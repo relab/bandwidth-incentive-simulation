@@ -3,23 +3,18 @@ package utils
 type Network struct {
 	bits  int
 	bin   int
-	nodes map[int]Node
+	nodes map[int]*Node
 }
 
 type Node struct {
 	net Network
 	id  int
+	adj [][]*Node
 	// storageSet
 	// cacheSet
 	canPay bool
 }
 
-// func
-
-// func (node *Node) add(other *Node) bool {
-// 	net := node.net
-// 	if (net == nil) || other.net() != net || node == other {
-// 		return false
-// 	}
-// 	bits := net.bits - (node.id ^ other.id)
-// }
+func (node *Node) AddNode(other *Node) bool {
+	return true
+}
