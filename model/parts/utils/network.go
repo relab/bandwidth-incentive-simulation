@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"math"
 	"os"
 )
 
@@ -14,7 +15,7 @@ type Network struct {
 type Node struct {
 	network    *Network
 	id         int
-	adj        [][]int
+	adj        [][]*Node
 	storageSet []int
 	cacheSet   []int
 	canPay     bool
@@ -42,10 +43,13 @@ func (network *Network) load(path string) (int, int, map[int]Node) {
 	for _, node := range test.Nodes {
 		nodes[node.ID] = node.Adj
 	}
-	//network.nodes = nodes
 	network.nodes = make(map[int]Node)
 	for _, data := range test.Nodes {
-		network.node(data.ID)
+		node1 := network.node(data.ID)
+		for _, adj := range data.Adj {
+			node2 := network.node(adj)
+			node1.add(&node2)
+		}
 	}
 
 	return network.bits, network.bin, network.nodes
@@ -58,7 +62,7 @@ func (network *Network) node(value int) Node {
 	res := Node{
 		network:    network,
 		id:         value,
-		adj:        make([][]int, 0),
+		adj:        make([][]*Node, network.bits),
 		storageSet: make([]int, 0),
 		cacheSet:   make([]int, 0),
 		canPay:     true,
@@ -71,17 +75,24 @@ func (network *Network) node(value int) Node {
 
 }
 
-// func (node *Node) add(other *Node) bool {
-// 	if node.network == nil || node.network != other.network || node == other {
-// 		return false
-// 	}
-// 	bit := node.network.bits - (node.id ^ other.id).bitLen()	
-// }
-
-// func BitLen(x int) int {
-// 	bitLen := 0
-// 	for n > 0 {
-// 		n >>= 1
-// 		bitLen++
-// 	}
-// }
+func (node *Node) add(other *Node) bool {
+	if node.network == nil || node.network != other.network || node == other {
+		return false
+	}
+	if node.adj == nil {
+		node.adj = make([][]*Node, node.network.bits)
+	}
+	if other.adj == nil {
+		other.adj = make([][]*Node, other.network.bits)
+	}
+	bit := node.network.bits - int(math.Ceil(math.Log2(float64(node.id^other.id))))
+	if bit < 0 || bit >= node.network.bits {
+		return false
+	}
+	if len(node.adj[bit]) < node.network.bin && len(other.adj[bit]) < node.network.bin {
+		node.adj[bit] = append(node.adj[bit], other)
+		other.adj[bit] = append(other.adj[bit], node)
+		return true
+	}
+	return false
+}
