@@ -18,8 +18,8 @@ func TestCreateGraphNetwork(t *testing.T) {
 	}
 }
 
-func TestPushSync(t *testing.T) {
+func TestCreateDowloaderList(t *testing.T) {
 	network := Network{}
-	network.load("input_test.txt")
-	network.PushSync("input_test.txt", []string{"file1", "file2"})
+	network.load("nodes_data_8_10000.txt")
+	network.CreateDowloadersList()
 }

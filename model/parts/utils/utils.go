@@ -4,15 +4,16 @@ import (
 	"fmt"
 	ct "go-incentive-simulation/model"
 	"math/rand"
+	"time"
 )
 
-func CreateGraphNetwork(filename string) (*Graph) {
+func CreateGraphNetwork(filename string) *Graph {
 	fmt.Println("Creating graph network...")
 	graph := &Graph{
 		edges: make(map[int][]*Edge),
 	}
 	net := new(Network)
-	_,_, nodes := net.load(filename)
+	_, _, nodes := net.load(filename)
 	for _, node := range nodes {
 		graph.AddNode(node)
 	}
@@ -33,44 +34,54 @@ func CreateGraphNetwork(filename string) (*Graph) {
 	return graph
 }
 
+func choice(nodes []int, k int) []int {
+	res := make([]int, 0, k)
+
+	rand.Seed(time.Now().UnixMicro())
+
+	for i := 0; i < k; i++ {
+		res = append(res, nodes[rand.Intn(10000)])
+	}
+	return res
+}
+
 func MakeFiles() []int {
 	fmt.Println("Making files...")
 	var filesList []int
 
-	// Gets all constants 
-	consts := ct.Constants
-
-	for i := 0; i <= consts.GetOriginators(); i++ {
-		chunksList := rand.Perm(consts.GetChunks())
-		filesList = append(chunksList)
-	}
+	// for i := 0; i <= ct.Constants.GetOriginators(); i++ {
+	// 	chunksList := choice(ct.Constants.GetChunks(), ct.Constants.GetRangeAddress())
+	// 	filesList = append(chunksList)
+	// }
 	fmt.Println("Files made!")
 	return filesList
 }
 
-func (net *Network) CreateDowloadersList(fileName string) []int {
+func (net *Network) CreateDowloadersList() []int {
 	fmt.Println("Creating downloaders list...")
-	var downloadersList []int
 
-	// nodes := net.nodes
-	// downloadersList
+	nodesValue := make([]int, 0, len(net.nodes))
+	for i := range net.nodes {
+		nodesValue = append(nodesValue, net.nodes[i].id)
+	}
+	downloadersList := choice(nodesValue, ct.Constants.GetOriginators())
 
 	fmt.Println("Downloaders list create...!")
 	return downloadersList
 }
 
-func (net *Network) PushSync(fileName string, files []string) {
-	fmt.Println("Pushing sync...")
-	if net == nil {
-		fmt.Println("Network is nil!")
-		return 
-	}
-	nodes := net.nodes
-	for i := range nodes {
-		fmt.Println(nodes[i].id)
-	}
-	// fmt.Println(nodes)
 
-	fmt.Println("Pushing sync finished...")
-}
 
+// func (net *Network) PushSync(fileName string, files []string) {
+// 	fmt.Println("Pushing sync...")
+// 	if net == nil {
+// 		fmt.Println("Network is nil!")
+// 		return
+// 	}
+// 	nodes := net.nodes
+// 	for i := range nodes {
+// 		fmt.Println(nodes[i].id)
+// 	}
+
+// 	fmt.Println("Pushing sync finished...")
+// }
