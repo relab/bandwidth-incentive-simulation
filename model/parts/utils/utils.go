@@ -49,10 +49,11 @@ func MakeFiles() []int {
 	fmt.Println("Making files...")
 	var filesList []int
 
-	// for i := 0; i <= ct.Constants.GetOriginators(); i++ {
-	// 	chunksList := choice(ct.Constants.GetChunks(), ct.Constants.GetRangeAddress())
-	// 	filesList = append(chunksList)
-	// }
+	for i := 0; i <= ct.Constants.GetOriginators(); i++ {
+		// TODO: fix this, GetChuncks should be a list?
+		// chunksList := choice(ct.Constants.GetChunks(), ct.Constants.GetRangeAddress())
+		// filesList = append(chunksList)
+	}
 	fmt.Println("Files made!")
 	return filesList
 }
@@ -71,17 +72,17 @@ func (net *Network) CreateDowloadersList() []int {
 }
 
 
+// no need for this function
+func (net *Network) PushSync(fileName string, files []string) {
+	fmt.Println("Pushing sync...")
+	if net == nil {
+		fmt.Println("Network is nil!")
+		return
+	}
+	nodes := net.nodes
+	for i := range nodes {
+		fmt.Println(nodes[i].id)
+	}
 
-// func (net *Network) PushSync(fileName string, files []string) {
-// 	fmt.Println("Pushing sync...")
-// 	if net == nil {
-// 		fmt.Println("Network is nil!")
-// 		return
-// 	}
-// 	nodes := net.nodes
-// 	for i := range nodes {
-// 		fmt.Println(nodes[i].id)
-// 	}
-
-// 	fmt.Println("Pushing sync finished...")
-// }
+	fmt.Println("Pushing sync finished...")
+}
