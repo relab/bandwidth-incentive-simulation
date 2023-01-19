@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"math"
 	"os"
+	"sort"
 )
 
 type Network struct {
@@ -39,14 +40,12 @@ func (network *Network) load(path string) (int, int, map[int]*Node) {
 
 	network.bits = test.Bits
 	network.bin = test.Bin
-	nodes := make(map[int][]int)
-	for _, node := range test.Nodes {
-		nodes[node.ID] = node.Adj
-	}
 	network.nodes = make(map[int]*Node)
-	for _, data := range test.Nodes {
-		node1 := network.node(data.ID)
-		for _, adj := range data.Adj {
+
+	for _, node := range test.Nodes {
+		node1 := network.node(node.ID)
+		sort.Ints(node.Adj)
+		for _, adj := range node.Adj {
 			node2 := network.node(adj)
 			node1.add(node2)
 		}
