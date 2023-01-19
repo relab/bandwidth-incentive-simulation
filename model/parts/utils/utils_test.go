@@ -1,17 +1,21 @@
 package utils
 
 import (
+	"fmt"
 	"testing"
 )
 
-func TestNetwork(t *testing.T) {
-	network := Network{}
-	bits, bin, nodes := network.load("input_test.txt")
-	t.Log("Bits:", bits)
-	t.Log("Bin:", bin)
-	t.Log("Nodes:", nodes)
+func TestCreateGraphNetwork(t *testing.T) {
+	// fileName := "input_test.txt"
+	fileName := "nodes_data_8_10000.txt"
 
-	t.Log("Nodes[1]:", nodes[1])
+	graph := CreateGraphNetwork(fileName)
+	for i, _ := range graph.edges {
+		for _, edge := range graph.edges[i]{
+			fmt.Print(edge)
+			fmt.Print("\n")
+		}
+	}
 }
 
 func TestPushSync(t *testing.T) {
