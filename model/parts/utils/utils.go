@@ -2,6 +2,8 @@ package utils
 
 import (
 	"fmt"
+	ct "go-incentive-simulation/model"
+	"math/rand"
 )
 
 func CreateGraphNetwork(filename string) *Graph {
@@ -32,7 +34,7 @@ func CreateGraphNetwork(filename string) *Graph {
 }
 
 func isThresholdFailed(firstNode *Node, secondNode *Node, chunkId int, net *Network) {
-	if ct.
+	ct.Constants.
 }
 
 func getNext(firstNode *Node, chunkId int, net *Network, mainOriginator *Node, prevNodePaid *Node, rerouteMap int) {
@@ -51,11 +53,14 @@ func getNext(firstNode *Node, chunkId int, net *Network, mainOriginator *Node, p
 	for _, adj := range firstNode.adj {
 		fmt.Println("adj: %d", adj)
 		for _, node := range adj {
-			dist := int(node.id^chunkId)
+			dist := int(node.id ^ chunkId)
 			if BitLength(dist) >= BitLength(lastDistance) {
 				continue
 			}
-			if !thresholdFailed(firstNode, node, chunkId, net)
+			if !thresholdFailed(firstNode, node, chunkId, net) {
+				return
+			}
+
 		}
 	}
 }
@@ -72,4 +77,45 @@ func getBin(src int, dest int, index int) int {
 
 func whichPowerTwo(rangeAddress int) int {
 	return BitLength(rangeAddress) - 1
+}
+
+func MakeFiles() []int {
+	fmt.Println("Making files...")
+	var filesList []int
+
+	// Gets all constants
+	consts := ct.Constants
+
+	for i := 0; i <= consts.GetOriginators(); i++ {
+		chunksList := rand.Perm(consts.GetChunks())
+		filesList = append(chunksList)
+	}
+	fmt.Println("Files made!")
+	return filesList
+}
+
+func (net *Network) CreateDowloadersList(fileName string) []int {
+	fmt.Println("Creating downloaders list...")
+	var downloadersList []int
+
+	// nodes := net.nodes
+	// downloadersList
+
+	fmt.Println("Downloaders list create...!")
+	return downloadersList
+}
+
+func (net *Network) PushSync(fileName string, files []string) {
+	fmt.Println("Pushing sync...")
+	if net == nil {
+		fmt.Println("Network is nil!")
+		return
+	}
+	nodes := net.nodes
+	for i := range nodes {
+		fmt.Println(nodes[i].id)
+	}
+	// fmt.Println(nodes)
+
+	fmt.Println("Pushing sync finished...")
 }
