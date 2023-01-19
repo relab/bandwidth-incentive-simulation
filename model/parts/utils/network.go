@@ -9,7 +9,7 @@ import (
 type Network struct {
 	bits  int
 	bin   int
-	nodes map[int]Node
+	nodes map[int]*Node
 }
 
 type Node struct {
@@ -30,7 +30,7 @@ type Test struct {
 	} `json:"nodes"`
 }
 
-func (network *Network) load(path string) (int, int, map[int]Node) {
+func (network *Network) load(path string) (int, int, map[int]*Node) {
 	file, _ := os.Open(path)
 	defer file.Close()
 	decoder := json.NewDecoder(file)
@@ -43,19 +43,19 @@ func (network *Network) load(path string) (int, int, map[int]Node) {
 	for _, node := range test.Nodes {
 		nodes[node.ID] = node.Adj
 	}
-	network.nodes = make(map[int]Node)
+	network.nodes = make(map[int]*Node)
 	for _, data := range test.Nodes {
 		node1 := network.node(data.ID)
 		for _, adj := range data.Adj {
 			node2 := network.node(adj)
-			node1.add(&node2)
+			node1.add(node2)
 		}
 	}
 
 	return network.bits, network.bin, network.nodes
 }
 
-func (network *Network) node(value int) Node {
+func (network *Network) node(value int) *Node {
 	if value < 0 || value >= (1<<network.bits) {
 		panic("address out of range")
 	}
@@ -63,16 +63,20 @@ func (network *Network) node(value int) Node {
 		network:    network,
 		id:         value,
 		adj:        make([][]*Node, network.bits),
-		storageSet: make([]int, 0),
-		cacheSet:   make([]int, 0),
+		storageSet: []int{0},
+		cacheSet:   []int{0},
 		canPay:     true,
 	}
 	if _, ok := network.nodes[value]; !ok {
-		network.nodes[value] = res
-		return res
+		network.nodes[value] = &res
+		return &res
 	}
 	return network.nodes[value]
 
+}
+
+func (network *Network) generate(count int) {
+	// TODO: implement
 }
 
 func (node *Node) add(other *Node) bool {
@@ -89,10 +93,20 @@ func (node *Node) add(other *Node) bool {
 	if bit < 0 || bit >= node.network.bits {
 		return false
 	}
-	if len(node.adj[bit]) < node.network.bin && len(other.adj[bit]) < node.network.bin {
+	isDup := contains(node.adj[bit], other.id) || contains(other.adj[bit], node.id)
+	if len(node.adj[bit]) < node.network.bin && len(other.adj[bit]) < node.network.bin && !isDup {
 		node.adj[bit] = append(node.adj[bit], other)
 		other.adj[bit] = append(other.adj[bit], node)
 		return true
+	}
+	return false
+}
+
+func contains(slice []*Node, value int) bool {
+	for _, item := range slice {
+		if item.id == value {
+			return true
+		}
 	}
 	return false
 }
