@@ -13,3 +13,8 @@ func TestNetwork(t *testing.T) {
 
 	t.Log("Nodes[1]:", nodes[1])
 }
+
+func TestIsCacheEnable(t *testing.T) {
+	c := MakeFiles()
+	t.Log(c)
+}
