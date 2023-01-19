@@ -14,7 +14,8 @@ func TestNetwork(t *testing.T) {
 	t.Log("Nodes[1]:", nodes[1])
 }
 
-func TestIsCacheEnable(t *testing.T) {
-	c := MakeFiles()
-	t.Log(c)
+func TestPushSync(t *testing.T) {
+	network := Network{}
+	network.load("input_test.txt")
+	network.PushSync("input_test.txt", []string{"file1", "file2"})
 }

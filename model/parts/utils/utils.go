@@ -21,14 +21,29 @@ func MakeFiles() []int {
 	return filesList
 }
 
-func (n *Network) CreateDowloadersList(fileName string) []int {
+func (net *Network) CreateDowloadersList(fileName string) []int {
 	fmt.Println("Creating downloaders list...")
 	var downloadersList []int
 
-	// net := n.load(fileName)
 	// nodes := net.nodes
 	// downloadersList
 
 	fmt.Println("Downloaders list create...!")
 	return downloadersList
+}
+
+func (net *Network) PushSync(fileName string, files []string) {
+	fmt.Println("Pushing sync...")
+	if net == nil {
+		fmt.Println("Network is nil!")
+		return 
+	}
+	nodes := net.nodes
+	for i := range nodes {
+		fmt.Println(nodes[i].id)
+	}
+	// fmt.Println(nodes)
+
+
+	fmt.Println("Pushing sync finished...")
 }
