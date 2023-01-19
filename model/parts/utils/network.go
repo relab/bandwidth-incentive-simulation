@@ -32,6 +32,7 @@ type Test struct {
 }
 
 func (network *Network) load(path string) (int, int, map[int]*Node) {
+
 	file, _ := os.Open(path)
 	defer file.Close()
 	decoder := json.NewDecoder(file)
@@ -88,7 +89,7 @@ func (node *Node) add(other *Node) bool {
 	if other.adj == nil {
 		other.adj = make([][]*Node, other.network.bits)
 	}
-	bit := node.network.bits - int(math.Ceil(math.Log2(float64(node.id^other.id))))
+	bit := node.network.bits - BitLength(node.id^other.id)
 	if bit < 0 || bit >= node.network.bits {
 		return false
 	}
@@ -99,6 +100,10 @@ func (node *Node) add(other *Node) bool {
 		return true
 	}
 	return false
+}
+
+func BitLength(num int) int {
+	return int(math.Ceil(math.Log2(float64(num))))
 }
 
 func contains(slice []*Node, value int) bool {
