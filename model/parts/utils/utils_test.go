@@ -17,3 +17,9 @@ func TestCreateGraphNetwork(t *testing.T) {
 		}
 	}
 }
+
+func TestPushSync(t *testing.T) {
+	network := Network{}
+	network.load("input_test.txt")
+	network.PushSync("input_test.txt", []string{"file1", "file2"})
+}
