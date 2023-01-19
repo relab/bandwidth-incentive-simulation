@@ -1,20 +1,99 @@
 package utils
 
+import (
+	"encoding/json"
+	"math"
+	"os"
+)
+
 type Network struct {
 	bits  int
 	bin   int
-	nodes map[int]*Node
+	nodes map[int]Node
 }
 
 type Node struct {
-	net Network
-	id  int
-	adj [][]*Node
-	// storageSet
-	// cacheSet
-	canPay bool
+	network    *Network
+	id         int
+	adj        [][]*Node
+	storageSet []int
+	cacheSet   []int
+	canPay     bool
 }
 
-func (node *Node) AddNode(other *Node) bool {
-	return true
+type Test struct {
+	Bits  int `json:"bits"`
+	Bin   int `json:"bin"`
+	Nodes []struct {
+		ID  int   `json:"id"`
+		Adj []int `json:"adj"`
+	} `json:"nodes"`
+}
+
+func (network *Network) load(path string) (int, int, map[int]Node) {
+	file, _ := os.Open(path)
+	defer file.Close()
+	decoder := json.NewDecoder(file)
+	var test Test
+	decoder.Decode(&test)
+
+	network.bits = test.Bits
+	network.bin = test.Bin
+	nodes := make(map[int][]int)
+	for _, node := range test.Nodes {
+		nodes[node.ID] = node.Adj
+	}
+	// optimalisere dette?
+	network.nodes = make(map[int]Node)
+	for _, data := range test.Nodes {
+		node1 := network.node(data.ID)
+		for _, adj := range data.Adj {
+			node2 := network.node(adj)
+			node1.add(&node2)
+		}
+	}
+
+	return network.bits, network.bin, network.nodes
+}
+
+func (network *Network) node(value int) Node {
+	if value < 0 || value >= (1<<network.bits) {
+		panic("address out of range")
+	}
+	res := Node{
+		network:    network,
+		id:         value,
+		adj:        make([][]*Node, network.bits),
+		storageSet: make([]int, 0),
+		cacheSet:   make([]int, 0),
+		canPay:     true,
+	}
+	if _, ok := network.nodes[value]; !ok {
+		network.nodes[value] = res
+		return res
+	}
+	return network.nodes[value]
+
+}
+
+func (node *Node) add(other *Node) bool {
+	if node.network == nil || node.network != other.network || node == other {
+		return false
+	}
+	if node.adj == nil {
+		node.adj = make([][]*Node, node.network.bits)
+	}
+	if other.adj == nil {
+		other.adj = make([][]*Node, other.network.bits)
+	}
+	bit := node.network.bits - int(math.Ceil(math.Log2(float64(node.id^other.id))))
+	if bit < 0 || bit >= node.network.bits {
+		return false
+	}
+	if len(node.adj[bit]) < node.network.bin && len(other.adj[bit]) < node.network.bin {
+		node.adj[bit] = append(node.adj[bit], other)
+		other.adj[bit] = append(other.adj[bit], node)
+		return true
+	}
+	return false
 }

@@ -7,9 +7,8 @@ import (
 func CreateGraphNetwork(filename string) {
 	fmt.Println("Creating graph network...")
 	graph := new(Graph)
-	// net := Network.Load(filename)
-	// nodes := []Node{net.nodes.values()}
-	nodes := []Node{}
+	net := new(Network)
+	_,_, nodes := net.load(filename)
 	for _, node := range nodes {
 		graph.AddNode(node.id)
 	}

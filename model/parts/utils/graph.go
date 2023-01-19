@@ -37,7 +37,7 @@ func (g *Graph) Nodes() []*Node {
 
 // AddNode will add a Node to a graph
 func (g *Graph) AddNode(nodeId int) error {
-	if contains(g.nodes, nodeId) {
+	if containsNode(g.nodes, nodeId) {
 		err := fmt.Errorf("node %d already exists", nodeId)
 		return err
 	} else {
@@ -54,10 +54,12 @@ func (g *Graph) AddEdge(edge *Edge) error {
 	toNode := g.getNode(edge.toNodeId)
 	fromNode := g.getNode(edge.fromNodeId)
 	if toNode == nil || fromNode == nil {
-		return fmt.Errorf("not a valid edge from %d ---> %d", edge.fromNodeId, edge.toNodeId)
+		return fmt.Errorf("not a valid edge from %d ---> %d", fromNode.id, toNode.id)
+	} else if containsEdge(g.edges[fromNode.id], edge) {
+		return fmt.Errorf("edge from node %d ---> %d already exists", fromNode.id, toNode.id)
 	} else {
-		newEdges := append(g.edges[edge.fromNodeId], edge)
-		g.edges[edge.fromNodeId] = newEdges
+		newEdges := append(g.edges[fromNode.id], edge)
+		g.edges[fromNode.id] = newEdges
 		return nil
 	}
 }
@@ -72,9 +74,19 @@ func (g *Graph) getNode(nodeId int) *Node {
 	return nil
 }
 
-func contains(v []*Node, id int) bool {
+func containsNode(v []*Node, id int) bool {
 	for _, v := range v {
 		if v.id == id {
+			return true
+		}
+	}
+	return false
+}
+
+
+func containsEdge(v []*Edge, edge *Edge) bool {
+	for _, v := range v {
+		if v.toNodeId == edge.toNodeId {
 			return true
 		}
 	}
