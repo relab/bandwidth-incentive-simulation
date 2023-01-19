@@ -4,13 +4,15 @@ import (
 	"fmt"
 )
 
-func CreateGraphNetwork(filename string) {
+func CreateGraphNetwork(filename string) (*Graph) {
 	fmt.Println("Creating graph network...")
-	graph := new(Graph)
+	graph := &Graph{
+		edges: make(map[int][]*Edge),
+	}
 	net := new(Network)
 	_,_, nodes := net.load(filename)
 	for _, node := range nodes {
-		graph.AddNode(node.id)
+		graph.AddNode(node)
 	}
 	for _, node := range graph.Nodes() {
 		nodeAdj := node.adj
@@ -26,47 +28,6 @@ func CreateGraphNetwork(filename string) {
 		}
 	}
 	fmt.Println("Graph network is created.")
+	return graph
 }
 
-// package utils
-
-// import (
-// 	"gonum.org/v1/gonum/graph"
-// 	"gonum.org/v1/gonum/graph/simple"
-// )
-
-// type Edge struct {
-// 	from, to int
-// 	a2b      float64
-// 	last     float64
-// }
-
-// func (e Edge) From() graph.Node {
-// 	return simple.Node(e.from)
-// }
-
-// func (e Edge) To() graph.Node {
-// 	return simple.Node(e.to)
-// }
-
-// func createGraph(filename string) *simple.DirectedGraph {
-// 	g := simple.NewDirectedGraph()
-// 	// load network from file
-// 	// net := Network.Load(filename)
-// 	// nodes := []Node{net.nodes.values()}
-// 	nodes := []Node{}
-
-// 	for _, node := range nodes {
-// 		graph.AddNode(node.id)
-// 		graph.NewNode
-
-// 	nodes := []Node{}
-// 	for _, node := range nodes {
-// 		g.AddNode(simple.Node(node.ID))
-// 		for _, adj := range node.adj {
-// 			e := Edge{from: node.id, to: adj.id, a2b: 0, last: 0}
-// 			g.SetEdge(e)
-// 		}
-// 	}
-// 	return g
-// }

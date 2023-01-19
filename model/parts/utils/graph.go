@@ -25,26 +25,18 @@ type EdgeAttrs struct {
 	last int
 }
 
-// func (g *Graph) Init() {
-// 	g.nodes = make([]*Node, 1000)
-// 	g.edges = make(map[int][]*Edge)
-// }
-
 // Returns all nodes
 func (g *Graph) Nodes() []*Node {
 	return g.nodes
 }
 
 // AddNode will add a Node to a graph
-func (g *Graph) AddNode(nodeId int) error {
-	if containsNode(g.nodes, nodeId) {
-		err := fmt.Errorf("node %d already exists", nodeId)
+func (g *Graph) AddNode(node *Node) error {
+	if containsNode(g.nodes, node) {
+		err := fmt.Errorf("node %d already exists", node.id)
 		return err
 	} else {
-		v := &Node{
-			id: nodeId,
-		}
-		g.nodes = append(g.nodes, v)
+		g.nodes = append(g.nodes, node)
 	}
 	return nil
 }
@@ -74,15 +66,14 @@ func (g *Graph) getNode(nodeId int) *Node {
 	return nil
 }
 
-func containsNode(v []*Node, id int) bool {
+func containsNode(v []*Node, node *Node) bool {
 	for _, v := range v {
-		if v.id == id {
+		if v.id == node.id {
 			return true
 		}
 	}
 	return false
 }
-
 
 func containsEdge(v []*Edge, edge *Edge) bool {
 	for _, v := range v {
@@ -104,23 +95,3 @@ func (g *Graph) Print() {
 		fmt.Println()
 	}
 }
-
-// func PrintEgDirectedGraph() {
-// 	g := &Graph{}
-// 	g.AddNode(1)
-// 	g.AddNode(2)
-// 	g.AddNode(3)
-// 	g.AddEdge(1, 2)
-// 	g.AddEdge(2, 3)
-// 	g.AddEdge(1, 3)
-// 	g.AddEdge(3, 1)
-// 	g.Print()
-// }
-
-/*
-// Call In Main:: datastructures.PrintEgDirectedGraph()
-// Output:
-// 1 : 3
-// 2 : 1
-// 3 : 2 1
-*/
