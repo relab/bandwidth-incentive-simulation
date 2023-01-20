@@ -34,7 +34,6 @@ func CreateGraphNetwork(filename string) *Graph {
 	return graph
 }
 
-
 // Python version stores the GetEdgeData function on the net class, instead of the graph... maybe change later?
 func isThresholdFailed(firstNode *Node, secondNode *Node, chunkId int, g *Graph) bool {
 	if ct.Constants.GetThresholdEnabled() {
@@ -45,7 +44,7 @@ func isThresholdFailed(firstNode *Node, secondNode *Node, chunkId int, g *Graph)
 		p2pSecond := edgeDataSecond.a2b
 
 		price := p2pFirst - p2pSecond + peerPriceChunk(secondNode, chunkId)
-		// fmt.Println("price: %d", price)
+		fmt.Printf("price: %d", price)
 		return price > ct.Constants.GetThreshold()
 	}
 	return false
@@ -61,13 +60,13 @@ func isThresholdFailed(firstNode *Node, secondNode *Node, chunkId int, g *Graph)
 // 	accessFailed := false
 // 	payment := 0
 // 	lastDistance := int(firstNode.id ^ chunkId)
-// 	fmt.Println("last distance is : %d, chunk is: %d, first is: %d", lastDistance, chunkId, firstNode.id)
-// 	fmt.Println("which bucket: %d", 16-BitLength(chunkId^firstNode.id))
+// 	fmt.Printf("last distance is : %d, chunk is: %d, first is: %d", lastDistance, chunkId, firstNode.id)
+// 	fmt.Printf("which bucket: %d", 16-BitLength(chunkId^firstNode.id))
 
 // 	currDist := int(lastDistance)
 // 	payDist := int(lastDistance)
 // 	for _, adj := range firstNode.adj {
-// 		fmt.Println("adj: %d", adj)
+// 		fmt.Printf("adj: %d", adj)
 // 		for _, node := range adj {
 // 			dist := int(node.id ^ chunkId)
 // 			if BitLength(dist) >= BitLength(lastDistance) {
