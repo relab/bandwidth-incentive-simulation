@@ -158,6 +158,7 @@ func choice(nodes []int, k int) []int {
 		res = append(res, nodes[rand.Intn(len(nodes))])
 	}
 	return res
+}
 
 func MakeFiles() []int {
 	fmt.Println("Making files...")
@@ -167,7 +168,8 @@ func MakeFiles() []int {
 		// TODO: fix this, GetChuncks should be a list?
 		// chunksList := choice(ct.Constants.GetChunks(), ct.Constants.GetRangeAddress())
 		// filesList = append(chunksList)
-
+		fmt.Println(i)
+	}
 	// Gets all constants
 	consts := ct.Constants
 
