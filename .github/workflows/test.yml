@@ -1,4 +1,4 @@
-name: TestUtils
+name: Test
 
 on:
   push:
@@ -22,5 +22,5 @@ jobs:
     
     - users: actions/checkout@v2
 
-    - name: TestUtils
+    - name: Test
         run: go test -v ./...

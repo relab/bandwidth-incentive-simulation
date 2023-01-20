@@ -45,7 +45,7 @@ func isThresholdFailed(firstNode *Node, secondNode *Node, chunkId int, g *Graph)
 		p2pSecond := edgeDataSecond.a2b
 
 		price := p2pFirst - p2pSecond + peerPriceChunk(secondNode, chunkId)
-		fmt.Println("price: %d", price)
+		// fmt.Println("price: %d", price)
 		return price > ct.Constants.GetThreshold()
 	}
 	return false
