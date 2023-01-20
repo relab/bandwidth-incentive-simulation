@@ -3,6 +3,8 @@ package utils
 import (
 	"fmt"
 	"testing"
+	ct "go-incentive-simulation/model"
+	"gotest.tools/assert"
 )
 
 func TestCreateGraphNetwork(t *testing.T) {
@@ -19,7 +21,17 @@ func TestCreateGraphNetwork(t *testing.T) {
 }
 
 func TestCreateDowloaderList(t *testing.T) {
+	// Create a network
 	network := Network{}
+	// Load data to network 
 	network.load("nodes_data_8_10000.txt")
-	network.CreateDowloadersList()
+
+	// Get number of originators used in the func
+	c := ct.Constants.GetOriginators()
+
+	// Create a list of downloaders
+	l:= network.CreateDowloadersList()
+
+	// Check if the length of the list is equal to the number of originators specified
+	assert.Equal(t, len(l), c)
 }
