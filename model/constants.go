@@ -34,7 +34,7 @@ var Constants = constant{
 	networkSize: 1000,
 	binSize:     8,
 	rangeAddress: 0, // 2 * *Bits
-	originators : 12, // int(0.001 * NetworkSize)
+	originators : 1, // int(0.001 * NetworkSize)
 	refreshRate: 8,
 	threshold: 16,
 	randomSeed : rand.Int() * 100,

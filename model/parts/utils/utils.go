@@ -4,6 +4,7 @@ import (
 	"fmt"
 	ct "go-incentive-simulation/model"
 	"math/rand"
+	"time"
 )
 
 func CreateGraphNetwork(filename string) *Graph {
@@ -32,6 +33,7 @@ func CreateGraphNetwork(filename string) *Graph {
 	fmt.Println("Graph network is created.")
 	return graph
 }
+
 
 // Python version stores the GetEdgeData function on the net class, instead of the graph... maybe change later?
 func isThresholdFailed(firstNode *Node, secondNode *Node, chunkId int, g *Graph) bool {
@@ -147,9 +149,24 @@ func peerPriceChunk(firstNode *Node, chunkId int) int {
 	return (ct.Constants.GetMaxProximityOrder() - getProximityChunk(firstNode, chunkId) + 1) * ct.Constants.GetPrice()
 }
 
+func choice(nodes []int, k int) []int {
+	res := make([]int, 0, k)
+
+	rand.Seed(time.Now().UnixMicro())
+
+	for i := 0; i < k; i++ {
+		res = append(res, nodes[rand.Intn(len(nodes))])
+	}
+	return res
+
 func MakeFiles() []int {
 	fmt.Println("Making files...")
 	var filesList []int
+
+	for i := 0; i <= ct.Constants.GetOriginators(); i++ {
+		// TODO: fix this, GetChuncks should be a list?
+		// chunksList := choice(ct.Constants.GetChunks(), ct.Constants.GetRangeAddress())
+		// filesList = append(chunksList)
 
 	// Gets all constants
 	consts := ct.Constants
@@ -162,17 +179,20 @@ func MakeFiles() []int {
 	return filesList
 }
 
-func (net *Network) CreateDowloadersList(fileName string) []int {
+func (net *Network) CreateDowloadersList() []int {
 	fmt.Println("Creating downloaders list...")
-	var downloadersList []int
 
-	// nodes := net.nodes
-	// downloadersList
+	nodesValue := make([]int, 0, len(net.nodes))
+	for i := range net.nodes {
+		nodesValue = append(nodesValue, net.nodes[i].id)
+	}
+	downloadersList := choice(nodesValue, ct.Constants.GetOriginators())
 
 	fmt.Println("Downloaders list create...!")
 	return downloadersList
 }
 
+// no need for this function
 func (net *Network) PushSync(fileName string, files []string) {
 	fmt.Println("Pushing sync...")
 	if net == nil {
@@ -183,7 +203,6 @@ func (net *Network) PushSync(fileName string, files []string) {
 	for i := range nodes {
 		fmt.Println(nodes[i].id)
 	}
-	// fmt.Println(nodes)
 
 	fmt.Println("Pushing sync finished...")
 }
