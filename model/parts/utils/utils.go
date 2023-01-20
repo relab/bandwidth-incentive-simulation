@@ -40,7 +40,7 @@ func choice(nodes []int, k int) []int {
 	rand.Seed(time.Now().UnixMicro())
 
 	for i := 0; i < k; i++ {
-		res = append(res, nodes[rand.Intn(10000)])
+		res = append(res, nodes[rand.Intn(len(nodes))])
 	}
 	return res
 }
@@ -70,7 +70,6 @@ func (net *Network) CreateDowloadersList() []int {
 	fmt.Println("Downloaders list create...!")
 	return downloadersList
 }
-
 
 // no need for this function
 func (net *Network) PushSync(fileName string, files []string) {
