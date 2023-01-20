@@ -51,76 +51,76 @@ func isThresholdFailed(firstNode *Node, secondNode *Node, chunkId int, g *Graph)
 	return false
 }
 
-func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginator *Node, prevNodePaid *Node, rerouteMap map[int][]*Node) {
-	var nextNode *Node
-	nextNode = nil
-	var payNext *Node
-	payNext = nil
-	var thresholdList [][2]*Node
-	thresholdFailed := false
-	accessFailed := false
-	payment := 0
-	lastDistance := int(firstNode.id ^ chunkId)
-	fmt.Println("last distance is : %d, chunk is: %d, first is: %d", lastDistance, chunkId, firstNode.id)
-	fmt.Println("which bucket: %d", 16-BitLength(chunkId^firstNode.id))
+// func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginator *Node, prevNodePaid *Node, rerouteMap map[int][]*Node) {
+// 	var nextNode *Node
+// 	nextNode = nil
+// 	var payNext *Node
+// 	payNext = nil
+// 	var thresholdList [][2]*Node
+// 	thresholdFailed := false
+// 	accessFailed := false
+// 	payment := 0
+// 	lastDistance := int(firstNode.id ^ chunkId)
+// 	fmt.Println("last distance is : %d, chunk is: %d, first is: %d", lastDistance, chunkId, firstNode.id)
+// 	fmt.Println("which bucket: %d", 16-BitLength(chunkId^firstNode.id))
 
-	currDist := int(lastDistance)
-	payDist := int(lastDistance)
-	for _, adj := range firstNode.adj {
-		fmt.Println("adj: %d", adj)
-		for _, node := range adj {
-			dist := int(node.id ^ chunkId)
-			if BitLength(dist) >= BitLength(lastDistance) {
-				continue
-			}
+// 	currDist := int(lastDistance)
+// 	payDist := int(lastDistance)
+// 	for _, adj := range firstNode.adj {
+// 		fmt.Println("adj: %d", adj)
+// 		for _, node := range adj {
+// 			dist := int(node.id ^ chunkId)
+// 			if BitLength(dist) >= BitLength(lastDistance) {
+// 				continue
+// 			}
 
-			if !isThresholdFailed(firstNode, node, chunkId, graph) {
-				thresholdFailed = false
+// 			if !isThresholdFailed(firstNode, node, chunkId, graph) {
+// 				thresholdFailed = false
 
-				// Could probably clean this one up, but keeping it close to original for now
-				if dist < currDist {
-					if ct.Constants.IsRetryWithAnotherPeer() {
-						_, ok := rerouteMap[mainOriginator.id]
-						if ok {
-							allExceptLast := len(rerouteMap[mainOriginator.id]) - 1
-							if containsNode(rerouteMap[mainOriginator.id][:allExceptLast], node) {
-								continue
-							} else {
-								currDist = dist
-								nextNode = node
-							}
-						} else {
-							currDist = dist
-							nextNode = node
-						}
-					} else {
-						currDist = dist
-						nextNode = node
-					}
-				}
-			} else {
-				thresholdFailed = true
-				if ct.Constants.GetPaymentEnabled() {
-					if dist < payDist {
-						payDist = dist
-						payNext = node
-					}
-				}
-				listItem := [2]*Node{firstNode, node}
-				thresholdList = append(thresholdList, listItem)
-			}
-		}
-	}
-	// FORTSETT HER!
-	if nextNode != nil {
-		thresholdFailed = false
-		accessFailed = false
-	} else {
-		if !thresholdFailed {
-			accessFailed = true
-		}
-	}
-}
+// 				// Could probably clean this one up, but keeping it close to original for now
+// 				if dist < currDist {
+// 					if ct.Constants.IsRetryWithAnotherPeer() {
+// 						_, ok := rerouteMap[mainOriginator.id]
+// 						if ok {
+// 							allExceptLast := len(rerouteMap[mainOriginator.id]) - 1
+// 							if containsNode(rerouteMap[mainOriginator.id][:allExceptLast], node) {
+// 								continue
+// 							} else {
+// 								currDist = dist
+// 								nextNode = node
+// 							}
+// 						} else {
+// 							currDist = dist
+// 							nextNode = node
+// 						}
+// 					} else {
+// 						currDist = dist
+// 						nextNode = node
+// 					}
+// 				}
+// 			} else {
+// 				thresholdFailed = true
+// 				if ct.Constants.GetPaymentEnabled() {
+// 					if dist < payDist {
+// 						payDist = dist
+// 						payNext = node
+// 					}
+// 				}
+// 				listItem := [2]*Node{firstNode, node}
+// 				thresholdList = append(thresholdList, listItem)
+// 			}
+// 		}
+// 	}
+// 	// FORTSETT HER!
+// 	if nextNode != nil {
+// 		thresholdFailed = false
+// 		accessFailed = false
+// 	} else {
+// 		if !thresholdFailed {
+// 			accessFailed = true
+// 		}
+// 	}
+// }
 
 func getBin(src int, dest int, index int) int {
 	distance := src ^ dest
