@@ -17,7 +17,7 @@ type Edge struct {
 	attrs      EdgeAttrs
 }
 
-// Edge attributes structure,
+// EdgeAttrs Edge attributes structure,
 // "a2b" show how much this node asked from other node,
 // "last" is for the last forgiveness time
 type EdgeAttrs struct {
@@ -25,7 +25,7 @@ type EdgeAttrs struct {
 	last int
 }
 
-// Returns all nodes
+// Nodes Returns all nodes
 func (g *Graph) Nodes() []*Node {
 	return g.nodes
 }
@@ -37,8 +37,8 @@ func (g *Graph) AddNode(node *Node) error {
 		return err
 	} else {
 		g.nodes = append(g.nodes, node)
+		return nil
 	}
-	return nil
 }
 
 // AddEdge will add an edge from a node to a node

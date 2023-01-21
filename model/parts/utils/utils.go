@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func CreateGraphNetwork(filename string) *Graph {
+func CreateGraphNetwork(filename string) (*Graph, error) {
 	fmt.Println("Creating graph network...")
 	graph := &Graph{
 		edges: make(map[int][]*Edge),
@@ -15,7 +15,10 @@ func CreateGraphNetwork(filename string) *Graph {
 	net := new(Network)
 	_, _, nodes := net.load(filename)
 	for _, node := range nodes {
-		graph.AddNode(node)
+		err := graph.AddNode(node)
+		if err != nil {
+			return nil, err
+		}
 	}
 	for _, node := range graph.Nodes() {
 		nodeAdj := node.adj
@@ -25,13 +28,16 @@ func CreateGraphNetwork(filename string) *Graph {
 				// "last" is for the last forgiveness time
 				attrs := EdgeAttrs{a2b: 0, last: 0}
 				edge := Edge{fromNodeId: node.id, toNodeId: item.id, attrs: attrs}
-				graph.AddEdge(&edge)
+				err := graph.AddEdge(&edge)
+				if err != nil {
+					return nil, err
+				}
 				// graph.SetEdgeAttributes()
 			}
 		}
 	}
 	fmt.Println("Graph network is created.")
-	return graph
+	return graph, nil
 }
 
 // Python version stores the GetEdgeData function on the net class, instead of the graph... maybe change later?
