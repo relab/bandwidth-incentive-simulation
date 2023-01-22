@@ -93,7 +93,7 @@ func (node *Node) add(other *Node) bool {
 	if bit < 0 || bit >= node.network.bits {
 		return false
 	}
-	isDup := contains(node.adj[bit], other.id) || contains(other.adj[bit], node.id)
+	isDup := containsNode(node.adj[bit], other) || containsNode(other.adj[bit], node)
 	if len(node.adj[bit]) < node.network.bin && len(other.adj[bit]) < node.network.bin && !isDup {
 		node.adj[bit] = append(node.adj[bit], other)
 		other.adj[bit] = append(other.adj[bit], node)
@@ -106,9 +106,9 @@ func BitLength(num int) int {
 	return int(math.Ceil(math.Log2(float64(num))))
 }
 
-func contains(slice []*Node, value int) bool {
-	for _, item := range slice {
-		if item.id == value {
+func Contains[T comparable](elems []T, value T) bool {
+	for _, item := range elems {
+		if item == value {
 			return true
 		}
 	}

@@ -56,76 +56,164 @@ func isThresholdFailed(firstNode *Node, secondNode *Node, chunkId int, g *Graph)
 	return false
 }
 
-// func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginator *Node, prevNodePaid *Node, rerouteMap map[int][]*Node) {
-// 	var nextNode *Node
-// 	nextNode = nil
-// 	var payNext *Node
-// 	payNext = nil
-// 	var thresholdList [][2]*Node
-// 	thresholdFailed := false
-// 	accessFailed := false
-// 	payment := 0
-// 	lastDistance := int(firstNode.id ^ chunkId)
-// 	fmt.Printf("last distance is : %d, chunk is: %d, first is: %d", lastDistance, chunkId, firstNode.id)
-// 	fmt.Printf("which bucket: %d", 16-BitLength(chunkId^firstNode.id))
+type Payment struct {
+	unknown   int
+	firstNode *Node
+	payNext   *Node
+	chunkId   int
+}
 
-// 	currDist := int(lastDistance)
-// 	payDist := int(lastDistance)
-// 	for _, adj := range firstNode.adj {
-// 		fmt.Printf("adj: %d", adj)
-// 		for _, node := range adj {
-// 			dist := int(node.id ^ chunkId)
-// 			if BitLength(dist) >= BitLength(lastDistance) {
-// 				continue
-// 			}
+func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginator *Node, prevNodePaid bool, rerouteMap map[int][]*Node) (*Node, [][2]*Node, bool, bool, Payment, bool) {
+	var nextNode *Node
+	nextNode = nil
+	var payNext *Node
+	payNext = nil
+	var thresholdList [][2]*Node
+	thresholdFailed := false
+	accessFailed := false
+	payment := Payment{}
+	lastDistance := firstNode.id ^ chunkId
+	fmt.Printf("last distance is : %d, chunk is: %d, first is: %d", lastDistance, chunkId, firstNode.id)
+	fmt.Printf("which bucket: %d", 16-BitLength(chunkId^firstNode.id))
 
-// 			if !isThresholdFailed(firstNode, node, chunkId, graph) {
-// 				thresholdFailed = false
+	currDist := int(lastDistance)
+	payDist := int(lastDistance)
+	for _, adj := range firstNode.adj {
+		fmt.Printf("adj: %d", adj)
+		for _, node := range adj {
+			dist := int(node.id ^ chunkId)
+			if BitLength(dist) >= BitLength(lastDistance) {
+				continue
+			}
 
-// 				// Could probably clean this one up, but keeping it close to original for now
-// 				if dist < currDist {
-// 					if ct.Constants.IsRetryWithAnotherPeer() {
-// 						_, ok := rerouteMap[mainOriginator.id]
-// 						if ok {
-// 							allExceptLast := len(rerouteMap[mainOriginator.id]) - 1
-// 							if containsNode(rerouteMap[mainOriginator.id][:allExceptLast], node) {
-// 								continue
-// 							} else {
-// 								currDist = dist
-// 								nextNode = node
-// 							}
-// 						} else {
-// 							currDist = dist
-// 							nextNode = node
-// 						}
-// 					} else {
-// 						currDist = dist
-// 						nextNode = node
-// 					}
-// 				}
-// 			} else {
-// 				thresholdFailed = true
-// 				if ct.Constants.GetPaymentEnabled() {
-// 					if dist < payDist {
-// 						payDist = dist
-// 						payNext = node
-// 					}
-// 				}
-// 				listItem := [2]*Node{firstNode, node}
-// 				thresholdList = append(thresholdList, listItem)
-// 			}
-// 		}
-// 	}
-// 	// FORTSETT HER!
-// 	if nextNode != nil {
-// 		thresholdFailed = false
-// 		accessFailed = false
-// 	} else {
-// 		if !thresholdFailed {
-// 			accessFailed = true
-// 		}
-// 	}
-// }
+			if !isThresholdFailed(firstNode, node, chunkId, graph) {
+				thresholdFailed = false
+
+				// Could probably clean this one up, but keeping it close to original for now
+				if dist < currDist {
+					if ct.Constants.IsRetryWithAnotherPeer() {
+						_, ok := rerouteMap[mainOriginator.id]
+						if ok {
+							allExceptLast := len(rerouteMap[mainOriginator.id]) - 1
+							if containsNode(rerouteMap[mainOriginator.id][:allExceptLast], node) {
+								continue
+							} else {
+								currDist = dist
+								nextNode = node
+							}
+						} else {
+							currDist = dist
+							nextNode = node
+						}
+					} else {
+						currDist = dist
+						nextNode = node
+					}
+				}
+			} else {
+				thresholdFailed = true
+				if ct.Constants.GetPaymentEnabled() {
+					if dist < payDist {
+						payDist = dist
+						payNext = node
+					}
+				}
+				listItem := [2]*Node{firstNode, node}
+				thresholdList = append(thresholdList, listItem)
+			}
+		}
+	}
+	//lastDistance = durrDist
+	if nextNode != nil {
+		thresholdFailed = false
+		accessFailed = false
+	} else {
+		if !thresholdFailed {
+			accessFailed = true
+			// nextNode = -2 // accessFailed, TYPE MISMATCH ??
+		} else {
+			// nextNode = -1 // thresholdFailed, TYPE MISMATCH ??
+		}
+		if ct.Constants.GetPaymentEnabled() {
+			if payNext != nil {
+				accessFailed = false
+				if ct.Constants.IsOnlyOriginatorPays() {
+					if firstNode == mainOriginator {
+						payment.unknown = -1
+						payment.firstNode = firstNode
+						payment.payNext = payNext
+						payment.chunkId = chunkId
+						nextNode = payNext
+					} else {
+						thresholdFailed = true
+						// nextNode = -1, TYPE MISMATCH ??
+					}
+				} else if ct.Constants.IsPayIfOrigPays() {
+					if prevNodePaid {
+						nextNode = payNext
+						thresholdFailed = false
+						if firstNode == mainOriginator {
+							payment.unknown = -1
+						} else {
+							payment.unknown = 0
+						}
+						payment.firstNode = firstNode
+						payment.payNext = payNext
+						payment.chunkId = chunkId
+					} else {
+						if firstNode == mainOriginator {
+							payment.unknown = -1
+							payment.firstNode = firstNode
+							payment.payNext = payNext
+							payment.chunkId = chunkId
+							nextNode = payNext
+						} else {
+							thresholdFailed = true
+							// nextNode = -1, TYPE MISMATCH ??
+							payNext = nil
+						}
+					}
+				} else {
+					nextNode = payNext
+					thresholdFailed = false
+					if firstNode == mainOriginator {
+						payment.unknown = -1
+					} else {
+						payment.unknown = 0
+					}
+					payment.firstNode = firstNode
+					payment.payNext = payNext
+					payment.chunkId = chunkId
+				}
+			}
+		}
+	}
+	// TODO: Usikker på dette
+	if ct.Constants.GetPaymentEnabled() {
+	out:
+		for i, item := range thresholdList {
+			for _, node := range item {
+				if node == payNext {
+					if ct.Constants.IsPayIfOrigPays() {
+						if firstNode == mainOriginator {
+							thresholdList = append(thresholdList[:i], thresholdList[i+1:]...)
+						}
+					} else {
+						thresholdList = append(thresholdList[:i], thresholdList[i+1:]...)
+					}
+					break out
+				}
+			}
+		}
+	}
+	if payment == (Payment{}) {
+		prevNodePaid = true
+	} else {
+		prevNodePaid = false
+	}
+	fmt.Printf("next node is: %d", nextNode.id)
+	return nextNode, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid
+}
 
 func getBin(src int, dest int, index int) int {
 	distance := src ^ dest

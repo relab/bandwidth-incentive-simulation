@@ -6,9 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="71dfb426-3b62-4fef-9471-ec0906a721f9" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/parts/utils/graph.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/parts/utils/graph.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/parts/utils/network.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/parts/utils/network.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/model/parts/utils/utils.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/parts/utils/utils.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/parts/utils/utils_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/parts/utils/utils_test.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,6 +24,19 @@
   <component name="GOROOT" url="file://$PROJECT_DIR$/../../../../usr/local/go-1.19.5" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="da5c0000-c1c8-40b6-bbc1-67c088290dee" />
+        <option name="url" value="git@github.com:filigott/go-incentive-simulation.git" />
+      </UrlAndAccount>
+    </option>
   </component>
   <component name="GoLibraries">
     <option name="urls">
@@ -60,18 +72,10 @@
     "last_opened_file_path": "C:/Users/Filigott_Laptop",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
-    "settings.editor.selected.configurable": "preferences.lookFeel"
+    "settings.editor.selected.configurable": "editor.preferences.fonts.default"
   }
 }]]></component>
-  <component name="RunManager" selected="Go Test.TestCreateGraphNetwork in go-incentive-simulation/model/parts/utils">
-    <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
-      <module name="go-incentive-simulation" />
-      <working_directory value="$PROJECT_DIR$" />
-      <kind value="FILE" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Go Build.go build go-incentive-simulation">
     <configuration name="go build go-incentive-simulation" type="GoApplicationRunConfiguration" factoryName="Go Application" nameIsGenerated="true">
       <module name="go-incentive-simulation" />
       <working_directory value="$PROJECT_DIR$" />
@@ -93,15 +97,6 @@
       <pattern value="^\QTestCreateGraphNetwork\E$" />
       <method v="2" />
     </configuration>
-    <configuration default="true" type="GoTestRunConfiguration" factoryName="Go Test">
-      <module name="go-incentive-simulation" />
-      <working_directory value="$PROJECT_DIR$" />
-      <kind value="DIRECTORY" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$" />
-      <framework value="gotest" />
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="Go Test.TestCreateGraphNetwork in go-incentive-simulation/model/parts/utils" />
@@ -111,6 +106,17 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
