@@ -79,7 +79,7 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginator *Node, p
 	currDist := int(lastDistance)
 	payDist := int(lastDistance)
 	for _, adj := range firstNode.adj {
-		fmt.Printf("adj: %d", adj)
+		fmt.Println("adj: ", adj)
 		for _, node := range adj {
 			dist := int(node.id ^ chunkId)
 			if BitLength(dist) >= BitLength(lastDistance) {
