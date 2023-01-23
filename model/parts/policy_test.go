@@ -12,3 +12,8 @@ func TestResponisbleNodes(t *testing.T) {
 
 	assert.Equal(t, len(values), 4)
 }
+
+func TestSendRequest(t *testing.T) {
+	state := State{}
+	state.SendRequest()
+}
