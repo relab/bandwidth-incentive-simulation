@@ -55,8 +55,9 @@ func (g *Graph) AddEdge(edge *Edge) error {
 		return nil
 	}
 }
-func (g *Graph) GetEdgeData(fromNode *Node, toNode *Node) EdgeAttrs {
-	return g.edges[fromNode.id][toNode.id].attrs
+
+func (g *Graph) GetEdgeData(fromNodeId int, toNodeId int) EdgeAttrs {
+	return g.edges[fromNodeId][toNodeId].attrs
 }
 
 // getNode will return a node point if exists or return nil

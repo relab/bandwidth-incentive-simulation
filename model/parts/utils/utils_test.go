@@ -49,3 +49,7 @@ func TestChoice(t *testing.T) {
 
 	assert.Equal(t, len(c), k)
 }
+
+func TestGetNext(t *testing.T) {
+
+}
