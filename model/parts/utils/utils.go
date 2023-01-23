@@ -3,8 +3,7 @@ package utils
 import (
 	"fmt"
 	ct "go-incentive-simulation/model"
-	"math/rand"
-	"time"
+	g "go-incentive-simulation/model/general"
 )
 
 func CreateGraphNetwork(filename string) (*Graph, error) {
@@ -244,16 +243,16 @@ func peerPriceChunk(firstNode *Node, chunkId int) int {
 	return (ct.Constants.GetMaxProximityOrder() - getProximityChunk(firstNode, chunkId) + 1) * ct.Constants.GetPrice()
 }
 
-func choice(nodes []int, k int) []int {
-	res := make([]int, 0, k)
+// func choice(nodes []int, k int) []int {
+// 	res := make([]int, 0, k)
 
-	rand.Seed(time.Now().UnixMicro())
+// 	rand.Seed(time.Now().UnixMicro())
 
-	for i := 0; i < k; i++ {
-		res = append(res, nodes[rand.Intn(len(nodes))])
-	}
-	return res
-}
+// 	for i := 0; i < k; i++ {
+// 		res = append(res, nodes[rand.Intn(len(nodes))])
+// 	}
+// 	return res
+// }
 
 // TODO: Not used in original
 //func MakeFiles() []int {
@@ -284,7 +283,7 @@ func (net *Network) CreateDowloadersList() []int {
 	for i := range net.nodes {
 		nodesValue = append(nodesValue, net.nodes[i].id)
 	}
-	downloadersList := choice(nodesValue, ct.Constants.GetOriginators())
+	downloadersList := g.Choice(nodesValue, ct.Constants.GetOriginators())
 
 	fmt.Println("Downloaders list create...!")
 	return downloadersList
