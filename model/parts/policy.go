@@ -1,7 +1,6 @@
 package policy
 
 import (
-	"fmt"
 	ct "go-incentive-simulation/model"
 	ut "go-incentive-simulation/model/parts/utils"
 	"math/rand"
@@ -36,18 +35,47 @@ func findResponisbleNodes(nodesId []int, chunkAdd int) []int {
 	return v[:4]
 }
 
-func (prevState *State) SendRequest() {
-	// chunkAddr := g.Choice(ct.Constants.GetRangeAddress(), 1) //GetRangeAddress er int? no need for choice
-	// chunkAddr := ct.Constants.GetRangeAddress()
+func (prevState *State) SendRequest() map[string]int {
 	random := []int{}
+	chunkId := ct.Constants.GetRangeAddress()
 
 	rand.Seed(time.Now().UnixNano())
 	if ct.Constants.IsCacheEnabled() == true {
 		random = append(random, rand.Intn(1-0) + 0)
-		fmt.Println(random)
 		if float32(random[0]) < 0.5 {
-			c := rand.Intn(1000-0) + 0
-			fmt.Println(c)
+			chunkId = rand.Intn(1000-0) + 0
+		} else {
+			chunkId = rand.Intn(1000-ct.Constants.GetRangeAddress()) + ct.Constants.GetRangeAddress()
 		}
 	}
+	responisbleNodes := findResponisbleNodes(prevState.nodesId, chunkId)
+	originator := prevState.originators[prevState.originatorIndex]
+
+	for _, value := range prevState.pendingDict {
+		if originator == value {
+			chunkId = prevState.pendingDict[originator]
+			responisbleNodes = findResponisbleNodes(prevState.nodesId, chunkId)
+		}
+	}
+
+	for _, value := range prevState.rerouteDict {
+		if originator == value {
+			chunkId = prevState.rerouteDict[originator]
+			responisbleNodes = findResponisbleNodes(prevState.nodesId, chunkId)
+		}
+	}
+
+	request := []int{originator, chunkId}
+
+	found, route, thresholdFailed, accessFailed, paymentsList := ut.ConsumeTask(request, prevState.network, responisbleNodes, prevState.rerouteDict, prevState.cacheDict)
+	
+	res := map[string]int{
+		"found": found,
+		"route": route,
+		"thresholdFailed": thresholdFailed,
+		"originatorIndex": prevState.originatorIndex,
+		"accessFailed": accessFailed,
+		"paymentsList": paymentsList,
+	}
+	return res
 }
