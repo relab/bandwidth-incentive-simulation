@@ -34,10 +34,18 @@ type Test struct {
 func (network *Network) load(path string) (int, int, map[int]*Node) {
 
 	file, _ := os.Open(path)
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+		}
+	}(file)
 	decoder := json.NewDecoder(file)
+
 	var test Test
-	decoder.Decode(&test)
+	err := decoder.Decode(&test)
+	if err != nil {
+		return 0, 0, nil
+	}
 
 	network.bits = test.Bits
 	network.bin = test.Bin

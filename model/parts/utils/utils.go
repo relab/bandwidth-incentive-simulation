@@ -76,8 +76,8 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginator *Node, p
 	fmt.Printf("last distance is : %d, chunk is: %d, first is: %d", lastDistance, chunkId, firstNode.id)
 	fmt.Printf("which bucket: %d", 16-BitLength(chunkId^firstNode.id))
 
-	currDist := int(lastDistance)
-	payDist := int(lastDistance)
+	currDist := lastDistance
+	payDist := lastDistance
 	for _, adj := range firstNode.adj {
 		fmt.Println("adj: ", adj)
 		for _, node := range adj {
@@ -215,19 +215,21 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginator *Node, p
 	return nextNode, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid
 }
 
-func getBin(src int, dest int, index int) int {
-	distance := src ^ dest
-	result := index
-	for distance > 0 {
-		distance >>= 1
-		result -= 1
-	}
-	return result
-}
+// TODO: Not used in original
+//func getBin(src int, dest int, index int) int {
+//	distance := src ^ dest
+//	result := index
+//	for distance > 0 {
+//		distance >>= 1
+//		result -= 1
+//	}
+//	return result
+//}
 
-func whichPowerTwo(rangeAddress int) int {
-	return BitLength(rangeAddress) - 1
-}
+// TODO: Not used in original
+//func whichPowerTwo(rangeAddress int) int {
+//	return BitLength(rangeAddress) - 1
+//}
 
 func getProximityChunk(firstNode *Node, chunkId int) int {
 	retVal := ct.Constants.GetBits() - BitLength(firstNode.id^chunkId)
@@ -253,26 +255,27 @@ func choice(nodes []int, k int) []int {
 	return res
 }
 
-func MakeFiles() []int {
-	fmt.Println("Making files...")
-	var filesList []int
-
-	for i := 0; i <= ct.Constants.GetOriginators(); i++ {
-		// TODO: fix this, GetChuncks should be a list?
-		// chunksList := choice(ct.Constants.GetChunks(), ct.Constants.GetRangeAddress())
-		// filesList = append(chunksList)
-		fmt.Println(i)
-	}
-	// Gets all constants
-	consts := ct.Constants
-
-	for i := 0; i <= consts.GetOriginators(); i++ {
-		chunksList := rand.Perm(consts.GetChunks())
-		filesList = append(chunksList)
-	}
-	fmt.Println("Files made!")
-	return filesList
-}
+// TODO: Not used in original
+//func MakeFiles() []int {
+//	fmt.Println("Making files...")
+//	var filesList []int
+//
+//	for i := 0; i <= ct.Constants.GetOriginators(); i++ {
+//		// TODO: fix this, GetChunks should be a list?
+//		// chunksList := choice(ct.Constants.GetChunks(), ct.Constants.GetRangeAddress())
+//		// filesList = append(chunksList)
+//		fmt.Println(i)
+//	}
+//	// Gets all constants
+//	consts := ct.Constants
+//
+//	for i := 0; i <= consts.GetOriginators(); i++ {
+//		chunksList := rand.Perm(consts.GetChunks())
+//		filesList = append(chunksList)
+//	}
+//	fmt.Println("Files made!")
+//	return filesList
+//}
 
 func (net *Network) CreateDowloadersList() []int {
 	fmt.Println("Creating downloaders list...")
@@ -287,17 +290,17 @@ func (net *Network) CreateDowloadersList() []int {
 	return downloadersList
 }
 
-// no need for this function
-func (net *Network) PushSync(fileName string, files []string) {
-	fmt.Println("Pushing sync...")
-	if net == nil {
-		fmt.Println("Network is nil!")
-		return
-	}
-	nodes := net.nodes
-	for i := range nodes {
-		fmt.Println(nodes[i].id)
-	}
-
-	fmt.Println("Pushing sync finished...")
-}
+// TODO: Not used in original
+//func (net *Network) PushSync(fileName string, files []string) {
+//	fmt.Println("Pushing sync...")
+//	if net == nil {
+//		fmt.Println("Network is nil!")
+//		return
+//	}
+//	nodes := net.nodes
+//	for i := range nodes {
+//		fmt.Println(nodes[i].id)
+//	}
+//
+//	fmt.Println("Pushing sync finished...")
+//}
