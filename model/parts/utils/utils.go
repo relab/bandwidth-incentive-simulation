@@ -297,19 +297,19 @@ func ConsumeTask(request *Request, graph *Graph, respNodes []*Node, rerouteMap R
 				if !firstPayment.isOriginator {
 					// TODO: Dobbelsjekk at logikken under her matcher originalen
 					for i := range route[:len(route)-1] {
-						payment := Payment{route[i], route[i+1], route[len(route)], false}
+						p := Payment{route[i], route[i+1], route[len(route)], false}
 						for j, tmp := range paymentList {
-							if payment.payNextId == tmp.payNextId && payment.firstNodeId == tmp.firstNodeId && payment.chunkId == tmp.chunkId {
+							if p.payNextId == tmp.payNextId && p.firstNodeId == tmp.firstNodeId && p.chunkId == tmp.chunkId {
 								break
 							}
 							if j == len(paymentList) {
 								// payment is now definitely not in paymentList
 								if i == 0 {
-									payment.isOriginator = true
+									p.isOriginator = true
 								}
 								if i != len(route)-2 {
 									paymentList = append(paymentList[:i+1], paymentList[i:]...)
-									paymentList[i] = payment
+									paymentList[i] = p
 								} else {
 									continue
 								}
@@ -319,16 +319,16 @@ func ConsumeTask(request *Request, graph *Graph, respNodes []*Node, rerouteMap R
 				} else {
 					// TODO: Dobbelsjekk at logikken under her matcher originalen
 					for i := range route[1 : len(route)-1] {
-						payment := Payment{route[i], route[i+1], route[len(route)], false}
+						p := Payment{route[i], route[i+1], route[len(route)], false}
 						for j, tmp := range paymentList {
-							if payment.payNextId == tmp.payNextId && payment.firstNodeId == tmp.firstNodeId && payment.chunkId == tmp.chunkId {
+							if p.payNextId == tmp.payNextId && payment.firstNodeId == tmp.firstNodeId && p.chunkId == tmp.chunkId {
 								break
 							}
 							if j == len(paymentList) {
 								// payment is now definitely not in paymentList
 								if i != len(route)-2 {
 									paymentList = append(paymentList[:i+1], paymentList[i:]...)
-									paymentList[i] = payment
+									paymentList[i] = p
 								} else {
 									continue
 								}
