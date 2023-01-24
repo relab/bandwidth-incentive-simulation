@@ -7,24 +7,7 @@ import (
 	"math/rand"
 	"sort"
 	"time"
-	// g "go-incentive-simulation/model/general"
 )
-
-type State struct {
-	network                 *Graph
-	originators             []*Node
-	originatorsIndex        int
-	nodesId                 []int
-	routeList               []int
-	pendingMap              map[int]int
-	rerouteMap              map[int]int
-	cacheMap                map[int]int
-	originatorIndex         int
-	successfulFound         int
-	failedRequestsThreshold int
-	failedRequestsAccess    int
-	timeStep                int
-}
 
 type Response struct {
 	found           bool
@@ -43,7 +26,7 @@ func findResponisbleNodes(nodesId []int, chunkAdd int) []int {
 	return v[:4]
 }
 
-func (prevState *State) SendRequest() Response {
+func SendRequest(prevState *State) (bool, Route, [][]Threshold, bool, []Payment) {
 	rand.Seed(time.Now().UnixNano())
 
 	// Gets one random chunkId from the range of addresses
@@ -58,31 +41,23 @@ func (prevState *State) SendRequest() Response {
 			chunkId = rand.Intn(Constants.GetRangeAddress()-1000) + 0
 		}
 	}
-	responsibleNodes := findResponisbleNodes(prevState.nodesId, chunkId)
-	originator := prevState.originators[prevState.originatorIndex]
+	responsibleNodes := findResponisbleNodes(prevState.NodesId, chunkId)
+	originator := prevState.Originators[prevState.OriginatorIndex]
 
-	for _, v := range prevState.pendingMap {
-		if originator.id == v {
-			chunkId = prevState.pendingMap[originator]
-			responsibleNodes = findResponisbleNodes(prevState.nodesId, chunkId)
-		}
+	if _, ok := prevState.PendingMap[originator]; ok {
+		chunkId = prevState.PendingMap[originator]
+		responsibleNodes = findResponisbleNodes(prevState.NodesId, chunkId)
 	}
-	for _, v := range prevState.rerouteMap {
-		if originator == v {
-			chunkId = prevState.rerouteMap[originator]
-			responsibleNodes = findResponisbleNodes(prevState.nodesId, chunkId)
-		}
+	if _, ok := prevState.RerouteMap[originator]; ok {
+		chunkId = prevState.RerouteMap[originator][len(prevState.RerouteMap[originator])-1]
+		responsibleNodes = findResponisbleNodes(prevState.NodesId, chunkId)
 	}
-	request := Request{Originator: originator, ChunkId: chunkId}
 
-	found, route, thresholdFailed, accessFailed, paymentsList := ConsumeTask(&request, prevState.network, responsibleNodes, prevState.rerouteDict, prevState.cacheDict)
+	getNode := GetNodeById(originator)
 
-	res := Response{
-		found:           found,
-		route:           route,
-		thresholdFailed: thresholdFailed,
-		accessFailed:    accessFailed,
-		paymentsList:    paymentsList,
-	}
-	return res
+	request := Request{Originator: getNode, ChunkId: chunkId}
+
+	found, route, thresholdFailed, accessFailed, paymentsList := ConsumeTask(&request, prevState.Network, responsibleNodes, prevState.RerouteMap, prevState.CacheListMap)
+
+	return found, route, thresholdFailed, accessFailed, paymentsList
 }

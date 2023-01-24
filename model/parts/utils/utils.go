@@ -2,9 +2,9 @@ package utils
 
 import (
 	"fmt"
-	. "go-incentive-simulation/model/general"
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/variables"
+	. "go-incentive-simulation/model/general"
 )
 
 func CreateGraphNetwork(filename string) (*Graph, error) {

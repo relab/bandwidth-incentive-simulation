@@ -1,6 +1,8 @@
 package general
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 func Choice(nodes []int, k int) []int {
 	res := make([]int, 0, k)
@@ -10,3 +12,5 @@ func Choice(nodes []int, k int) []int {
 	}
 	return res
 }
+
+
