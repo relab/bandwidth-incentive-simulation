@@ -26,7 +26,7 @@ type State struct {
 }
 
 func findResponisbleNodes(nodesId []int, chunkAdd int) []int {
-	v := []int{}
+	var v []int
 	for i := range nodesId {
 		v = append(v, nodesId[i]^chunkAdd)
 	}
@@ -36,12 +36,12 @@ func findResponisbleNodes(nodesId []int, chunkAdd int) []int {
 }
 
 func (prevState *State) SendRequest() map[string]int {
-	random := []int{}
+	var random []int
 	chunkId := ct.Constants.GetRangeAddress()
 
 	rand.Seed(time.Now().UnixNano())
 	if ct.Constants.IsCacheEnabled() == true {
-		random = append(random, rand.Intn(1-0) + 0)
+		random = append(random, rand.Intn(1-0)+0)
 		if float32(random[0]) < 0.5 {
 			chunkId = rand.Intn(1000-0) + 0
 		} else {
@@ -57,25 +57,23 @@ func (prevState *State) SendRequest() map[string]int {
 			responisbleNodes = findResponisbleNodes(prevState.nodesId, chunkId)
 		}
 	}
-
 	for _, value := range prevState.rerouteDict {
 		if originator == value {
 			chunkId = prevState.rerouteDict[originator]
 			responisbleNodes = findResponisbleNodes(prevState.nodesId, chunkId)
 		}
 	}
-
 	request := []int{originator, chunkId}
 
 	found, route, thresholdFailed, accessFailed, paymentsList := ut.ConsumeTask(request, prevState.network, responisbleNodes, prevState.rerouteDict, prevState.cacheDict)
-	
+
 	res := map[string]int{
-		"found": found,
-		"route": route,
+		"found":           found,
+		"route":           route,
 		"thresholdFailed": thresholdFailed,
 		"originatorIndex": prevState.originatorIndex,
-		"accessFailed": accessFailed,
-		"paymentsList": paymentsList,
+		"accessFailed":    accessFailed,
+		"paymentsList":    paymentsList,
 	}
 	return res
 }
