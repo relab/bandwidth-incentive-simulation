@@ -64,35 +64,35 @@ func UpdateCacheDictionary(prevState State, policyInput Policy) State {
 	return prevState
 }
 
-func UpdateRerouteDictionary(prevState State, policyInput Policy) State {
-	rerouteDict := prevState.RerouteDict
+func UpdateRerouteMap(prevState State, policyInput Policy) State {
+	rerouteMap := prevState.RerouteMap
 	if Constants.IsRetryWithAnotherPeer() {
 		route := policyInput.Route
 		originator := route[0]
 		if !contains(route, -1) && !contains(route, -2) {
-			if _, ok := rerouteDict[originator]; ok {
-				val := rerouteDict[originator]
+			if _, ok := rerouteMap[originator]; ok {
+				val := rerouteMap[originator]
 				if val[len(val)-1] == route[len(route)-1] {
-					//remove rerouteDict[originator]
-					delete(rerouteDict, originator)
+					//remove rerouteMap[originator]
+					delete(rerouteMap, originator)
 				}
 			}
 		} else {
 			if len(route) > 3 {
-				if _, ok := rerouteDict[originator]; ok {
-					val := rerouteDict[originator]
+				if _, ok := rerouteMap[originator]; ok {
+					val := rerouteMap[originator]
 					if !contains(val, route[1]) {
 						val = append([]int{route[1]}, val...)
-						rerouteDict[originator] = val
+						rerouteMap[originator] = val
 					}
 				} else {
-					rerouteDict[originator] = []int{route[1], route[len(route)-1]}
+					rerouteMap[originator] = []int{route[1], route[len(route)-1]}
 				}
 			}
 		}
-		if _, ok := rerouteDict[originator]; ok {
-			if len(rerouteDict[originator]) > Constants.GetBinSize() {
-				delete(rerouteDict, originator)
+		if _, ok := rerouteMap[originator]; ok {
+			if len(rerouteMap[originator]) > Constants.GetBinSize() {
+				delete(rerouteMap, originator)
 			}
 		}
 	}

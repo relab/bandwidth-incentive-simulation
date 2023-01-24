@@ -27,7 +27,7 @@ type State struct {
 	NodesId                 []int
 	RouteLists              []Route
 	PendingDict             map[int]int
-	RerouteDict             map[int][]int
+	RerouteMap              map[int][]int
 	CacheDict               map[int]int
 	OriginatorIndex         int
 	SuccessfulFound         int
