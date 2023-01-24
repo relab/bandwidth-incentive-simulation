@@ -166,9 +166,9 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 			}
 		}
 	}
-	if !contains(route, -1) && !contains(route, -2) {
+	if !Contains(route, -1) && !Contains(route, -2) {
 		routeWithPrice := []int{}
-		if contains(route, -3) {
+		if Contains(route, -3) {
 			chunkId := route[len(route)-2]
 			for i := 0; i < len(route)-3; i++ {
 				requesterNode := route[i]
@@ -204,7 +204,7 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 			}
 		}
 	}
-	if Constants.GetThresholdEnabled() && Constants.IsForgivenessEnabled() {
+	if Constants.GetThresholdEnabled() { // && Constants.IsForgivenessEnabled()
 		thresholdFailedLists := policyInput.ThresholdFailed
 		if len(thresholdFailedLists) > 0 {
 			for _, thresholdFailedL := range thresholdFailedLists {
