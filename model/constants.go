@@ -3,10 +3,10 @@ package model
 import "math/rand"
 
 type constant struct {
-	runs        int
-	bits        int
-	networkSize int
-	binSize     int
+	runs                             int
+	bits                             int
+	networkSize                      int
+	binSize                          int
 	rangeAddress                     int
 	originators                      int
 	refreshRate                      int
@@ -29,29 +29,29 @@ type constant struct {
 }
 
 var Constants = constant{
-	runs:        1,
-	bits:        16,
-	networkSize: 1000,
-	binSize:     8,
-	rangeAddress: 0, // 2 * *Bits
-	originators : 1, // int(0.001 * NetworkSize)
-	refreshRate: 8,
-	threshold: 16,
-	randomSeed : rand.Int() * 100,
-	maxProximityOrder: 16,
-	price: 1,
-	chunks: 1000,
-	requestsPerSecond: 12500,
-	thresholdEnabled: true,
-	paymentEnabled: true,
-	maxPoCheckEnabled: false,
-	waitingEnabled: false,
-	onlyOriginatorPays: false,
-	payOnlyForCurrentRequest: false,
-	payIfOrigPays: false,
+	runs:                             1,
+	bits:                             16,
+	networkSize:                      1000,
+	binSize:                          8,
+	rangeAddress:                     65536, // 2 * *Bits
+	originators:                      1,     // int(0.001 * NetworkSize)
+	refreshRate:                      8,
+	threshold:                        16,
+	randomSeed:                       rand.Int() * 100,
+	maxProximityOrder:                16,
+	price:                            1,
+	chunks:                           1000,
+	requestsPerSecond:                12500,
+	thresholdEnabled:                 true,
+	paymentEnabled:                   true,
+	maxPoCheckEnabled:                false,
+	waitingEnabled:                   false,
+	onlyOriginatorPays:               false,
+	payOnlyForCurrentRequest:         false,
+	payIfOrigPays:                    false,
 	forwarderPayForceOriginatorToPay: false,
-	retryWithAnotherPeer: false,
-	cacheIsEnabled: true,
+	retryWithAnotherPeer:             false,
+	cacheIsEnabled:                   true,
 }
 
 // func CreateRangeAddress(c *constant){
@@ -155,6 +155,3 @@ func (c *constant) GetPrice() int {
 }
 
 // np.random.seed(get_random_seed())
-
-
-

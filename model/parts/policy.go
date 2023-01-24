@@ -1,8 +1,8 @@
 package policy
 
 import (
-	ct "go-incentive-simulation/model"
-	ut "go-incentive-simulation/model/parts/utils"
+	. "go-incentive-simulation/model"
+	. "go-incentive-simulation/model/parts/utils"
 	"math/rand"
 	"sort"
 	"time"
@@ -10,19 +10,27 @@ import (
 )
 
 type State struct {
-	network                 *ut.Graph
-	originators             []int
+	network                 *Graph
+	originators             []*Node
 	originatorsIndex        int
 	nodesId                 []int
 	routeList               []int
-	pendingDict             map[int]int
-	rerouteDict             map[int]int
-	cacheDict               map[int]int
+	pendingMap              map[int]int
+	rerouteMap              map[int]int
+	cacheMap                map[int]int
 	originatorIndex         int
 	successfulFound         int
 	failedRequestsThreshold int
 	failedRequestsAccess    int
 	timeStep                int
+}
+
+type Response struct {
+	found           bool
+	route           Route
+	thresholdFailed [][]Threshold
+	accessFailed    bool
+	paymentsList    []Payment
 }
 
 func findResponisbleNodes(nodesId []int, chunkAdd int) []int {
@@ -31,49 +39,49 @@ func findResponisbleNodes(nodesId []int, chunkAdd int) []int {
 		v = append(v, nodesId[i]^chunkAdd)
 	}
 	sort.Slice(v, func(i, j int) bool { return v[i] < v[j] })
-
 	return v[:4]
 }
 
-func (prevState *State) SendRequest() map[string]int {
-	var random []int
-	chunkId := ct.Constants.GetRangeAddress()
-
+func (prevState *State) SendRequest() Response {
 	rand.Seed(time.Now().UnixNano())
-	if ct.Constants.IsCacheEnabled() == true {
-		random = append(random, rand.Intn(1-0)+0)
-		if float32(random[0]) < 0.5 {
-			chunkId = rand.Intn(1000-0) + 0
+
+	// Gets one random chunkId from the range of addresses
+	chunkId := rand.Intn(Constants.GetRangeAddress())
+	var random int
+
+	if Constants.IsCacheEnabled() == true {
+		random = rand.Intn(1)
+		if float32(random) < 0.5 {
+			chunkId = rand.Intn(1000)
 		} else {
-			chunkId = rand.Intn(1000-ct.Constants.GetRangeAddress()) + ct.Constants.GetRangeAddress()
+			chunkId = rand.Intn(Constants.GetRangeAddress()-1000) + 0
 		}
 	}
-	responisbleNodes := findResponisbleNodes(prevState.nodesId, chunkId)
+	responsibleNodes := findResponisbleNodes(prevState.nodesId, chunkId)
 	originator := prevState.originators[prevState.originatorIndex]
 
-	for _, value := range prevState.pendingDict {
-		if originator == value {
-			chunkId = prevState.pendingDict[originator]
-			responisbleNodes = findResponisbleNodes(prevState.nodesId, chunkId)
+	for _, v := range prevState.pendingMap {
+		if originator.id == v {
+			chunkId = prevState.pendingMap[originator]
+			responsibleNodes = findResponisbleNodes(prevState.nodesId, chunkId)
 		}
 	}
-	for _, value := range prevState.rerouteDict {
-		if originator == value {
-			chunkId = prevState.rerouteDict[originator]
-			responisbleNodes = findResponisbleNodes(prevState.nodesId, chunkId)
+	for _, v := range prevState.rerouteMap {
+		if originator == v {
+			chunkId = prevState.rerouteMap[originator]
+			responsibleNodes = findResponisbleNodes(prevState.nodesId, chunkId)
 		}
 	}
-	request := []int{originator, chunkId}
+	request := Request{Originator: originator, ChunkId: chunkId}
 
-	found, route, thresholdFailed, accessFailed, paymentsList := ut.ConsumeTask(request, prevState.network, responisbleNodes, prevState.rerouteDict, prevState.cacheDict)
+	found, route, thresholdFailed, accessFailed, paymentsList := ConsumeTask(&request, prevState.network, responsibleNodes, prevState.rerouteDict, prevState.cacheDict)
 
-	res := map[string]int{
-		"found":           found,
-		"route":           route,
-		"thresholdFailed": thresholdFailed,
-		"originatorIndex": prevState.originatorIndex,
-		"accessFailed":    accessFailed,
-		"paymentsList":    paymentsList,
+	res := Response{
+		found:           found,
+		route:           route,
+		thresholdFailed: thresholdFailed,
+		accessFailed:    accessFailed,
+		paymentsList:    paymentsList,
 	}
 	return res
 }

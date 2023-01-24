@@ -224,8 +224,8 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginator *Node, p
 }
 
 type Request struct {
-	originator *Node
-	chunkId    int
+	Originator *Node
+	ChunkId    int
 }
 
 type CacheListMap map[*Node][]map[int]int
@@ -388,8 +388,6 @@ func peerPriceChunk(firstNodeId int, chunkId int) int {
 
 // func choice(nodes []int, k int) []int {
 // 	res := make([]int, 0, k)
-
-// 	rand.Seed(time.Now().UnixMicro())
 
 // 	for i := 0; i < k; i++ {
 // 		res = append(res, nodes[rand.Intn(len(nodes))])
