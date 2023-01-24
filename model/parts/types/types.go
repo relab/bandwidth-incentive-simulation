@@ -19,3 +19,28 @@ type Payment struct {
 }
 
 type Threshold [2]*Node
+
+type State struct {
+	Network                 *Graph
+	Originators             []int
+	OriginatorsIndex        int
+	NodesId                 []int
+	RouteLists              []Route
+	PendingDict             map[int]int
+	RerouteDict             map[int][]int
+	CacheDict               map[int]int
+	OriginatorIndex         int
+	SuccessfulFound         int
+	FailedRequestsThreshold int
+	FailedRequestsAccess    int
+	TimeStep                int
+}
+
+type Policy struct {
+	Found           bool
+	Route           Route
+	ThresholdFailed []int
+	OriginatorIndex int
+	AccessFailed    bool
+	PaymentList     []Payment
+}
