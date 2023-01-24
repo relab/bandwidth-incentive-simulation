@@ -1,4 +1,4 @@
-package utils
+package types
 
 import (
 	"fmt"
@@ -7,22 +7,22 @@ import (
 // Graph structure, node Ids in array and edges in map
 type Graph struct {
 	nodes []*Node
-	edges map[int][]*Edge
+	Edges map[int][]*Edge
 }
 
 // Edge that connects to nodes with attributes about the connection
 type Edge struct {
-	fromNodeId int
-	toNodeId   int
-	attrs      EdgeAttrs
+	FromNodeId int
+	ToNodeId int
+	Attrs    EdgeAttrs
 }
 
 // EdgeAttrs Edge attributes structure,
 // "a2b" show how much this node asked from other node,
 // "last" is for the last forgiveness time
 type EdgeAttrs struct {
-	a2b  int
-	last int
+	A2b  int
+	Last int
 }
 
 // Nodes Returns all nodes
@@ -32,8 +32,8 @@ func (g *Graph) Nodes() []*Node {
 
 // AddNode will add a Node to a graph
 func (g *Graph) AddNode(node *Node) error {
-	if containsNode(g.nodes, node) {
-		err := fmt.Errorf("node %d already exists", node.id)
+	if ContainsNode(g.nodes, node) {
+		err := fmt.Errorf("node %d already exists", node.Id)
 		return err
 	} else {
 		g.nodes = append(g.nodes, node)
@@ -43,36 +43,36 @@ func (g *Graph) AddNode(node *Node) error {
 
 // AddEdge will add an edge from a node to a node
 func (g *Graph) AddEdge(edge *Edge) error {
-	toNode := g.getNode(edge.toNodeId)
-	fromNode := g.getNode(edge.fromNodeId)
+	toNode := g.getNode(edge.ToNodeId)
+	fromNode := g.getNode(edge.FromNodeId)
 	if toNode == nil || fromNode == nil {
-		return fmt.Errorf("not a valid edge from %d ---> %d", fromNode.id, toNode.id)
-	} else if containsEdge(g.edges[fromNode.id], edge) {
-		return fmt.Errorf("edge from node %d ---> %d already exists", fromNode.id, toNode.id)
+		return fmt.Errorf("not a valid edge from %d ---> %d", fromNode.Id, toNode.Id)
+	} else if containsEdge(g.Edges[fromNode.Id], edge) {
+		return fmt.Errorf("edge from node %d ---> %d already exists", fromNode.Id, toNode.Id)
 	} else {
-		newEdges := append(g.edges[fromNode.id], edge)
-		g.edges[fromNode.id] = newEdges
+		newEdges := append(g.Edges[fromNode.Id], edge)
+		g.Edges[fromNode.Id] = newEdges
 		return nil
 	}
 }
 
 func (g *Graph) GetEdgeData(fromNodeId int, toNodeId int) EdgeAttrs {
-	return g.edges[fromNodeId][toNodeId].attrs
+	return g.Edges[fromNodeId][toNodeId].Attrs
 }
 
 // getNode will return a node point if exists or return nil
 func (g *Graph) getNode(nodeId int) *Node {
 	for i, v := range g.nodes {
-		if v.id == nodeId {
+		if v.Id == nodeId {
 			return g.nodes[i]
 		}
 	}
 	return nil
 }
 
-func containsNode(v []*Node, node *Node) bool {
+func ContainsNode(v []*Node, node *Node) bool {
 	for _, v := range v {
-		if v.id == node.id {
+		if v.Id == node.Id {
 			return true
 		}
 	}
@@ -81,7 +81,7 @@ func containsNode(v []*Node, node *Node) bool {
 
 func containsEdge(v []*Edge, edge *Edge) bool {
 	for _, v := range v {
-		if v.toNodeId == edge.toNodeId {
+		if v.ToNodeId == edge.ToNodeId {
 			return true
 		}
 	}
@@ -90,10 +90,10 @@ func containsEdge(v []*Edge, edge *Edge) bool {
 
 func (g *Graph) Print() {
 	for _, v := range g.nodes {
-		fmt.Printf("%d : ", v.id)
-		for _, i := range v.adj {
+		fmt.Printf("%d : ", v.Id)
+		for _, i := range v.Adj {
 			for _, v := range i {
-				fmt.Printf("%d ", v.id)
+				fmt.Printf("%d ", v.Id)
 			}
 		}
 		fmt.Println()

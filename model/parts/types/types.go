@@ -1,8 +1,4 @@
-package constants
-
-import (
-	. "go-incentive-simulation/model/parts/utils"
-)
+package types
 
 type Request struct {
 	Originator *Node

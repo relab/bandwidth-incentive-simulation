@@ -1,4 +1,4 @@
-package utils
+package types
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 func TestNetwork(t *testing.T) {
 	path := "nodes_data_8_10000.txt"
 	network := Network{}
-	bits, bin, nodes := network.load(path)
+	bits, bin, nodes := network.Load(path)
 
 	t.Log("Bits:", bits)
 	t.Log("Bin:", bin)
@@ -18,9 +18,9 @@ func TestNetwork(t *testing.T) {
 
 	t.Log("Nodes[12381]:", *nodes[12381])
 
-	for _, bucket := range nodes[12381].adj {
+	for _, bucket := range nodes[12381].Adj {
 		for _, node := range bucket {
-			t.Log("Nodes[12381].adj:", node.id)
+			t.Log("Nodes[12381].adj:", node.Id)
 		}
 		t.Log("\n")
 	}

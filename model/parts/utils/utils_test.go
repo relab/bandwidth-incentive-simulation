@@ -2,6 +2,7 @@ package utils
 
 import (
 	ct "go-incentive-simulation/model/constants"
+	"go-incentive-simulation/model/parts/types"
 	"gotest.tools/assert"
 	"testing"
 )
@@ -24,7 +25,7 @@ func TestCreateGraphNetwork(t *testing.T) {
 
 func TestCreateDowloaderList(t *testing.T) {
 	// Create a network
-	network := Network{}
+	network := types.Network{}
 	// Load data to network
 	network.load("nodes_data_8_10000.txt")
 
