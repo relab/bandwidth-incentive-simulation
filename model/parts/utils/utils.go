@@ -88,7 +88,7 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginatorId int, p
 						_, ok := rerouteMap[mainOriginatorId]
 						if ok {
 							allExceptLast := len(rerouteMap[mainOriginatorId]) - 1
-							if ContainsNode(rerouteMap[mainOriginatorId][:allExceptLast], node) {
+							if Contains(rerouteMap[mainOriginatorId][:allExceptLast], node.Id) {
 								continue
 							} else {
 								currDist = dist

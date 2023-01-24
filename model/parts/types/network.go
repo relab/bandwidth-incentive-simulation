@@ -114,11 +114,11 @@ func BitLength(num int) int {
 	return int(math.Ceil(math.Log2(float64(num))))
 }
 
-//func Contains[T comparable](elems []T, value T) bool {
-//	for _, item := range elems {
-//		if item == value {
-//			return true
-//		}
-//	}
-//	return false
-//}
+func Contains[T comparable](elems []T, value T) bool {
+	for _, item := range elems {
+		if item == value {
+			return true
+		}
+	}
+	return false
+}
