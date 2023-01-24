@@ -21,7 +21,7 @@ func CreateGraphNetwork(filename string) (*Graph, error) {
 			return nil, err
 		}
 	}
-	for _, node := range graph.Nodes() {
+	for _, node := range graph.Nodes {
 		nodeAdj := node.Adj
 		for _, adjItems := range nodeAdj {
 			for _, item := range adjItems {
@@ -312,7 +312,7 @@ func ConsumeTask(request *Request, graph *Graph, respNodes []*Node, rerouteMap R
 					for i := range route[1 : len(route)-1] {
 						p := Payment{route[i], route[i+1], route[len(route)-1], false}
 						for j, tmp := range paymentList {
-							if p.PayNextId == tmp.PayNextId && p.FirstNodeId == tmp.FirstNodeId && p.ChunkId == tmp.ChunkId  {
+							if p.PayNextId == tmp.PayNextId && p.FirstNodeId == tmp.FirstNodeId && p.ChunkId == tmp.ChunkId {
 								break
 							}
 							if j == len(paymentList) {

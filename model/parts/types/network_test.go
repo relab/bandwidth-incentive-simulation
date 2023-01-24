@@ -11,7 +11,7 @@ func TestNetwork(t *testing.T) {
 
 	t.Log("Bits:", bits)
 	t.Log("Bin:", bin)
-	//print the nodes map
+	//print the Nodes map
 	for k, v := range nodes {
 		t.Log("Nodes:", k, *v)
 	}

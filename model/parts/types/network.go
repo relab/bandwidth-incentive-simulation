@@ -14,7 +14,7 @@ type Network struct {
 }
 
 type Node struct {
-	Network *Network
+	Network    *Network
 	Id         int
 	Adj        [][]*Node
 	storageSet []int
@@ -28,7 +28,7 @@ type Test struct {
 	Nodes []struct {
 		ID  int   `json:"id"`
 		Adj []int `json:"adj"`
-	} `json:"nodes"`
+	} `json:"Nodes"`
 }
 
 func (network *Network) Load(path string) (int, int, map[int]*Node) {
