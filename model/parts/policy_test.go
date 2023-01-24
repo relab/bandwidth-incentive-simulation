@@ -3,6 +3,8 @@ package policy
 import (
 	"testing"
 	"gotest.tools/assert"
+	. "go-incentive-simulation/model/parts/types"
+	. "go-incentive-simulation/model/general"
 )
 
 func TestResponisbleNodes(t *testing.T) {
@@ -13,18 +15,18 @@ func TestResponisbleNodes(t *testing.T) {
 	assert.Equal(t, len(values), 4)
 }
 
-// func TestSendRequest(t *testing.T) {
-// 	path := "../../../data/nodes_data_8_10000.txt"
-// 	network := Network{}
-// 	bits, bin, nodes := network.Load(path)
-// 	fmt.Println("Bits:", bits)
-// 	fmt.Println("Bin:", bin)
+func TestGetNodeById(t *testing.T) {
+	n := Network{}
+	n.Bin = 8
+	n.Bits = 16
+
+	n1 := Node{}
+	n1.Id = 111
+
+	n2 := Node{}
+	n2.Id = 222
+
+	GetNodeById(111)
+}
 
 
-// 	state := State{}
-
-
-// 	// state.originators = Node
-// 	// state.originatorIndex = 2
-// 	// state.SendRequest()
-// }

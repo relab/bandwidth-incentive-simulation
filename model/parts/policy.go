@@ -4,6 +4,7 @@ import (
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/utils"
 	. "go-incentive-simulation/model/variables"
+	. "go-incentive-simulation/model/general"
 	"math/rand"
 	"sort"
 	"time"

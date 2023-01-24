@@ -123,13 +123,3 @@ func Contains[T comparable](elems []T, value T) bool {
 	return false
 }
 
-func GetNodeById(nodeId int) *Node {
-	nodes := &Node{}
-
-	var res *Node
-
-	if nodes.Id == nodeId {
-		res = nodes
-	}
-	return res
-}
