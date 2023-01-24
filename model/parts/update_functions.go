@@ -120,8 +120,8 @@ func UpdatePendingDictionary(prevState State, policyInput Policy) State {
 
 func UpdateNetwork(prevState State, policyInput Policy) State {
 	network := prevState.Network
-	//currTinmeStep := prevState.TimeStep + 1
-	//route := policyInput.Route
+	currTinmeStep := prevState.TimeStep + 1
+	route := policyInput.Route
 	paymentsList := policyInput.PaymentList
 
 	if Constants.GetPaymentEnabled() {
@@ -166,7 +166,71 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 			}
 		}
 	}
-
+	if !contains(route, -1) && !contains(route, -2) {
+		routeWithPrice := []int{}
+		if contains(route, -3) {
+			chunkId := route[len(route)-2]
+			for i := 0; i < len(route)-3; i++ {
+				requesterNode := route[i]
+				providerNode := route[i+1]
+				price := PeerPriceChunk(providerNode, chunkId)
+				edgeData1 := network.GetEdgeData(requesterNode, providerNode)
+				edgeData1.A2b += price
+				if Constants.GetMaxPoCheckEnabled() {
+					routeWithPrice = append(routeWithPrice, requesterNode)
+					routeWithPrice = append(routeWithPrice, price)
+					routeWithPrice = append(routeWithPrice, providerNode)
+				}
+			}
+			if Constants.GetMaxPoCheckEnabled() {
+				fmt.Println("Route with price ", routeWithPrice)
+			}
+		} else {
+			chunkId := route[len(route)-1]
+			for i := 0; i < len(route)-2; i++ {
+				requesterNode := route[i]
+				providerNode := route[i+1]
+				price := PeerPriceChunk(providerNode, chunkId)
+				edgeData1 := network.GetEdgeData(requesterNode, providerNode)
+				edgeData1.A2b += price
+				if Constants.GetMaxPoCheckEnabled() {
+					routeWithPrice = append(routeWithPrice, requesterNode)
+					routeWithPrice = append(routeWithPrice, price)
+					routeWithPrice = append(routeWithPrice, providerNode)
+				}
+			}
+			if Constants.GetMaxPoCheckEnabled() {
+				fmt.Println("Route with price ", routeWithPrice)
+			}
+		}
+	}
+	if Constants.GetThresholdEnabled() && Constants.IsForgivenessEnabled() {
+		thresholdFailedLists := policyInput.ThresholdFailed
+		if len(thresholdFailedLists) > 0 {
+			for _, thresholdFailedL := range thresholdFailedLists {
+				if len(thresholdFailedL) > 0 {
+					for _, couple := range thresholdFailedL {
+						requesterNode := couple[0].Id
+						providerNode := couple[1].Id
+						edgeData1 := network.GetEdgeData(requesterNode, providerNode)
+						passedTime := (currTinmeStep - edgeData1.Last) / Constants.GetRequestsPerSecond()
+						if passedTime > 0 {
+							refreshRate := Constants.GetRefreshRate()
+							//if Constants.IsAdjustableThreshold() {
+							//	refreshRate = int(math.Ceil(edgeData1.Threshold / 2))
+							//}
+							removedDeptAmount := passedTime * refreshRate
+							edgeData1.A2b -= removedDeptAmount
+							if edgeData1.A2b < 0 {
+								edgeData1.A2b = 0
+							}
+							edgeData1.Last = currTinmeStep
+						}
+					}
+				}
+			}
+		}
+	}
 	return prevState
 }
 

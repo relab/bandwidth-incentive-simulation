@@ -39,7 +39,7 @@ type State struct {
 type Policy struct {
 	Found           bool
 	Route           Route
-	ThresholdFailed []int
+	ThresholdFailed [][]Threshold
 	OriginatorIndex int
 	AccessFailed    bool
 	PaymentList     []Payment
