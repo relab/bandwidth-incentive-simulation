@@ -1,4 +1,4 @@
-package constants
+package variables
 
 import "math/rand"
 
@@ -26,7 +26,6 @@ type constant struct {
 	forwarderPayForceOriginatorToPay bool
 	retryWithAnotherPeer             bool
 	cacheIsEnabled                   bool
-	forgivnessEnabled                bool
 }
 
 var Constants = constant{
@@ -53,7 +52,6 @@ var Constants = constant{
 	forwarderPayForceOriginatorToPay: false,
 	retryWithAnotherPeer:             false,
 	cacheIsEnabled:                   true,
-	forgivnessEnabled:                false,
 }
 
 // func CreateRangeAddress(c *constant){
@@ -63,10 +61,6 @@ var Constants = constant{
 // func (c *constant) CreateOriginators(){
 // 	c.originators = int(0.001 * float64(c.networkSize))
 // }
-
-func (c *constant) IsForgivenessEnabled() bool {
-	return c.forgivnessEnabled
-}
 
 func (c *constant) IsCacheEnabled() bool {
 	return c.cacheIsEnabled

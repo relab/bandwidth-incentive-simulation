@@ -2,9 +2,9 @@ package policy
 
 import (
 	"fmt"
-	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/utils"
+	. "go-incentive-simulation/model/variables"
 )
 
 func UpdateSuccessfulFound(prevState State, policyInput Policy) State {
@@ -60,7 +60,7 @@ func UpdateRouteListAndFlush(prevState State, policyInput Policy) State {
 }
 
 // TODO: Implement this function
-func UpdateCacheDictionary(prevState State, policyInput Policy) State {
+func UpdateCacheMap(prevState State, policyInput Policy) State {
 	return prevState
 }
 
@@ -69,7 +69,7 @@ func UpdateRerouteMap(prevState State, policyInput Policy) State {
 	if Constants.IsRetryWithAnotherPeer() {
 		route := policyInput.Route
 		originator := route[0]
-		if !contains(route, -1) && !contains(route, -2) {
+		if !Contains(route, -1) && !Contains(route, -2) {
 			if _, ok := rerouteMap[originator]; ok {
 				val := rerouteMap[originator]
 				if val[len(val)-1] == route[len(route)-1] {
@@ -81,7 +81,7 @@ func UpdateRerouteMap(prevState State, policyInput Policy) State {
 			if len(route) > 3 {
 				if _, ok := rerouteMap[originator]; ok {
 					val := rerouteMap[originator]
-					if !contains(val, route[1]) {
+					if !Contains(val, route[1]) {
 						val = append([]int{route[1]}, val...)
 						rerouteMap[originator] = val
 					}
@@ -99,20 +99,20 @@ func UpdateRerouteMap(prevState State, policyInput Policy) State {
 	return prevState
 }
 
-func UpdatePendingDictionary(prevState State, policyInput Policy) State {
-	pendingDict := prevState.PendingDict
+func UpdatePendingMap(prevState State, policyInput Policy) State {
+	pendingMap := prevState.PendingMap
 	if Constants.IsWaitingEnabled() {
 		route := policyInput.Route
 		originator := route[0]
-		if !contains(route, -1) && !contains(route, -2) {
-			if _, ok := pendingDict[originator]; ok {
-				if pendingDict[originator] == route[len(route)-1] {
-					delete(pendingDict, originator)
+		if !Contains(route, -1) && !Contains(route, -2) {
+			if _, ok := pendingMap[originator]; ok {
+				if pendingMap[originator] == route[len(route)-1] {
+					delete(pendingMap, originator)
 				}
 			}
 
 		} else {
-			pendingDict[originator] = route[len(route)-1]
+			pendingMap[originator] = route[len(route)-1]
 		}
 	}
 	return prevState
@@ -232,13 +232,4 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 		}
 	}
 	return prevState
-}
-
-func contains(s []int, e int) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
 }

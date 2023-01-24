@@ -1,8 +1,8 @@
 package utils
 
 import (
-	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/parts/types"
+	. "go-incentive-simulation/model/variables"
 	"gotest.tools/assert"
 	"testing"
 )

@@ -2,8 +2,8 @@ package utils
 
 import (
 	"fmt"
-	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/parts/types"
+	. "go-incentive-simulation/model/variables"
 	"math/rand"
 	"time"
 )
@@ -37,6 +37,7 @@ func CreateGraphNetwork(filename string) (*Graph, error) {
 			}
 		}
 	}
+
 	fmt.Println("Graph network is created.")
 	return graph, nil
 }
@@ -56,7 +57,7 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, g *Graph)
 	return false
 }
 
-func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginator *Node, prevNodePaid bool, rerouteMap RerouteMap) (int, *Node, []Threshold, bool, bool, Payment, bool) {
+func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginatorId int, prevNodePaid bool, rerouteMap RerouteMap) (int, *Node, []Threshold, bool, bool, Payment, bool) {
 	var nextNode *Node = nil
 	var payNext *Node = nil
 	var thresholdList []Threshold
@@ -84,10 +85,10 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginator *Node, p
 				// Could probably clean this one up, but keeping it close to original for now
 				if dist < currDist {
 					if Constants.IsRetryWithAnotherPeer() {
-						_, ok := rerouteMap[mainOriginator.Id]
+						_, ok := rerouteMap[mainOriginatorId]
 						if ok {
-							allExceptLast := len(rerouteMap[mainOriginator.Id]) - 1
-							if ContainsNode(rerouteMap[mainOriginator.Id][:allExceptLast], node) {
+							allExceptLast := len(rerouteMap[mainOriginatorId]) - 1
+							if Contains(rerouteMap[mainOriginatorId][:allExceptLast], node.Id) {
 								continue
 							} else {
 								currDist = dist
@@ -133,7 +134,7 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginator *Node, p
 			if payNext != nil {
 				accessFailed = false
 				if Constants.IsOnlyOriginatorPays() {
-					if firstNode == mainOriginator {
+					if firstNode.Id == mainOriginatorId {
 						payment.IsOriginator = true
 						payment.FirstNodeId = firstNode.Id
 						payment.PayNextId = payNext.Id
@@ -149,7 +150,7 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginator *Node, p
 					if prevNodePaid {
 						nextNode = payNext
 						thresholdFailed = false
-						if firstNode == mainOriginator {
+						if firstNode.Id == mainOriginatorId {
 							payment.IsOriginator = true
 						} else {
 							payment.IsOriginator = false
@@ -158,7 +159,7 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginator *Node, p
 						payment.PayNextId = payNext.Id
 						payment.ChunkId = chunkId
 					} else {
-						if firstNode == mainOriginator {
+						if firstNode.Id == mainOriginatorId {
 							payment.IsOriginator = true
 							payment.FirstNodeId = firstNode.Id
 							payment.PayNextId = payNext.Id
@@ -175,7 +176,7 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginator *Node, p
 				} else {
 					nextNode = payNext
 					thresholdFailed = false
-					if firstNode == mainOriginator {
+					if firstNode.Id == mainOriginatorId {
 						payment.IsOriginator = true
 					} else {
 						payment.IsOriginator = false
@@ -194,7 +195,7 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginator *Node, p
 			for _, node := range item {
 				if node == payNext {
 					if Constants.IsPayIfOrigPays() {
-						if firstNode == mainOriginator {
+						if firstNode.Id == mainOriginatorId {
 							thresholdList = append(thresholdList[:i], thresholdList[i+1:]...)
 						}
 					} else {
@@ -215,7 +216,7 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginator *Node, p
 }
 
 // ConsumeTask cacheDict is map of nodes containing an array of maps with key as a chunkAddr and a popularity counter
-func ConsumeTask(request *Request, graph *Graph, respNodes []*Node, rerouteMap RerouteMap, cacheListMap CacheListMap) (bool, Route, [][]Threshold, bool, []Payment) {
+func ConsumeTask(request *Request, graph *Graph, respNodes []int, rerouteMap RerouteMap, cacheListMap CacheListMap) (bool, Route, [][]Threshold, bool, []Payment) {
 	var thresholdFailedList [][]Threshold
 	var paymentList []Payment
 	originator := request.Originator
@@ -234,16 +235,16 @@ func ConsumeTask(request *Request, graph *Graph, respNodes []*Node, rerouteMap R
 	if Constants.IsPayIfOrigPays() {
 		prevNodePaid = true
 	}
-	if ContainsNode(respNodes, originator) {
+	if Contains(respNodes, originator.Id) {
 		// originator has the chunk
 		found = true
 	} else {
 	out:
 		for _, node := range respNodes {
 			// fmt.Printf("orig: %d, chunk_id: %d", originator.id, chunkId)
-			if node != originator {
+			if node != originator.Id {
 				// nextNode, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid = getNext(originator, chunkId, graph, mainOriginator, prevNodePaid, rerouteMap)
-				resultInt, nextNode, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originator, chunkId, graph, mainOriginator, prevNodePaid, rerouteMap)
+				resultInt, nextNode, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originator, chunkId, graph, mainOriginator.Id, prevNodePaid, rerouteMap)
 				if payment != (Payment{}) {
 					paymentList = append(paymentList, payment)
 				}
@@ -253,7 +254,7 @@ func ConsumeTask(request *Request, graph *Graph, respNodes []*Node, rerouteMap R
 				route = append(route, nextNode.Id)
 				// if not isinstance(next_node, int), originale versjonen
 				if !(resultInt <= -1) && nextNode != nil {
-					if ContainsNode(respNodes, nextNode) {
+					if Contains(respNodes, nextNode.Id) {
 						fmt.Println("is not in cache")
 						found = true
 						break out
