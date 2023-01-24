@@ -120,7 +120,7 @@ func UpdatePendingMap(prevState State, policyInput Policy) State {
 
 func UpdateNetwork(prevState State, policyInput Policy) State {
 	network := prevState.Network
-	currTinmeStep := prevState.TimeStep + 1
+	currTimeStep := prevState.TimeStep + 1
 	route := policyInput.Route
 	paymentsList := policyInput.PaymentList
 
@@ -205,7 +205,7 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 		}
 	}
 	if Constants.GetThresholdEnabled() { // && Constants.IsForgivenessEnabled()
-		thresholdFailedLists := policyInput.ThresholdFailed
+		thresholdFailedLists := policyInput.ThresholdFailedLists
 		if len(thresholdFailedLists) > 0 {
 			for _, thresholdFailedL := range thresholdFailedLists {
 				if len(thresholdFailedL) > 0 {
@@ -213,7 +213,7 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 						requesterNode := couple[0].Id
 						providerNode := couple[1].Id
 						edgeData1 := network.GetEdgeData(requesterNode, providerNode)
-						passedTime := (currTinmeStep - edgeData1.Last) / Constants.GetRequestsPerSecond()
+						passedTime := (currTimeStep - edgeData1.Last) / Constants.GetRequestsPerSecond()
 						if passedTime > 0 {
 							refreshRate := Constants.GetRefreshRate()
 							//if Constants.IsAdjustableThreshold() {
@@ -224,7 +224,7 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 							if edgeData1.A2b < 0 {
 								edgeData1.A2b = 0
 							}
-							edgeData1.Last = currTinmeStep
+							edgeData1.Last = currTimeStep
 						}
 					}
 				}
