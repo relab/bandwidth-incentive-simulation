@@ -5,7 +5,7 @@ import (
 )
 
 func TestNetwork(t *testing.T) {
-	path := "nodes_data_8_10000.txt"
+	path := "../../../data/nodes_data_8_10000.txt"
 	network := Network{}
 	bits, bin, nodes := network.Load(path)
 
