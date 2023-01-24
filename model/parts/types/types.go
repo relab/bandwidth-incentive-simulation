@@ -38,10 +38,10 @@ type State struct {
 }
 
 type Policy struct {
-	Found           bool
-	Route           Route
-	ThresholdFailed []int
-	OriginatorIndex int
-	AccessFailed    bool
-	PaymentList     []Payment
+	Found                bool
+	Route                Route
+	ThresholdFailedLists [][]Threshold
+	OriginatorIndex      int
+	AccessFailed         bool
+	PaymentList          []Payment
 }
