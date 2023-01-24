@@ -1,8 +1,9 @@
 package policy
 
 import (
-	. "go-incentive-simulation/model"
+	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/utils"
+	. "go-incentive-simulation/model/variables"
 	"math/rand"
 	"sort"
 	"time"
