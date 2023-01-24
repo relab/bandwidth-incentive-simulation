@@ -5,9 +5,11 @@ type Request struct {
 	ChunkId    int
 }
 
-type CacheListMap map[*Node][]map[int]int
+type PendingMap map[int]int
 
-type RerouteMap map[int][]*Node
+type RerouteMap map[int][]int
+
+type CacheListMap map[*Node][]map[int]int
 
 type Route []int
 
@@ -23,12 +25,11 @@ type Threshold [2]*Node
 type State struct {
 	Network                 *Graph
 	Originators             []int
-	OriginatorsIndex        int
 	NodesId                 []int
 	RouteLists              []Route
-	PendingDict             map[int]int
-	RerouteMap              map[int][]int
-	CacheDict               map[int]int
+	PendingMap              PendingMap
+	RerouteMap              RerouteMap
+	CacheListMap            CacheListMap
 	OriginatorIndex         int
 	SuccessfulFound         int
 	FailedRequestsThreshold int
