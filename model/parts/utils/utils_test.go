@@ -38,4 +38,6 @@ func TestCreateDowloaderList(t *testing.T) {
 	assert.Equal(t, len(l), c)
 }
 
+func TestGetNext(t *testing.T) {
 
+}
