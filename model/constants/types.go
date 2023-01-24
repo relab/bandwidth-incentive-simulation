@@ -1,4 +1,4 @@
-package model
+package constants
 
 import (
 	. "go-incentive-simulation/model/parts/utils"
