@@ -50,7 +50,7 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, g *Graph)
 		edgeDataSecond := g.GetEdgeData(secondNodeId, firstNodeId)
 		p2pSecond := edgeDataSecond.A2b
 
-		price := p2pFirst - p2pSecond + peerPriceChunk(secondNodeId, chunkId)
+		price := p2pFirst - p2pSecond + PeerPriceChunk(secondNodeId, chunkId)
 		fmt.Printf("price: %d", price)
 		return price > Constants.GetThreshold()
 	}
@@ -365,7 +365,7 @@ func getProximityChunk(firstNodeId int, chunkId int) int {
 	}
 }
 
-func peerPriceChunk(firstNodeId int, chunkId int) int {
+func PeerPriceChunk(firstNodeId int, chunkId int) int {
 	return (Constants.GetMaxProximityOrder() - getProximityChunk(firstNodeId, chunkId) + 1) * Constants.GetPrice()
 }
 
