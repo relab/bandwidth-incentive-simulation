@@ -4,21 +4,20 @@ import (
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/utils"
 	. "go-incentive-simulation/model/variables"
-	. "go-incentive-simulation/model/general"
 	"math/rand"
 	"sort"
 	"time"
 )
 
 type Response struct {
-	found           bool
-	route           Route
-	thresholdFailed [][]Threshold
-	accessFailed    bool
-	paymentsList    []Payment
+	found               bool
+	route               Route
+	thresholdFailedList [][]Threshold
+	accessFailed        bool
+	paymentsList        []Payment
 }
 
-func findResponisbleNodes(nodesId []int, chunkAdd int) []int {
+func findResponsibleNodes(nodesId []int, chunkAdd int) []int {
 	var v []int
 	for i := range nodesId {
 		v = append(v, nodesId[i]^chunkAdd)
@@ -42,23 +41,23 @@ func SendRequest(prevState *State) (bool, Route, [][]Threshold, bool, []Payment)
 			chunkId = rand.Intn(Constants.GetRangeAddress()-1000) + 0
 		}
 	}
-	responsibleNodes := findResponisbleNodes(prevState.NodesId, chunkId)
+	responsibleNodes := findResponsibleNodes(prevState.NodesId, chunkId)
 	originator := prevState.Originators[prevState.OriginatorIndex]
 
 	if _, ok := prevState.PendingMap[originator]; ok {
 		chunkId = prevState.PendingMap[originator]
-		responsibleNodes = findResponisbleNodes(prevState.NodesId, chunkId)
+		responsibleNodes = findResponsibleNodes(prevState.NodesId, chunkId)
 	}
 	if _, ok := prevState.RerouteMap[originator]; ok {
 		chunkId = prevState.RerouteMap[originator][len(prevState.RerouteMap[originator])-1]
-		responsibleNodes = findResponisbleNodes(prevState.NodesId, chunkId)
+		responsibleNodes = findResponsibleNodes(prevState.NodesId, chunkId)
 	}
 
-	getNode := GetNodeById(originator)
+	originatorNode := prevState.Graph.GetNode(originator)
 
-	request := Request{Originator: getNode, ChunkId: chunkId}
+	request := Request{Originator: originatorNode, ChunkId: chunkId}
 
-	found, route, thresholdFailed, accessFailed, paymentsList := ConsumeTask(&request, prevState.Network, responsibleNodes, prevState.RerouteMap, prevState.CacheListMap)
+	found, route, thresholdFailed, accessFailed, paymentsList := ConsumeTask(&request, prevState.Graph, responsibleNodes, prevState.RerouteMap, prevState.CacheListMap)
 
 	return found, route, thresholdFailed, accessFailed, paymentsList
 }

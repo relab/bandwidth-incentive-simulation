@@ -38,11 +38,11 @@ func (g *Graph) AddNode(node *Node) error {
 
 // AddEdge will add an edge from a node to a node
 func (g *Graph) AddEdge(edge *Edge) error {
-	toNode := g.getNode(edge.ToNodeId)
-	fromNode := g.getNode(edge.FromNodeId)
+	toNode := g.GetNode(edge.ToNodeId)
+	fromNode := g.GetNode(edge.FromNodeId)
 	if toNode == nil || fromNode == nil {
 		return fmt.Errorf("not a valid edge from %d ---> %d", fromNode.Id, toNode.Id)
-	} else if containsEdge(g.Edges[fromNode.Id], edge) {
+	} else if ContainsEdge(g.Edges[fromNode.Id], edge) {
 		return fmt.Errorf("edge from node %d ---> %d already exists", fromNode.Id, toNode.Id)
 	} else {
 		newEdges := append(g.Edges[fromNode.Id], edge)
@@ -55,8 +55,8 @@ func (g *Graph) GetEdgeData(fromNodeId int, toNodeId int) EdgeAttrs {
 	return g.Edges[fromNodeId][toNodeId].Attrs
 }
 
-// getNode will return a node point if exists or return nil
-func (g *Graph) getNode(nodeId int) *Node {
+// GetNode getNode will return a node point if exists or return nil
+func (g *Graph) GetNode(nodeId int) *Node {
 	for i, v := range g.Nodes {
 		if v.Id == nodeId {
 			return g.Nodes[i]
@@ -74,7 +74,7 @@ func ContainsNode(v []*Node, node *Node) bool {
 	return false
 }
 
-func containsEdge(v []*Edge, edge *Edge) bool {
+func ContainsEdge(v []*Edge, edge *Edge) bool {
 	for _, v := range v {
 		if v.ToNodeId == edge.ToNodeId {
 			return true

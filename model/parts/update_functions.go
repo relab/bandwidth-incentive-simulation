@@ -2,6 +2,7 @@ package policy
 
 import (
 	"fmt"
+	. "go-incentive-simulation/model/general"
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/utils"
 	. "go-incentive-simulation/model/variables"
@@ -20,7 +21,7 @@ func UpdateFailedRequestsThreshold(prevState State, policyInput Policy) State {
 	oldFailedCounter := prevState.FailedRequestsThreshold
 	newFailedCounter := oldFailedCounter
 	found := policyInput.Found
-	// thresholdFailed := policyInput.thresholdFailed
+	// thresholdFailedList := policyInput.thresholdFailedList
 	accessFailed := policyInput.AccessFailed
 	if !found && !accessFailed {
 		newFailedCounter++
@@ -119,7 +120,7 @@ func UpdatePendingMap(prevState State, policyInput Policy) State {
 }
 
 func UpdateNetwork(prevState State, policyInput Policy) State {
-	network := prevState.Network
+	network := prevState.Graph
 	currTimeStep := prevState.TimeStep + 1
 	route := policyInput.Route
 	paymentsList := policyInput.PaymentList

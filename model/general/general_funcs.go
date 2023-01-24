@@ -1,8 +1,7 @@
 package general
 
 import (
-	"fmt"
-	. "go-incentive-simulation/model/parts/types"
+	"math"
 	"math/rand"
 )
 
@@ -15,17 +14,29 @@ func Choice(nodes []int, k int) []int {
 	return res
 }
 
-func GetNodeById(nodeId int) *Node {
-	nodes := &Node{}
-	fmt.Println(nodes)
-
-	var res *Node
-
-	if nodes.Id == nodeId {
-		res = nodes
-	}
-	fmt.Println(res)
-	return res
+func BitLength(num int) int {
+	return int(math.Ceil(math.Log2(float64(num))))
 }
 
+func Contains[T comparable](elems []T, value T) bool {
+	for _, item := range elems {
+		if item == value {
+			return true
+		}
+	}
+	return false
+}
 
+// TODO: trenge vell ikkje denne då?
+//func GetNodeById(nodeId int) *Node {
+//	nodes := &Node{}
+//	fmt.Println(nodes)
+//
+//	var res *Node
+//
+//	if nodes.Id == nodeId {
+//		res = nodes
+//	}
+//	fmt.Println(res)
+//	return res
+//}
