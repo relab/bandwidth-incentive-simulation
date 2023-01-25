@@ -52,7 +52,14 @@ func (g *Graph) AddEdge(edge *Edge) error {
 }
 
 func (g *Graph) GetEdgeData(fromNodeId int, toNodeId int) EdgeAttrs {
-	return g.Edges[fromNodeId][toNodeId].Attrs
+	edgeData := EdgeAttrs{}
+	for _, edge := range g.Edges[fromNodeId] {
+		if edge.ToNodeId == toNodeId {
+			edgeData = edge.Attrs
+			break
+		}
+	}
+	return edgeData
 }
 
 // GetNode getNode will return a node point if exists or return nil
