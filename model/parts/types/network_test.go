@@ -25,7 +25,3 @@ func TestNetwork(t *testing.T) {
 		t.Log("\n")
 	}
 }
-
-// func TestGetNodeById(t *testing.T) {
-
-// }

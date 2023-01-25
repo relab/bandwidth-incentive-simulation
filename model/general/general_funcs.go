@@ -27,16 +27,4 @@ func Contains[T comparable](elems []T, value T) bool {
 	return false
 }
 
-// TODO: trenge vell ikkje denne då?
-//func GetNodeById(nodeId int) *Node {
-//	nodes := &Node{}
-//	fmt.Println(nodes)
-//
-//	var res *Node
-//
-//	if nodes.Id == nodeId {
-//		res = nodes
-//	}
-//	fmt.Println(res)
-//	return res
-//}
+
