@@ -23,7 +23,7 @@ type Payment struct {
 type Threshold [2]*Node
 
 type State struct {
-	Network                 *Graph
+	Graph                   *Graph
 	Originators             []int
 	NodesId                 []int
 	RouteLists              []Route

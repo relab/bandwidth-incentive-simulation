@@ -2,10 +2,9 @@ package utils
 
 import (
 	"fmt"
+	. "go-incentive-simulation/model/general"
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/variables"
-	"math/rand"
-	"time"
 )
 
 func CreateGraphNetwork(filename string) (*Graph, error) {
@@ -340,6 +339,32 @@ func ConsumeTask(request *Request, graph *Graph, respNodes []int, rerouteMap Rer
 	return found, route, thresholdFailedList, accessFailed, paymentList
 }
 
+func getProximityChunk(firstNodeId int, chunkId int) int {
+	retVal := Constants.GetBits() - BitLength(firstNodeId^chunkId)
+	if retVal <= Constants.GetMaxProximityOrder() {
+		return retVal
+	} else {
+		return Constants.GetMaxProximityOrder()
+	}
+}
+
+func PeerPriceChunk(firstNodeId int, chunkId int) int {
+	return (Constants.GetMaxProximityOrder() - getProximityChunk(firstNodeId, chunkId) + 1) * Constants.GetPrice()
+}
+
+func CreateDowloadersList(net *Network) []int {
+	fmt.Println("Creating downloaders list...")
+
+	nodesValue := make([]int, 0, len(net.Nodes))
+	for i := range net.Nodes {
+		nodesValue = append(nodesValue, net.Nodes[i].Id)
+	}
+	downloadersList := Choice(nodesValue, Constants.GetOriginators())
+
+	fmt.Println("Downloaders list create...!")
+	return downloadersList
+}
+
 // TODO: Not used in original
 //func getBin(src int, dest int, index int) int {
 //	distance := src ^ dest
@@ -356,37 +381,12 @@ func ConsumeTask(request *Request, graph *Graph, respNodes []int, rerouteMap Rer
 //	return BitLength(rangeAddress) - 1
 //}
 
-func getProximityChunk(firstNodeId int, chunkId int) int {
-	retVal := Constants.GetBits() - BitLength(firstNodeId^chunkId)
-	if retVal <= Constants.GetMaxProximityOrder() {
-		return retVal
-	} else {
-		return Constants.GetMaxProximityOrder()
-	}
-}
-
-func PeerPriceChunk(firstNodeId int, chunkId int) int {
-	return (Constants.GetMaxProximityOrder() - getProximityChunk(firstNodeId, chunkId) + 1) * Constants.GetPrice()
-}
-
-func choice(nodes []int, k int) []int {
-	res := make([]int, 0, k)
-
-	rand.Seed(time.Now().UnixMicro())
-
-	for i := 0; i < k; i++ {
-		res = append(res, nodes[rand.Intn(len(nodes))])
-	}
-	return res
-}
-
 // TODO: Not used in original
 //func MakeFiles() []int {
 //	fmt.Println("Making files...")
 //	var filesList []int
 //
 //	for i := 0; i <= ct.Constants.GetOriginators(); i++ {
-//		// TODO: fix this, GetChunks should be a list?
 //		// chunksList := choice(ct.Constants.GetChunks(), ct.Constants.GetRangeAddress())
 //		// filesList = append(chunksList)
 //		fmt.Println(i)
@@ -401,19 +401,6 @@ func choice(nodes []int, k int) []int {
 //	fmt.Println("Files made!")
 //	return filesList
 //}
-
-func CreateDowloadersList(net *Network) []int {
-	fmt.Println("Creating downloaders list...")
-
-	nodesValue := make([]int, 0, len(net.Nodes))
-	for i := range net.Nodes {
-		nodesValue = append(nodesValue, net.Nodes[i].Id)
-	}
-	downloadersList := choice(nodesValue, Constants.GetOriginators())
-
-	fmt.Println("Downloaders list create...!")
-	return downloadersList
-}
 
 // TODO: Not used in original
 //func (net *Network) PushSync(fileName string, files []string) {

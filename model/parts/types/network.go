@@ -2,7 +2,7 @@ package types
 
 import (
 	"encoding/json"
-	"math"
+	. "go-incentive-simulation/model/general"
 	"os"
 	"sort"
 )
@@ -106,19 +106,6 @@ func (node *Node) add(other *Node) bool {
 		node.Adj[bit] = append(node.Adj[bit], other)
 		other.Adj[bit] = append(other.Adj[bit], node)
 		return true
-	}
-	return false
-}
-
-func BitLength(num int) int {
-	return int(math.Ceil(math.Log2(float64(num))))
-}
-
-func Contains[T comparable](elems []T, value T) bool {
-	for _, item := range elems {
-		if item == value {
-			return true
-		}
 	}
 	return false
 }
