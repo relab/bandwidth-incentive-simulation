@@ -13,7 +13,7 @@ func TestCreateGraphNetwork(t *testing.T) {
 	fileName := "../../../data/nodes_data_8_10000.txt"
 	network := &Network{}
 	network.Load(fileName)
-	graph, err := CreateGraphNetwork(fileName, network)
+	graph, err := CreateGraphNetwork(network)
 	/*	for i, _ := range graph.edges {
 		for _, edge := range graph.edges[i] {
 			fmt.Print(edge)

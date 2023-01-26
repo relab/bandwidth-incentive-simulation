@@ -15,7 +15,7 @@ func MakeInitialState() State {
 	path := "nodes_data_8_10000.txt"
 	network := Network{}
 	network.Load(path)
-	graph, err := CreateGraphNetwork(path, &network)
+	graph, err := CreateGraphNetwork(&network)
 	if err != nil {
 		fmt.Println("create graph network returned an error: ", err)
 	}
