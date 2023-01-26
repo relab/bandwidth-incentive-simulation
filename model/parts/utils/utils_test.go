@@ -3,8 +3,9 @@ package utils
 import (
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/variables"
-	"gotest.tools/assert"
 	"testing"
+
+	"gotest.tools/assert"
 )
 
 func TestCreateGraphNetwork(t *testing.T) {
@@ -38,6 +39,15 @@ func TestCreateDowloaderList(t *testing.T) {
 
 	// Check if the length of the list is equal to the number of originators specified
 	assert.Equal(t, len(l), c)
+}
+
+func TestIsThresholdFailed(t *testing.T) {
+
+	// firstNodes := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	// secondsNodes := []int{11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
+	// chunkIds := []int{21, 22, 23, 24, 25, 26, 27, 28, 29, 30}
+
+	// graph := Graph{}
 }
 
 func TestGetNext(t *testing.T) {
