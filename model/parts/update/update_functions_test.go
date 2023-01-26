@@ -13,9 +13,10 @@ func MakeInitialState() State {
 	// Initialize the state
 	fmt.Println("start of make initial state")
 	path := "../../../data/nodes_data_8_10000.txt"
-	graph, _ := CreateGraphNetwork(path)
+
 	network := Network{}
 	network.Load(path)
+	graph, _ := CreateGraphNetwork(&network)
 	initialState := State{
 		Graph:                   graph,
 		Originators:             CreateDownloadersList(&network),

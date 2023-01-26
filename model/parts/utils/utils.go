@@ -7,7 +7,7 @@ import (
 	. "go-incentive-simulation/model/variables"
 )
 
-func CreateGraphNetwork(filename string, net *Network) (*Graph, error) {
+func CreateGraphNetwork(net *Network) (*Graph, error) {
 	fmt.Println("Creating graph network...")
 	graph := &Graph{
 		Edges: make(map[int][]*Edge),
