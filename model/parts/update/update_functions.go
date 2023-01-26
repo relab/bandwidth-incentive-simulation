@@ -232,3 +232,4 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 	prevState.Graph = network
 	return prevState
 }
+

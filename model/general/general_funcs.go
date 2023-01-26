@@ -8,8 +8,9 @@ import (
 func Choice(nodes []int, k int) []int {
 	res := make([]int, 0, k)
 
+	val := rand.Intn(len(nodes))
 	for i := 0; i < k; i++ {
-		res = append(res, nodes[rand.Intn(len(nodes))])
+		res = append(res, nodes[val])
 	}
 	return res
 }
@@ -26,5 +27,3 @@ func Contains[T comparable](elems []T, value T) bool {
 	}
 	return false
 }
-
-

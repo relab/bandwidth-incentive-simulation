@@ -50,7 +50,7 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, g *Graph)
 		p2pSecond := edgeDataSecond.A2b
 
 		price := p2pFirst - p2pSecond + PeerPriceChunk(secondNodeId, chunkId)
-		fmt.Printf("price: %d", price)
+		fmt.Printf("price: %d ", price)
 		return price > Constants.GetThreshold()
 	}
 	return false
@@ -65,13 +65,16 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginatorId int, p
 	var payment Payment
 	resultInt := 1
 	lastDistance := firstNode.Id ^ chunkId
-	fmt.Printf("last distance is : %d, chunk is: %d, first is: %d", lastDistance, chunkId, firstNode.Id)
-	fmt.Printf("which bucket: %d", 16-BitLength(chunkId^firstNode.Id))
+	fmt.Printf("\n last distance is : %d, chunk is: %d, first is: %d", lastDistance, chunkId, firstNode.Id)
+	fmt.Printf("\n which bucket: %d \n", 16-BitLength(chunkId^firstNode.Id))
 
 	currDist := lastDistance
 	payDist := lastDistance
 	for _, adj := range firstNode.Adj {
-		fmt.Println("adj: ", adj)
+		//fmt.Println("adj: ")
+		//for _, node := range adj {
+		//	fmt.Println(node.Id)
+		//}
 		for _, node := range adj {
 			dist := node.Id ^ chunkId
 			if BitLength(dist) >= BitLength(lastDistance) {
@@ -212,7 +215,7 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginatorId int, p
 	}
 	// RASMUS: nil reference error
 	if nextNode != nil {
-		fmt.Printf("next node is: %d", nextNode.Id)
+		fmt.Printf("\n next node is: %d", nextNode.Id)
 	}
 	return resultInt, nextNode, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid
 }
@@ -243,7 +246,7 @@ func ConsumeTask(request *Request, graph *Graph, respNodes []int, rerouteMap Rer
 	} else {
 	out:
 		for _, node := range respNodes {
-			// fmt.Printf("orig: %d, chunk_id: %d", originator.id, chunkId)
+			fmt.Printf("\n orig: %d, chunk_id: %d", originator.Id, chunkId)
 			if node != originator.Id {
 				// nextNode, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid = getNext(originator, chunkId, graph, mainOriginator, prevNodePaid, rerouteMap)
 				resultInt, nextNode, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originator, chunkId, graph, mainOriginator.Id, prevNodePaid, rerouteMap)
