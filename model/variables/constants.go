@@ -31,16 +31,16 @@ type constant struct {
 var Constants = constant{
 	runs:                     1,
 	bits:                     16,
-	networkSize:              1000,
+	networkSize:              10000,
 	binSize:                  8,
 	rangeAddress:             65536, // 2 * *Bits
-	originators:              1,     // int(0.001 * NetworkSize)
+	originators:              2000,  // int(0.001 * NetworkSize)
 	refreshRate:              8,
 	threshold:                16,
 	randomSeed:               rand.Int() * 100,
 	maxProximityOrder:        16,
 	price:                    1,
-	chunks:                   1000,
+	chunks:                   10000,
 	requestsPerSecond:        12500,
 	thresholdEnabled:         true,
 	paymentEnabled:           true,

@@ -50,7 +50,7 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, g *Graph)
 		p2pSecond := edgeDataSecond.A2b
 
 		price := p2pFirst - p2pSecond + PeerPriceChunk(secondNodeId, chunkId)
-		fmt.Printf("price: %d", price)
+		fmt.Printf("price: %d ", price)
 		return price > Constants.GetThreshold()
 	}
 	return false
@@ -65,13 +65,16 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginatorId int, p
 	var payment Payment
 	resultInt := 1
 	lastDistance := firstNode.Id ^ chunkId
-	fmt.Printf("last distance is : %d, chunk is: %d, first is: %d", lastDistance, chunkId, firstNode.Id)
-	fmt.Printf("which bucket: %d", 16-BitLength(chunkId^firstNode.Id))
+	fmt.Printf("\n last distance is : %d, chunk is: %d, first is: %d", lastDistance, chunkId, firstNode.Id)
+	fmt.Printf("\n which bucket: %d \n", 16-BitLength(chunkId^firstNode.Id))
 
 	currDist := lastDistance
 	payDist := lastDistance
 	for _, adj := range firstNode.Adj {
-		fmt.Println("adj: ", adj)
+		//fmt.Println("adj: ")
+		//for _, node := range adj {
+		//	fmt.Println(node.Id)
+		//}
 		for _, node := range adj {
 			dist := node.Id ^ chunkId
 			if BitLength(dist) >= BitLength(lastDistance) {
@@ -210,7 +213,10 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginatorId int, p
 	} else {
 		prevNodePaid = false
 	}
-	fmt.Printf("next node is: %d", nextNode.Id)
+	// RASMUS: nil reference error
+	if nextNode != nil {
+		fmt.Printf("\n next node is: %d", nextNode.Id)
+	}
 	return resultInt, nextNode, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid
 }
 
@@ -240,7 +246,7 @@ func ConsumeTask(request *Request, graph *Graph, respNodes []int, rerouteMap Rer
 	} else {
 	out:
 		for _, node := range respNodes {
-			// fmt.Printf("orig: %d, chunk_id: %d", originator.id, chunkId)
+			fmt.Printf("\n orig: %d, chunk_id: %d", originator.Id, chunkId)
 			if node != originator.Id {
 				// nextNode, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid = getNext(originator, chunkId, graph, mainOriginator, prevNodePaid, rerouteMap)
 				resultInt, nextNode, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originator, chunkId, graph, mainOriginator.Id, prevNodePaid, rerouteMap)
@@ -250,7 +256,10 @@ func ConsumeTask(request *Request, graph *Graph, respNodes []int, rerouteMap Rer
 				if len(thresholdList) > 0 {
 					thresholdFailedList = append(thresholdFailedList, thresholdList)
 				}
-				route = append(route, nextNode.Id)
+				// RASMUS: Nil reference error
+				if nextNode != nil {
+					route = append(route, nextNode.Id)
+				}
 				// if not isinstance(next_node, int), originale versjonen
 				if !(resultInt <= -1) && nextNode != nil {
 					if Contains(respNodes, nextNode.Id) {
@@ -352,17 +361,29 @@ func PeerPriceChunk(firstNodeId int, chunkId int) int {
 	return (Constants.GetMaxProximityOrder() - getProximityChunk(firstNodeId, chunkId) + 1) * Constants.GetPrice()
 }
 
-func CreateDowloadersList(net *Network) []int {
+func CreateDownloadersList(net *Network) []int {
 	fmt.Println("Creating downloaders list...")
 
 	nodesValue := make([]int, 0, len(net.Nodes))
-	for i := range net.Nodes {
-		nodesValue = append(nodesValue, net.Nodes[i].Id)
+	for _, v := range net.Nodes {
+		nodesValue = append(nodesValue, v.Id)
 	}
 	downloadersList := Choice(nodesValue, Constants.GetOriginators())
 
 	fmt.Println("Downloaders list create...!")
 	return downloadersList
+}
+
+func CreateNodesList(net *Network) []int {
+	fmt.Println("Creating nodes list...")
+
+	nodesValue := make([]int, 0, len(net.Nodes))
+	for _, v := range net.Nodes {
+		nodesValue = append(nodesValue, v.Id)
+	}
+
+	fmt.Println("Nodes list create...!")
+	return nodesValue
 }
 
 // TODO: Not used in original

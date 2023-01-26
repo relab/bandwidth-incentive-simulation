@@ -35,7 +35,7 @@ func TestCreateDowloaderList(t *testing.T) {
 	c := Constants.GetOriginators()
 
 	// Create a list of downloaders
-	l := CreateDowloadersList(network)
+	l := CreateDownloadersList(network)
 
 	// Check if the length of the list is equal to the number of originators specified
 	assert.Equal(t, len(l), c)
