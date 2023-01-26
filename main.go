@@ -15,7 +15,10 @@ func MakeInitialState() State {
 	path := "nodes_data_8_10000.txt"
 	network := Network{}
 	network.Load(path)
-	graph, _ := CreateGraphNetwork(path)
+	graph, err := CreateGraphNetwork(&network)
+	if err != nil {
+		fmt.Println("create graph network returned an error: ", err)
+	}
 	initialState := State{
 		Graph:                   graph,
 		Originators:             CreateDownloadersList(&network),
@@ -50,7 +53,7 @@ func MakePolicyOutput(state State) Policy {
 func main() {
 	state := MakeInitialState()
 	stateArray := []State{state}
-	constant := 10000
+	constant := 100
 	for i := 0; i < constant; i++ {
 		policyOutput := MakePolicyOutput(state)
 		state = UpdatePendingMap(state, policyOutput)
