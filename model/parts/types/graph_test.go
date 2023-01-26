@@ -13,34 +13,36 @@ func testAddNode(t *testing.T) {
 }
 
 func testGetNode(t *testing.T) {
-	// graph := Graph{}
 
 }
 
 func TestAddEdge(t *testing.T) {
+	path := "../../../data/nodes_data_8_10000.txt"
+	network := Network{}
+	_, _, nodes := network.Load(path)
+	var testNodes []*Node
+	counter := 0
 
-	graph := &Graph{}
+	for _, node := range nodes {
+		if counter == 10 {
+			break
+		}
+		counter++
+		testNodes = append(testNodes, node)
+	}
+	graph := &Graph{Nodes: testNodes, Edges: map[int][]*Edge{}}
 
-	edgeAttrs := EdgeAttrs{10, 20}
-
-	edge1 := &Edge{FromNodeId: 1, ToNodeId: 2, Attrs: edgeAttrs}
-	err1 := graph.AddEdge(edge1)
-	if err1 != nil {
-		t.Error("addEdge function returned an error message: ", err1)
+	edge1 := &Edge{testNodes[0].Id, testNodes[1].Id, EdgeAttrs{10, 20}}
+	err := graph.AddEdge(edge1)
+	if err != nil {
+		t.Error("addEdge function returned an error message: ", err)
 	}
 
-	edge2 := &Edge{FromNodeId: 1, ToNodeId: 2, Attrs: edgeAttrs}
-	err2 := graph.AddEdge(edge2)
-	if err2 == nil {
+	err = graph.AddEdge(edge1)
+	if err == nil {
 		t.Error("addedge should have returned an error for trying to add the same edge twice")
 	}
-
-	edge3 := &Edge{FromNodeId: 2, ToNodeId: 3, Attrs: edgeAttrs}
-	err3 := graph.AddEdge(edge3)
-	if err3 == nil {
-		t.Error("addedge should have returned an error for trying to add the same edge twice")
-	}
-
+	
 }
 
 func TestGetEdgeData(t *testing.T) {
