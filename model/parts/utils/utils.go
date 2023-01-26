@@ -7,14 +7,13 @@ import (
 	. "go-incentive-simulation/model/variables"
 )
 
-func CreateGraphNetwork(filename string) (*Graph, error) {
+func CreateGraphNetwork(filename string, net *Network) (*Graph, error) {
 	fmt.Println("Creating graph network...")
 	graph := &Graph{
 		Edges: make(map[int][]*Edge),
 	}
-	net := new(Network)
-	_, _, nodes := net.Load(filename)
-	for _, node := range nodes {
+
+	for _, node := range net.Nodes {
 		err := graph.AddNode(node)
 		if err != nil {
 			return nil, err
@@ -71,10 +70,6 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginatorId int, p
 	currDist := lastDistance
 	payDist := lastDistance
 	for _, adj := range firstNode.Adj {
-		//fmt.Println("adj: ")
-		//for _, node := range adj {
-		//	fmt.Println(node.Id)
-		//}
 		for _, node := range adj {
 			dist := node.Id ^ chunkId
 			if BitLength(dist) >= BitLength(lastDistance) {
@@ -125,11 +120,9 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginatorId int, p
 		if !thresholdFailed {
 			accessFailed = true
 			resultInt = -2
-			nextNode = nil
 			// nextNode = -2 // accessFailed, TYPE MISMATCH ??
 		} else {
 			resultInt = -1
-			nextNode = nil
 			// nextNode = -1 // thresholdFailed, TYPE MISMATCH ??
 		}
 		if Constants.GetPaymentEnabled() {
@@ -145,8 +138,6 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginatorId int, p
 					} else {
 						thresholdFailed = true
 						resultInt = -1
-						nextNode = nil
-						// nextNode = -1 TYPE MISMATCH ??
 					}
 				} else if Constants.IsPayIfOrigPays() {
 					if prevNodePaid {
@@ -170,8 +161,6 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginatorId int, p
 						} else {
 							thresholdFailed = true
 							resultInt = -1
-							nextNode = nil
-							// nextNode = -1 // TYPE MISMATCH ??
 							payNext = nil
 						}
 					}
@@ -208,7 +197,7 @@ func getNext(firstNode *Node, chunkId int, graph *Graph, mainOriginatorId int, p
 			}
 		}
 	}
-	if payment == (Payment{}) {
+	if payment != (Payment{}) {
 		prevNodePaid = true
 	} else {
 		prevNodePaid = false

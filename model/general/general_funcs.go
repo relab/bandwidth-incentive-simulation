@@ -8,9 +8,10 @@ import (
 func Choice(nodes []int, k int) []int {
 	res := make([]int, 0, k)
 
-	val := rand.Intn(len(nodes))
+	var val int
 	for i := 0; i < k; i++ {
-		res = append(res, nodes[val])
+		val = rand.Intn(len(nodes))
+		res = append(res, nodes[val-1])
 	}
 	return res
 }

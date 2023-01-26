@@ -11,8 +11,9 @@ import (
 func TestCreateGraphNetwork(t *testing.T) {
 	// fileName := "input_test.txt"
 	fileName := "../../../data/nodes_data_8_10000.txt"
-
-	graph, err := CreateGraphNetwork(fileName)
+	network := &Network{}
+	network.Load(fileName)
+	graph, err := CreateGraphNetwork(fileName, network)
 	/*	for i, _ := range graph.edges {
 		for _, edge := range graph.edges[i] {
 			fmt.Print(edge)

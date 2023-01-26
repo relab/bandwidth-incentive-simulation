@@ -18,12 +18,22 @@ type Response struct {
 }
 
 func findResponsibleNodes(nodesId []int, chunkAdd int) []int {
-	var v []int
-	for i := range nodesId {
-		v = append(v, nodesId[i]^chunkAdd)
+	var distances []int
+	var distance int
+	nodesMap := make(map[int]int)
+	returnNodes := make([]int, 4)
+
+	for _, nodeId := range nodesId {
+		distance = nodeId ^ chunkAdd
+		distances = append(distances, distance)
+		nodesMap[distance] = nodeId
 	}
-	sort.Slice(v, func(i, j int) bool { return v[i] < v[j] })
-	return v[:4]
+	sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
+	for i := 0; i < 4; i++ {
+		distance = distances[i]
+		returnNodes[i] = nodesMap[distance]
+	}
+	return returnNodes
 }
 
 func SendRequest(prevState *State) (bool, Route, [][]Threshold, bool, []Payment) {
