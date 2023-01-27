@@ -6,9 +6,10 @@ import (
 
 // Graph structure, node Ids in array and edges in map
 type Graph struct {
+	Network *Network
 	Nodes   []*Node
 	NodeIds []int
-	Edges   map[int][]*Edge
+	Edges   map[int][]Edge
 }
 
 // Edge that connects to Nodes with attributes about the connection
@@ -38,16 +39,17 @@ func (g *Graph) AddNode(node *Node) error {
 }
 
 // AddEdge will add an edge from a node to a node
-func (g *Graph) AddEdge(edge *Edge) error {
+func (g *Graph) AddEdge(edge Edge) error {
 	toNode := g.GetNode(edge.ToNodeId)
 	fromNode := g.GetNode(edge.FromNodeId)
 	if toNode == nil || fromNode == nil {
 		return fmt.Errorf("not a valid edge from %d ---> %d", fromNode.Id, toNode.Id)
 	} else if ContainsEdge(g.Edges[fromNode.Id], edge) {
-		return fmt.Errorf("edge from node %d ---> %d already exists", fromNode.Id, toNode.Id)
+		//if ContainsEdge(g.Edges[edge.FromNodeId], edge) {
+		return fmt.Errorf("edge from node %d ---> %d already exists", edge.FromNodeId, edge.ToNodeId)
 	} else {
-		newEdges := append(g.Edges[fromNode.Id], edge)
-		g.Edges[fromNode.Id] = newEdges
+		newEdges := append(g.Edges[edge.FromNodeId], edge)
+		g.Edges[edge.FromNodeId] = newEdges
 		return nil
 	}
 }
@@ -65,10 +67,9 @@ func (g *Graph) GetEdgeData(fromNodeId int, toNodeId int) EdgeAttrs {
 
 // GetNode getNode will return a node point if exists or return nil
 func (g *Graph) GetNode(nodeId int) *Node {
-	for i, v := range g.Nodes {
-		if v.Id == nodeId {
-			return g.Nodes[i]
-		}
+	node, ok := g.Network.Nodes[nodeId]
+	if ok {
+		return node
 	}
 	return nil
 }
@@ -82,7 +83,7 @@ func ContainsNode(v []*Node, node *Node) bool {
 	return false
 }
 
-func ContainsEdge(v []*Edge, edge *Edge) bool {
+func ContainsEdge(v []Edge, edge Edge) bool {
 	for _, v := range v {
 		if v.ToNodeId == edge.ToNodeId {
 			return true
