@@ -2,10 +2,10 @@ package update
 
 import (
 	"fmt"
+	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/general"
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/utils"
-	. "go-incentive-simulation/model/variables"
 )
 
 func UpdateSuccessfulFound(prevState State, policyInput Policy) State {

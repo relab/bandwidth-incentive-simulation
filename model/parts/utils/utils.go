@@ -2,9 +2,9 @@ package utils
 
 import (
 	"fmt"
+	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/general"
 	. "go-incentive-simulation/model/parts/types"
-	. "go-incentive-simulation/model/variables"
 	"sort"
 )
 

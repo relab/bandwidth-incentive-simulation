@@ -5,39 +5,9 @@ import (
 	. "go-incentive-simulation/model/parts/policy"
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/update"
-	. "go-incentive-simulation/model/parts/utils"
-	. "go-incentive-simulation/model/variables"
-	"math/rand"
-	//. "go-incentive-simulation/model/variables"
+	. "go-incentive-simulation/model/state"
+	//. "go-incentive-simulation/model/constants"
 )
-
-func MakeInitialState() State {
-	// Initialize the state
-	fmt.Println("start of make initial state")
-	rand.Seed(Constants.GetRandomSeed())
-	path := "nodes_data_8_10000.txt"
-	network := Network{}
-	network.Load(path)
-	graph, err := CreateGraphNetwork(&network)
-	if err != nil {
-		fmt.Println("create graph network returned an error: ", err)
-	}
-	initialState := State{
-		Graph:                   graph,
-		Originators:             CreateDownloadersList(graph),
-		NodesId:                 CreateNodesList(graph),
-		RouteLists:              []Route{},
-		PendingMap:              make(PendingMap, 0),
-		RerouteMap:              make(RerouteMap, 0),
-		CacheListMap:            make(CacheListMap, 0),
-		OriginatorIndex:         0,
-		SuccessfulFound:         0,
-		FailedRequestsThreshold: 0,
-		FailedRequestsAccess:    0,
-		TimeStep:                0,
-	}
-	return initialState
-}
 
 func MakePolicyOutput(state State) Policy {
 	fmt.Println("start of make initial policy")
@@ -54,7 +24,7 @@ func MakePolicyOutput(state State) Policy {
 }
 
 func main() {
-	state := MakeInitialState()
+	state := MakeInitialState("./data/nodes_data_8_10000.txt")
 	stateArray := []State{state}
 	iterations := 1000
 	for i := 0; i < iterations; i++ {

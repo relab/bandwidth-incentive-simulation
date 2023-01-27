@@ -1,4 +1,4 @@
-package variables
+package constants
 
 type constant struct {
 	runs                             int
