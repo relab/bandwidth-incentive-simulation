@@ -1,6 +1,4 @@
-package variables
-
-import "math/rand"
+package constants
 
 type constant struct {
 	runs                             int
@@ -11,7 +9,7 @@ type constant struct {
 	originators                      int
 	refreshRate                      int
 	threshold                        int
-	randomSeed                       int
+	randomSeed                       int64
 	maxProximityOrder                int
 	price                            int
 	chunks                           int
@@ -29,26 +27,29 @@ type constant struct {
 }
 
 var Constants = constant{
-	runs:                     1,
-	bits:                     16,
-	networkSize:              10000,
-	binSize:                  8,
-	rangeAddress:             65536, // 2 * *Bits
-	originators:              2000,  // int(0.001 * NetworkSize)
-	refreshRate:              8,
-	threshold:                16,
-	randomSeed:               rand.Int() * 100,
-	maxProximityOrder:        16,
-	price:                    1,
-	chunks:                   10000,
-	requestsPerSecond:        12500,
-	thresholdEnabled:         true,
-	paymentEnabled:           true,
-	maxPoCheckEnabled:        false,
-	waitingEnabled:           false,
-	onlyOriginatorPays:       false,
-	payOnlyForCurrentRequest: false,
-	payIfOrigPays:            false,
+	runs:                             1,
+	bits:                             16,
+	networkSize:                      10000,
+	binSize:                          8,
+	rangeAddress:                     65536, // 2 * *Bits
+	originators:                      2000,  // int(0.001 * NetworkSize)
+	refreshRate:                      8,
+	threshold:                        16,
+	randomSeed:                       123456789,
+	maxProximityOrder:                16,
+	price:                            1,
+	chunks:                           10000,
+	requestsPerSecond:                12500,
+	thresholdEnabled:                 true,
+	paymentEnabled:                   true,
+	maxPoCheckEnabled:                false,
+	waitingEnabled:                   false,
+	onlyOriginatorPays:               false,
+	payOnlyForCurrentRequest:         false,
+	payIfOrigPays:                    false,
+	forwarderPayForceOriginatorToPay: false,
+	retryWithAnotherPeer:             false,
+	cacheIsEnabled:                   false,
 }
 
 // func CreateRangeAddress(c *constant){
@@ -139,7 +140,7 @@ func (c *constant) GetThreshold() int {
 	return c.threshold
 }
 
-func (c *constant) GetRandomSeed() int {
+func (c *constant) GetRandomSeed() int64 {
 	return c.randomSeed
 }
 

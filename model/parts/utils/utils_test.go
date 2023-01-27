@@ -1,18 +1,19 @@
 package utils
 
 import (
+	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/parts/types"
-	. "go-incentive-simulation/model/variables"
 	"testing"
 
 	"gotest.tools/assert"
 )
 
+const path = "../../../data/nodes_data_8_10000.txt"
+
 func TestCreateGraphNetwork(t *testing.T) {
 	// fileName := "input_test.txt"
-	fileName := "../../../data/nodes_data_8_10000.txt"
 	network := &Network{}
-	network.Load(fileName)
+	network.Load(path)
 	graph, err := CreateGraphNetwork(network)
 	/*	for i, _ := range graph.edges {
 		for _, edge := range graph.edges[i] {
@@ -30,13 +31,14 @@ func TestCreateDowloaderList(t *testing.T) {
 	// Create a network
 	network := &Network{}
 	// Load data to network
-	network.Load("../../../data/nodes_data_8_10000.txt")
-
+	network.Load(path)
+	// Creates graph
+	graph, _ := CreateGraphNetwork(network)
 	// Get number of originators used in the func
 	c := Constants.GetOriginators()
 
 	// Create a list of downloaders
-	l := CreateDownloadersList(network)
+	l := CreateDownloadersList(graph)
 
 	// Check if the length of the list is equal to the number of originators specified
 	assert.Equal(t, len(l), c)

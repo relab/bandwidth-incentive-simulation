@@ -2,37 +2,14 @@ package update
 
 import (
 	"fmt"
+	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/parts/policy"
 	. "go-incentive-simulation/model/parts/types"
-	. "go-incentive-simulation/model/parts/utils"
-	. "go-incentive-simulation/model/variables"
+	. "go-incentive-simulation/model/state"
 	"testing"
 )
 
-func MakeInitialState() State {
-	// Initialize the state
-	fmt.Println("start of make initial state")
-	path := "../../../data/nodes_data_8_10000.txt"
-
-	network := Network{}
-	network.Load(path)
-	graph, _ := CreateGraphNetwork(&network)
-	initialState := State{
-		Graph:                   graph,
-		Originators:             CreateDownloadersList(&network),
-		NodesId:                 CreateNodesList(&network),
-		RouteLists:              []Route{},
-		PendingMap:              PendingMap{},
-		RerouteMap:              RerouteMap{},
-		CacheListMap:            CacheListMap{},
-		OriginatorIndex:         0,
-		SuccessfulFound:         0,
-		FailedRequestsThreshold: 0,
-		FailedRequestsAccess:    0,
-		TimeStep:                0,
-	}
-	return initialState
-}
+const path = "../../../data/nodes_data_8_10000.txt"
 
 func MakePolicyOutput(state State) Policy {
 	fmt.Println("start of make initial policy")
@@ -49,7 +26,7 @@ func MakePolicyOutput(state State) Policy {
 }
 
 func TestUpdateSuccessfulFound(t *testing.T) {
-	state := MakeInitialState()
+	state := MakeInitialState(path)
 	policy := MakePolicyOutput(state)
 	policy.Found = true
 	newState := UpdateSuccessfulFound(state, policy)
@@ -60,7 +37,7 @@ func TestUpdateSuccessfulFound(t *testing.T) {
 }
 
 func TestFailedRequestsThreshold(t *testing.T) {
-	state := MakeInitialState()
+	state := MakeInitialState(path)
 	policy := MakePolicyOutput(state)
 	policy.Found = false
 	policy.AccessFailed = false
@@ -71,7 +48,7 @@ func TestFailedRequestsThreshold(t *testing.T) {
 }
 
 func TestFailedRequestsAccess(t *testing.T) {
-	state := MakeInitialState()
+	state := MakeInitialState(path)
 	policy := MakePolicyOutput(state)
 	policy.AccessFailed = true
 	newState := UpdateFailedRequestsAccess(state, policy)
@@ -81,7 +58,7 @@ func TestFailedRequestsAccess(t *testing.T) {
 }
 
 func TestUpdateOriginatorIndex(t *testing.T) {
-	state := MakeInitialState()
+	state := MakeInitialState(path)
 	policy := MakePolicyOutput(state)
 	newState := UpdateOriginatorIndex(state, policy)
 	if newState.OriginatorIndex >= Constants.GetOriginators() {
@@ -93,7 +70,7 @@ func TestUpdateOriginatorIndex(t *testing.T) {
 }
 
 func TestUpdateRouteListAndFlush(t *testing.T) {
-	state := MakeInitialState()
+	state := MakeInitialState(path)
 	policy := MakePolicyOutput(state)
 	state.TimeStep = 6249
 	newState := UpdateRouteListAndFlush(state, policy)
@@ -103,7 +80,7 @@ func TestUpdateRouteListAndFlush(t *testing.T) {
 }
 
 func TestUpdateRouteList(t *testing.T) {
-	state := MakeInitialState()
+	state := MakeInitialState(path)
 	policy := MakePolicyOutput(state)
 	state.RouteLists = []Route{}
 	policy.Route = []int{1, 2, 3}

@@ -1,12 +1,11 @@
 package policy
 
 import (
+	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/utils"
-	. "go-incentive-simulation/model/variables"
 	"math/rand"
 	"sort"
-	"time"
 )
 
 type Response struct {
@@ -37,8 +36,6 @@ func findResponsibleNodes(nodesId []int, chunkAdd int) []int {
 }
 
 func SendRequest(prevState *State) (bool, Route, [][]Threshold, bool, []Payment) {
-	rand.Seed(time.Now().UnixNano())
-
 	// Gets one random chunkId from the range of addresses
 	chunkId := rand.Intn(Constants.GetRangeAddress())
 	var random int

@@ -32,7 +32,6 @@ type Test struct {
 }
 
 func (network *Network) Load(path string) (int, int, map[int]*Node) {
-
 	file, _ := os.Open(path)
 	defer func(file *os.File) {
 		err := file.Close()
