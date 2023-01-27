@@ -1,7 +1,5 @@
 package variables
 
-import "math/rand"
-
 type constant struct {
 	runs                             int
 	bits                             int
@@ -11,7 +9,7 @@ type constant struct {
 	originators                      int
 	refreshRate                      int
 	threshold                        int
-	randomSeed                       int
+	randomSeed                       int64
 	maxProximityOrder                int
 	price                            int
 	chunks                           int
@@ -37,7 +35,7 @@ var Constants = constant{
 	originators:              2000,  // int(0.001 * NetworkSize)
 	refreshRate:              8,
 	threshold:                16,
-	randomSeed:               rand.Int() * 100,
+	randomSeed:               123456789,
 	maxProximityOrder:        16,
 	price:                    1,
 	chunks:                   10000,
@@ -139,7 +137,7 @@ func (c *constant) GetThreshold() int {
 	return c.threshold
 }
 
-func (c *constant) GetRandomSeed() int {
+func (c *constant) GetRandomSeed() int64 {
 	return c.randomSeed
 }
 

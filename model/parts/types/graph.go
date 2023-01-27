@@ -6,8 +6,9 @@ import (
 
 // Graph structure, node Ids in array and edges in map
 type Graph struct {
-	Nodes []*Node
-	Edges map[int][]*Edge
+	Nodes   []*Node
+	NodeIds []int
+	Edges   map[int][]*Edge
 }
 
 // Edge that connects to Nodes with attributes about the connection

@@ -5,16 +5,30 @@ import (
 	. "go-incentive-simulation/model/general"
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/variables"
+	"sort"
 )
+
+func SortedKeys(m map[int]*Node) []int {
+	keys := make([]int, len(m))
+	i := 0
+	for k := range m {
+		keys[i] = k
+		i++
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+	return keys
+}
 
 func CreateGraphNetwork(net *Network) (*Graph, error) {
 	fmt.Println("Creating graph network...")
+	sortedNodeIds := SortedKeys(net.Nodes)
 	graph := &Graph{
-		Edges: make(map[int][]*Edge),
+		Edges:   make(map[int][]*Edge),
+		NodeIds: sortedNodeIds,
 	}
 
-	for _, node := range net.Nodes {
-		err := graph.AddNode(node)
+	for _, nodeId := range sortedNodeIds {
+		err := graph.AddNode(net.Nodes[nodeId])
 		if err != nil {
 			return nil, err
 		}
@@ -347,14 +361,15 @@ func getProximityChunk(firstNodeId int, chunkId int) int {
 }
 
 func PeerPriceChunk(firstNodeId int, chunkId int) int {
-	return (Constants.GetMaxProximityOrder() - getProximityChunk(firstNodeId, chunkId) + 1) * Constants.GetPrice()
+	val := (Constants.GetMaxProximityOrder() - getProximityChunk(firstNodeId, chunkId) + 1) * Constants.GetPrice()
+	return val
 }
 
-func CreateDownloadersList(net *Network) []int {
+func CreateDownloadersList(g *Graph) []int {
 	fmt.Println("Creating downloaders list...")
 
-	nodesValue := make([]int, 0, len(net.Nodes))
-	for _, v := range net.Nodes {
+	nodesValue := make([]int, 0, len(g.Nodes))
+	for _, v := range g.Nodes {
 		nodesValue = append(nodesValue, v.Id)
 	}
 	downloadersList := Choice(nodesValue, Constants.GetOriginators())
@@ -363,11 +378,11 @@ func CreateDownloadersList(net *Network) []int {
 	return downloadersList
 }
 
-func CreateNodesList(net *Network) []int {
+func CreateNodesList(g *Graph) []int {
 	fmt.Println("Creating nodes list...")
 
-	nodesValue := make([]int, 0, len(net.Nodes))
-	for _, v := range net.Nodes {
+	nodesValue := make([]int, 0, len(g.Nodes))
+	for _, v := range g.Nodes {
 		nodesValue = append(nodesValue, v.Id)
 	}
 

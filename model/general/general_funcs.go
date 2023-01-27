@@ -1,7 +1,7 @@
 package general
 
 import (
-	"math"
+	"math/bits"
 	"math/rand"
 )
 
@@ -17,7 +17,7 @@ func Choice(nodes []int, k int) []int {
 }
 
 func BitLength(num int) int {
-	return int(math.Ceil(math.Log2(float64(num))))
+	return bits.Len(uint(num))
 }
 
 func Contains[T comparable](elems []T, value T) bool {
