@@ -15,12 +15,7 @@ func TestCreateGraphNetwork(t *testing.T) {
 	network := &Network{}
 	network.Load(path)
 	graph, err := CreateGraphNetwork(network)
-	/*	for i, _ := range graph.edges {
-		for _, edge := range graph.edges[i] {
-			fmt.Print(edge)
-			fmt.Print("\n")
-		}
-	}*/
+
 	assert.Equal(t, err, nil)
 	assert.Equal(t, len(graph.Nodes), 10000)
 	assert.Equal(t, len(graph.Edges), 10000)
