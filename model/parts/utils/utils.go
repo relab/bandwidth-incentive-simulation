@@ -32,17 +32,16 @@ func CreateGraphNetwork(net *Network) (*Graph, error) {
 
 	for _, nodeId := range sortedNodeIds {
 		node := net.Nodes[nodeId]
-		err := graph.AddNode(net.Nodes[nodeId])
-		if err != nil {
-			return nil, err
+		err1 := graph.AddNode(net.Nodes[nodeId])
+		if err1 != nil {
+			return nil, err1
 		}
 
 		nodeAdj := node.Adj
 		for _, adjItems := range nodeAdj {
 			for _, item := range adjItems {
-				// "a2b" show how much this node asked from other node,
-				// "last" is for the last forgiveness time
-				attrs := EdgeAttrs{A2b: 0, Last: 0}
+				threshold := BitLength(nodeId ^ item.Id)
+				attrs := EdgeAttrs{A2B: 0, Last: 0, Threshold: threshold}
 				edge := Edge{FromNodeId: node.Id, ToNodeId: item.Id, Attrs: attrs}
 				err := graph.AddEdge(edge)
 				if err != nil {
@@ -60,14 +59,17 @@ func CreateGraphNetwork(net *Network) (*Graph, error) {
 func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, g *Graph) bool {
 	if Constants.GetThresholdEnabled() {
 		edgeDataFirst := g.GetEdgeData(firstNodeId, secondNodeId)
-		p2pFirst := edgeDataFirst.A2b
-
+		p2pFirst := edgeDataFirst.A2B
 		edgeDataSecond := g.GetEdgeData(secondNodeId, firstNodeId)
-		p2pSecond := edgeDataSecond.A2b
+		p2pSecond := edgeDataSecond.A2B
 
+		threshold := Constants.GetThreshold()
+		if Constants.IsAdjustableThreshold() {
+			threshold = edgeDataFirst.Threshold
+		}
 		price := p2pFirst - p2pSecond + PeerPriceChunk(secondNodeId, chunkId)
 		fmt.Printf("price: %d ", price)
-		return price > Constants.GetThreshold()
+		return price > threshold
 	}
 	return false
 }

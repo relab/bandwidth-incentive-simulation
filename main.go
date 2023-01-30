@@ -6,6 +6,7 @@ import (
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/update"
 	. "go-incentive-simulation/model/state"
+	"time"
 	//. "go-incentive-simulation/model/constants"
 )
 
@@ -24,9 +25,10 @@ func MakePolicyOutput(state State) Policy {
 }
 
 func main() {
+	start := time.Now()
 	state := MakeInitialState("./data/nodes_data_8_10000.txt")
 	stateArray := []State{state}
-	iterations := 1000
+	iterations := 250000
 	for i := 0; i < iterations; i++ {
 		policyOutput := MakePolicyOutput(state)
 		state = UpdatePendingMap(state, policyOutput)
@@ -39,7 +41,10 @@ func main() {
 		stateArray = append(stateArray, state)
 		//PrintState(state)
 	}
-	fmt.Print("end of main")
+	PrintState(state)
+	fmt.Print("end of main: ")
+	end := time.Since(start)
+	fmt.Println(end)
 }
 
 func PrintState(state State) {
@@ -50,6 +55,6 @@ func PrintState(state State) {
 	fmt.Println("OriginatorIndex: ", state.OriginatorIndex)
 	fmt.Println("PendingMap: ", state.PendingMap)
 	fmt.Println("RerouteMap: ", state.RerouteMap)
-	fmt.Println("RouteLists: ", state.RouteLists)
+	//fmt.Println("RouteLists: ", state.RouteLists)
 	fmt.Println("CacheListMap: ", state.CacheListMap)
 }
