@@ -10,7 +10,7 @@ import (
 )
 
 func findResponsibleNodes(nodesId []int, chunkAdd int) []int {
-	numNodes := Constants.GetBits() * Constants.GetBinSize()
+	numNodes := Constants.GetBits()
 	distances := make([]int, 0, numNodes)
 	var distance int
 	nodesMap := make(map[int]int)
