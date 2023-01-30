@@ -32,7 +32,7 @@ func TestAddEdge(t *testing.T) {
 	}
 	graph := &Graph{Network: &network, Nodes: testNodes, Edges: map[int][]Edge{}}
 
-	edge1 := Edge{testNodes[0].Id, testNodes[1].Id, EdgeAttrs{10, 20}}
+	edge1 := Edge{testNodes[0].Id, testNodes[1].Id, EdgeAttrs{10, 20, 16}}
 	err := graph.AddEdge(edge1)
 	if err != nil {
 		t.Error("addEdge function returned an error message: ", err)

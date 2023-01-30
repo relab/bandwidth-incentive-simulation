@@ -55,6 +55,6 @@ func PrintState(state State) {
 	fmt.Println("OriginatorIndex: ", state.OriginatorIndex)
 	fmt.Println("PendingMap: ", state.PendingMap)
 	fmt.Println("RerouteMap: ", state.RerouteMap)
-	fmt.Println("RouteLists: ", state.RouteLists)
+	//fmt.Println("RouteLists: ", state.RouteLists)
 	fmt.Println("CacheListMap: ", state.CacheListMap)
 }
