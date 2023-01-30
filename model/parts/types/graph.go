@@ -21,10 +21,12 @@ type Edge struct {
 
 // EdgeAttrs Edge attributes structure,
 // "a2b" show how much this node asked from other node,
-// "last" is for the last forgiveness time
+// "last" is for the last forgiveness time,
+// "threshold" is for the adjustable threshold limit.
 type EdgeAttrs struct {
-	A2b  int
-	Last int
+	A2B       int
+	Last      int
+	Threshold int
 }
 
 // AddNode will add a Node to a graph

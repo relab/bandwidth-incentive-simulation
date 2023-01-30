@@ -6,6 +6,7 @@ import (
 	. "go-incentive-simulation/model/general"
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/utils"
+	"math"
 )
 
 func UpdateSuccessfulFound(prevState State, policyInput Policy) State {
@@ -130,7 +131,7 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 					edgeData1 := network.GetEdgeData(payment.FirstNodeId, payment.PayNextId)
 					edgeData2 := network.GetEdgeData(payment.PayNextId, payment.FirstNodeId)
 					price := PeerPriceChunk(payment.PayNextId, payment.ChunkId)
-					val := edgeData1.A2b - edgeData2.A2b + price
+					val := edgeData1.A2B - edgeData2.A2B + price
 					if Constants.IsPayOnlyForCurrentRequest() {
 						val = price
 					}
@@ -138,8 +139,8 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 						continue
 					} else {
 						if !Constants.IsPayOnlyForCurrentRequest() {
-							edgeData1.A2b = 0
-							edgeData2.A2b = 0
+							edgeData1.A2B = 0
+							edgeData2.A2B = 0
 						}
 					}
 					fmt.Println("Payment from ", payment.FirstNodeId, " to ", payment.PayNextId, " for chunk ", payment.ChunkId, " with price ", val)
@@ -147,7 +148,7 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 					edgeData1 := network.GetEdgeData(payment.FirstNodeId, payment.PayNextId)
 					edgeData2 := network.GetEdgeData(payment.PayNextId, payment.FirstNodeId)
 					price := PeerPriceChunk(payment.PayNextId, payment.ChunkId)
-					val := edgeData1.A2b - edgeData2.A2b + price
+					val := edgeData1.A2B - edgeData2.A2B + price
 					if Constants.IsPayOnlyForCurrentRequest() {
 						val = price
 					}
@@ -155,8 +156,8 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 						continue
 					} else {
 						if !Constants.IsPayOnlyForCurrentRequest() {
-							edgeData1.A2b = 0
-							edgeData2.A2b = 0
+							edgeData1.A2B = 0
+							edgeData2.A2B = 0
 						}
 					}
 					fmt.Println("-1", "Payment from ", payment.FirstNodeId, " to ", payment.PayNextId, " for chunk ", payment.ChunkId, " with price ", val) //Means that the first one is the originator
@@ -173,14 +174,14 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 				providerNode := route[i+1]
 				price := PeerPriceChunk(providerNode, chunkId)
 				edgeData1 := network.GetEdgeData(requesterNode, providerNode)
-				edgeData1.A2b += price
-				if Constants.GetMaxPoCheckEnabled() {
+				edgeData1.A2B += price
+				if Constants.GetMaxPOCheckEnabled() {
 					routeWithPrice = append(routeWithPrice, requesterNode)
 					routeWithPrice = append(routeWithPrice, price)
 					routeWithPrice = append(routeWithPrice, providerNode)
 				}
 			}
-			if Constants.GetMaxPoCheckEnabled() {
+			if Constants.GetMaxPOCheckEnabled() {
 				fmt.Println("Route with price ", routeWithPrice)
 			}
 		} else {
@@ -190,19 +191,19 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 				providerNode := route[i+1]
 				price := PeerPriceChunk(providerNode, chunkId)
 				edgeData1 := network.GetEdgeData(requesterNode, providerNode)
-				edgeData1.A2b += price
-				if Constants.GetMaxPoCheckEnabled() {
+				edgeData1.A2B += price
+				if Constants.GetMaxPOCheckEnabled() {
 					routeWithPrice = append(routeWithPrice, requesterNode)
 					routeWithPrice = append(routeWithPrice, price)
 					routeWithPrice = append(routeWithPrice, providerNode)
 				}
 			}
-			if Constants.GetMaxPoCheckEnabled() {
+			if Constants.GetMaxPOCheckEnabled() {
 				fmt.Println("Route with price ", routeWithPrice)
 			}
 		}
 	}
-	if Constants.GetThresholdEnabled() { // && Constants.IsForgivenessEnabled()
+	if Constants.GetThresholdEnabled() && Constants.IsForgivenessEnabled() {
 		thresholdFailedLists := policyInput.ThresholdFailedLists
 		if len(thresholdFailedLists) > 0 {
 			for _, thresholdFailedL := range thresholdFailedLists {
@@ -214,13 +215,13 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 						passedTime := (currTimeStep - edgeData1.Last) / Constants.GetRequestsPerSecond()
 						if passedTime > 0 {
 							refreshRate := Constants.GetRefreshRate()
-							//if Constants.IsAdjustableThreshold() {
-							//	refreshRate = int(math.Ceil(edgeData1.Threshold / 2))
-							//}
+							if Constants.IsAdjustableThreshold() {
+								refreshRate = int(math.Ceil(float64(edgeData1.Threshold / 2)))
+							}
 							removedDeptAmount := passedTime * refreshRate
-							edgeData1.A2b -= removedDeptAmount
-							if edgeData1.A2b < 0 {
-								edgeData1.A2b = 0
+							edgeData1.A2B -= removedDeptAmount
+							if edgeData1.A2B < 0 {
+								edgeData1.A2B = 0
 							}
 							edgeData1.Last = currTimeStep
 						}

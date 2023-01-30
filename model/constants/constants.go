@@ -15,8 +15,9 @@ type constant struct {
 	chunks                           int
 	requestsPerSecond                int
 	thresholdEnabled                 bool
+	forgivenessEnabled               bool
 	paymentEnabled                   bool
-	maxPoCheckEnabled                bool
+	maxPOCheckEnabled                bool
 	waitingEnabled                   bool
 	onlyOriginatorPays               bool
 	payOnlyForCurrentRequest         bool
@@ -24,6 +25,7 @@ type constant struct {
 	forwarderPayForceOriginatorToPay bool
 	retryWithAnotherPeer             bool
 	cacheIsEnabled                   bool
+	adjustableThreshold              bool
 }
 
 var Constants = constant{
@@ -41,8 +43,9 @@ var Constants = constant{
 	chunks:                           10000,
 	requestsPerSecond:                12500,
 	thresholdEnabled:                 true,
-	paymentEnabled:                   true,
-	maxPoCheckEnabled:                false,
+	forgivenessEnabled:               false,
+	paymentEnabled:                   false,
+	maxPOCheckEnabled:                true,
 	waitingEnabled:                   false,
 	onlyOriginatorPays:               false,
 	payOnlyForCurrentRequest:         false,
@@ -50,6 +53,7 @@ var Constants = constant{
 	forwarderPayForceOriginatorToPay: false,
 	retryWithAnotherPeer:             false,
 	cacheIsEnabled:                   false,
+	adjustableThreshold:              false,
 }
 
 // func CreateRangeAddress(c *constant){
@@ -59,6 +63,14 @@ var Constants = constant{
 // func (c *constant) CreateOriginators(){
 // 	c.originators = int(0.001 * float64(c.networkSize))
 // }
+
+func (c *constant) IsAdjustableThreshold() bool {
+	return c.adjustableThreshold
+}
+
+func (c *constant) IsForgivenessEnabled() bool {
+	return c.forgivenessEnabled
+}
 
 func (c *constant) IsCacheEnabled() bool {
 	return c.cacheIsEnabled
@@ -88,8 +100,8 @@ func (c *constant) IsWaitingEnabled() bool {
 	return c.waitingEnabled
 }
 
-func (c *constant) GetMaxPoCheckEnabled() bool {
-	return c.maxPoCheckEnabled
+func (c *constant) GetMaxPOCheckEnabled() bool {
+	return c.maxPOCheckEnabled
 }
 
 func (c *constant) GetThresholdEnabled() bool {
