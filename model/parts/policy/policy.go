@@ -1,20 +1,14 @@
 package policy
 
 import (
+	"fmt"
 	. "go-incentive-simulation/model/constants"
+	. "go-incentive-simulation/model/general"
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/utils"
 	"math/rand"
 	"sort"
 )
-
-type Response struct {
-	found               bool
-	route               Route
-	thresholdFailedList [][]Threshold
-	accessFailed        bool
-	paymentsList        []Payment
-}
 
 func findResponsibleNodes(nodesId []int, chunkAdd int) []int {
 	var distances []int
@@ -22,12 +16,17 @@ func findResponsibleNodes(nodesId []int, chunkAdd int) []int {
 	nodesMap := make(map[int]int)
 	returnNodes := make([]int, 4)
 
-	for _, nodeId := range nodesId {
+	closestNodes := BinarySearchClosest(nodesId, chunkAdd, 10)
+
+	for _, nodeId := range closestNodes {
 		distance = nodeId ^ chunkAdd
+		fmt.Println(distance, nodeId)
 		distances = append(distances, distance)
 		nodesMap[distance] = nodeId
 	}
+
 	sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
+
 	for i := 0; i < 4; i++ {
 		distance = distances[i]
 		returnNodes[i] = nodesMap[distance]
