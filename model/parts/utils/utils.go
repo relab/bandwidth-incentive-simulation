@@ -22,18 +22,21 @@ func SortedKeys(m map[int]*Node) []int {
 func CreateGraphNetwork(net *Network) (*Graph, error) {
 	fmt.Println("Creating graph network...")
 	sortedNodeIds := SortedKeys(net.Nodes)
+	numNodes := len(net.Nodes)
 	graph := &Graph{
-		Edges:   make(map[int][]*Edge),
+		Network: net,
+		Nodes:   make([]*Node, 0, numNodes),
+		Edges:   make(map[int][]Edge, numNodes),
 		NodeIds: sortedNodeIds,
 	}
 
 	for _, nodeId := range sortedNodeIds {
+		node := net.Nodes[nodeId]
 		err := graph.AddNode(net.Nodes[nodeId])
 		if err != nil {
 			return nil, err
 		}
-	}
-	for _, node := range graph.Nodes {
+
 		nodeAdj := node.Adj
 		for _, adjItems := range nodeAdj {
 			for _, item := range adjItems {
@@ -41,7 +44,7 @@ func CreateGraphNetwork(net *Network) (*Graph, error) {
 				// "last" is for the last forgiveness time
 				attrs := EdgeAttrs{A2b: 0, Last: 0}
 				edge := Edge{FromNodeId: node.Id, ToNodeId: item.Id, Attrs: attrs}
-				err := graph.AddEdge(&edge)
+				err := graph.AddEdge(edge)
 				if err != nil {
 					return nil, err
 				}
