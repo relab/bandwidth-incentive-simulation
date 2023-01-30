@@ -10,12 +10,13 @@ import (
 )
 
 func findResponsibleNodes(nodesId []int, chunkAdd int) []int {
-	var distances []int
+	numNodes := Constants.GetBits() * Constants.GetBinSize()
+	distances := make([]int, 0, numNodes)
 	var distance int
 	nodesMap := make(map[int]int)
 	returnNodes := make([]int, 4)
 
-	closestNodes := BinarySearchClosest(nodesId, chunkAdd, 10)
+	closestNodes := BinarySearchClosest(nodesId, chunkAdd, numNodes)
 
 	for _, nodeId := range closestNodes {
 		distance = nodeId ^ chunkAdd
