@@ -33,9 +33,10 @@ func BinarySearchClosest(arr []int, target int, n int) []int {
 	left, right := 0, len(arr)-1
 	for left <= right {
 		mid := (left + right) / 2
-		if arr[mid] == target {
+		curNodeId := arr[mid]
+		if curNodeId > target-n && curNodeId < target+n {
 			return findClosest(arr, target, mid, n)
-		} else if arr[mid] < target {
+		} else if curNodeId < target {
 			left = mid + 1
 		} else {
 			right = mid - 1

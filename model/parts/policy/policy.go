@@ -1,7 +1,6 @@
 package policy
 
 import (
-	"fmt"
 	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/general"
 	. "go-incentive-simulation/model/parts/types"
@@ -20,7 +19,7 @@ func findResponsibleNodes(nodesId []int, chunkAdd int) []int {
 
 	for _, nodeId := range closestNodes {
 		distance = nodeId ^ chunkAdd
-		fmt.Println(distance, nodeId)
+		// fmt.Println(distance, nodeId)
 		distances = append(distances, distance)
 		nodesMap[distance] = nodeId
 	}
