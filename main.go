@@ -41,7 +41,20 @@ func main() {
 		state = UpdateRouteListAndFlush(state, policyOutput)
 		state = UpdateNetwork(state, policyOutput)
 
-		stateArray = append(stateArray, state)
+		curState := State{
+			Graph:                   state.Graph,
+			Originators:             state.Originators,
+			NodesId:                 state.NodesId,
+			RouteLists:              state.RouteLists,
+			PendingMap:              state.PendingMap,
+			RerouteMap:              state.RerouteMap,
+			CacheStruct:             state.CacheStruct,
+			OriginatorIndex:         state.OriginatorIndex,
+			SuccessfulFound:         state.SuccessfulFound,
+			FailedRequestsThreshold: state.FailedRequestsThreshold,
+			FailedRequestsAccess:    state.FailedRequestsAccess,
+			TimeStep:                state.TimeStep}
+		stateArray = append(stateArray, curState)
 		//PrintState(state)
 	}
 	PrintState(state)
