@@ -33,6 +33,7 @@ func main() {
 		policyOutput := MakePolicyOutput(state)
 		state = UpdatePendingMap(state, policyOutput)
 		state = UpdateRerouteMap(state, policyOutput)
+		state = UpdateCacheMap(state, policyOutput)
 		state = UpdateOriginatorIndex(state, policyOutput)
 		state = UpdateSuccessfulFound(state, policyOutput)
 		state = UpdateFailedRequestsThreshold(state, policyOutput)
