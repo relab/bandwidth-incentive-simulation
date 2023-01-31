@@ -46,6 +46,7 @@ func main() {
 	PrintState(state)
 	fmt.Print("end of main: ")
 	end := time.Since(start)
+	fmt.Println(NotFoundChunkIds)
 	fmt.Println(end)
 }
 
