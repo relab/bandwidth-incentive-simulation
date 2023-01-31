@@ -54,10 +54,11 @@ func PrintState(state State) {
 	fmt.Println("SuccessfulFound: ", state.SuccessfulFound)
 	fmt.Println("FailedRequestsThreshold: ", state.FailedRequestsThreshold)
 	fmt.Println("FailedRequestsAccess: ", state.FailedRequestsAccess)
+	fmt.Println("CacheHits:", state.CacheStruct.CacheHits)
 	fmt.Println("TimeStep: ", state.TimeStep)
 	fmt.Println("OriginatorIndex: ", state.OriginatorIndex)
 	fmt.Println("PendingMap: ", state.PendingMap)
 	fmt.Println("RerouteMap: ", state.RerouteMap)
 	//fmt.Println("RouteLists: ", state.RouteLists)
-	fmt.Println("CacheListMap: ", state.CacheListMap)
+	//fmt.Println("CacheMap: ", state.CacheStruct.CacheMap)
 }

@@ -63,7 +63,7 @@ func SendRequest(prevState *State) (bool, Route, [][]Threshold, bool, []Payment)
 
 	request := Request{Originator: originatorNode, ChunkId: chunkId}
 
-	found, route, thresholdFailed, accessFailed, paymentsList := ConsumeTask(&request, prevState.Graph, responsibleNodes, prevState.RerouteMap, prevState.CacheListMap)
+	found, route, thresholdFailed, accessFailed, paymentsList := ConsumeTask(&request, prevState.Graph, responsibleNodes, prevState.RerouteMap, prevState.CacheStruct.CacheMap)
 
 	return found, route, thresholdFailed, accessFailed, paymentsList
 }

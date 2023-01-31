@@ -9,8 +9,12 @@ type PendingMap map[int]int
 
 type RerouteMap map[int][]int
 
-type CacheListMap map[*Node][]map[int]int
+type CacheMap map[*Node]map[int]int
 
+type CacheStruct struct {
+	CacheHits int
+	CacheMap  CacheMap
+}
 type Route []int
 
 type Payment struct {
@@ -29,7 +33,7 @@ type State struct {
 	RouteLists              []Route
 	PendingMap              PendingMap
 	RerouteMap              RerouteMap
-	CacheListMap            CacheListMap
+	CacheStruct             CacheStruct
 	OriginatorIndex         int
 	SuccessfulFound         int
 	FailedRequestsThreshold int
