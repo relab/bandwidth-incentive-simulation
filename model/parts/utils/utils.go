@@ -373,11 +373,7 @@ func PeerPriceChunk(firstNodeId int, chunkId int) int {
 func CreateDownloadersList(g *Graph) []int {
 	fmt.Println("Creating downloaders list...")
 
-	nodesValue := make([]int, 0, len(g.Nodes))
-	for _, v := range g.Nodes {
-		nodesValue = append(nodesValue, v.Id)
-	}
-	downloadersList := Choice(nodesValue, Constants.GetOriginators())
+	downloadersList := Choice(g.NodeIds, Constants.GetOriginators())
 
 	fmt.Println("Downloaders list create...!")
 	return downloadersList
@@ -385,12 +381,7 @@ func CreateDownloadersList(g *Graph) []int {
 
 func CreateNodesList(g *Graph) []int {
 	fmt.Println("Creating nodes list...")
-
-	nodesValue := make([]int, 0, len(g.Nodes))
-	for _, v := range g.Nodes {
-		nodesValue = append(nodesValue, v.Id)
-	}
-
+	nodesValue := g.NodeIds
 	fmt.Println("Nodes list create...!")
 	return nodesValue
 }
