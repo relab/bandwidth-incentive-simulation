@@ -59,8 +59,6 @@ func SendRequest(prevState *State) (bool, Route, [][]Threshold, bool, []Payment)
 		responsibleNodes = findResponsibleNodes(prevState.NodesId, chunkId)
 	}
 
-	//originatorNode := prevState.Graph.GetNode(originator)
-
 	request := Request{OriginatorId: originatorId, ChunkId: chunkId}
 
 	found, route, thresholdFailed, accessFailed, paymentsList := ConsumeTask(&request, prevState.Graph, responsibleNodes, prevState.RerouteMap, prevState.CacheStruct.CacheMap)

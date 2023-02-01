@@ -248,10 +248,6 @@ func ConsumeTask(request *Request, graph *Graph, respNodes []int, rerouteMap Rer
 	var payment Payment
 	var prevNodePaid bool
 
-	//foundCh := make(chan bool, 4)
-	//closeCh := make(chan struct{})
-	//wg := sync.WaitGroup{}
-
 	if Constants.IsPayIfOrigPays() {
 		prevNodePaid = true
 	}
@@ -261,34 +257,29 @@ func ConsumeTask(request *Request, graph *Graph, respNodes []int, rerouteMap Rer
 	} else {
 		counter := 0
 	out:
-		for _, nodeId := range respNodes {
-			node := nodeId
+		for !Contains(respNodes, originatorId) {
 			counter++
-			//wg.Add(1)
-			//go func(int) {
-			//defer wg.Done()
 			fmt.Printf("\n orig: %d, chunk_id: %d", mainOriginatorId, chunkId)
-			if node != mainOriginatorId && originatorId != 0 {
-				// nextNodeId, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid = getNext(originator, chunkId, graph, mainOriginator, prevNodePaid, rerouteMap)
-				resultInt, nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originatorId, chunkId, graph, mainOriginatorId, prevNodePaid, rerouteMap)
-				if payment != (Payment{}) {
-					paymentList = append(paymentList, payment)
+			// nextNodeId, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid = getNext(originator, chunkId, graph, mainOriginator, prevNodePaid, rerouteMap)
+			resultInt, nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originatorId, chunkId, graph, mainOriginatorId, prevNodePaid, rerouteMap)
+			if payment != (Payment{}) {
+				paymentList = append(paymentList, payment)
+			}
+			if len(thresholdList) > 0 {
+				thresholdFailedList = append(thresholdFailedList, thresholdList)
+			}
+			// RASMUS: Nil reference error
+			if nextNodeId != 0 {
+				route = append(route, nextNodeId)
+			}
+			// if not isinstance(next_node, int), originale versjonen
+			if !(resultInt <= -1) && nextNodeId != 0 {
+				if Contains(respNodes, nextNodeId) {
+					fmt.Println("is not in cache")
+					found = true
+					break out
 				}
-				if len(thresholdList) > 0 {
-					thresholdFailedList = append(thresholdFailedList, thresholdList)
-				}
-				// RASMUS: Nil reference error
-				if nextNodeId != 0 {
-					route = append(route, nextNodeId)
-				}
-				// if not isinstance(next_node, int), originale versjonen
-				if !(resultInt <= -1) && nextNodeId != 0 {
-					if Contains(respNodes, nextNodeId) {
-						fmt.Println("is not in cache")
-						found = true
-						//foundCh <- true
-						break out
-					}
+				if Constants.IsCacheEnabled() {
 					nextNode := graph.NodesMap[nextNodeId]
 					chunkMap, ok := cacheMap[nextNode]
 					if ok {
@@ -296,20 +287,16 @@ func ConsumeTask(request *Request, graph *Graph, respNodes []int, rerouteMap Rer
 							fmt.Println("is in cache")
 							found = true
 							foundByCaching = true
-							//foundCh <- true
 							break out
 						}
 					}
-					originatorId = nextNodeId
-				} else {
-					//foundCh <- false
-					break out
 				}
+				originatorId = nextNodeId
+			} else {
+				break out
 			}
-			//}(node)
 		}
 	}
-	//wg.Wait()
 
 	route = append(route, chunkId)
 
