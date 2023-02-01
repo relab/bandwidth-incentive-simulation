@@ -1,8 +1,8 @@
 package types
 
 type Request struct {
-	Originator *Node
-	ChunkId    int
+	OriginatorId int
+	ChunkId      int
 }
 
 type PendingMap map[int]int
@@ -24,7 +24,7 @@ type Payment struct {
 	IsOriginator bool
 }
 
-type Threshold [2]*Node
+type Threshold [2]int
 
 type State struct {
 	Graph                   *Graph

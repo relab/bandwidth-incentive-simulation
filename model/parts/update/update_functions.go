@@ -265,8 +265,8 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 			for _, thresholdFailedL := range thresholdFailedLists {
 				if len(thresholdFailedL) > 0 {
 					for _, couple := range thresholdFailedL {
-						requesterNode := couple[0].Id
-						providerNode := couple[1].Id
+						requesterNode := couple[0]
+						providerNode := couple[1]
 						edgeData1 := network.GetEdgeData(requesterNode, providerNode)
 						passedTime := (currTimeStep - edgeData1.Last) / Constants.GetRequestsPerSecond()
 						if passedTime > 0 {
