@@ -6,12 +6,12 @@ import (
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/update"
 	. "go-incentive-simulation/model/state"
+	"sync"
 	"time"
-	//. "go-incentive-simulation/model/constants"
 )
 
 func MakePolicyOutput(state State) Policy {
-	fmt.Println("start of make initial policy")
+	//fmt.Println("start of make initial policy")
 	found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state)
 	policy := Policy{
 		Found:                found,
@@ -26,41 +26,57 @@ func MakePolicyOutput(state State) Policy {
 
 func main() {
 	start := time.Now()
-	state := MakeInitialState("./data/nodes_data_8_10000.txt")
-	stateArray := []State{state}
-	iterations := 250000
-	for i := 0; i < iterations; i++ {
-		policyOutput := MakePolicyOutput(state)
-		state = UpdatePendingMap(state, policyOutput)
-		state = UpdateRerouteMap(state, policyOutput)
-		state = UpdateCacheMap(state, policyOutput)
-		state = UpdateOriginatorIndex(state, policyOutput)
-		state = UpdateSuccessfulFound(state, policyOutput)
-		state = UpdateFailedRequestsThreshold(state, policyOutput)
-		state = UpdateFailedRequestsAccess(state, policyOutput)
-		state = UpdateRouteListAndFlush(state, policyOutput)
-		state = UpdateNetwork(state, policyOutput)
-
-		curState := State{
-			Graph:                   state.Graph,
-			Originators:             state.Originators,
-			NodesId:                 state.NodesId,
-			RouteLists:              state.RouteLists,
-			PendingMap:              state.PendingMap,
-			RerouteMap:              state.RerouteMap,
-			CacheStruct:             state.CacheStruct,
-			OriginatorIndex:         state.OriginatorIndex,
-			SuccessfulFound:         state.SuccessfulFound,
-			FailedRequestsThreshold: state.FailedRequestsThreshold,
-			FailedRequestsAccess:    state.FailedRequestsAccess,
-			TimeStep:                state.TimeStep}
-		stateArray = append(stateArray, curState)
-		//PrintState(state)
+	state := MakeInitialState("./data/nodes_data_16_10000.txt")
+	//stateArray := []State{state}
+	iterations := 10000000
+	const numRotines = 10000
+	// for i := 0; i < iterations; i++ {
+	//     policyOutput := MakePolicyOutput(state)
+	//     state = UpdatePendingMap(state, policyOutput)
+	//     state = UpdateRerouteMap(state, policyOutput)
+	//     state = UpdateCacheMap(state, policyOutput)
+	//     state = UpdateOriginatorIndex(state, policyOutput)
+	//     state = UpdateSuccessfulFound(state, policyOutput)
+	//     state = UpdateFailedRequestsThreshold(state, policyOutput)
+	//     state = UpdateFailedRequestsAccess(state, policyOutput)
+	//     state = UpdateRouteListAndFlush(state, policyOutput)
+	//     state = UpdateNetwork(state, policyOutput)
+	// }
+	for i := 0; i < iterations/numRotines; i++ {
+		//fmt.Println("Start of lop ", time.Since(start))
+		var policyOutputs [numRotines]Policy
+		var wg sync.WaitGroup
+		for j := 0; j < numRotines; j++ {
+			wg.Add(1)
+			go func(index int) {
+				defer wg.Done()
+				policyOutputs[index] = MakePolicyOutput(state)
+			}(j)
+		}
+		wg.Wait()
+		//fmt.Println("end of lop ", time.Since(start))
+		for j := 0; j < numRotines; j++ {
+			state = UpdatePendingMap(state, policyOutputs[j])
+			state = UpdateRerouteMap(state, policyOutputs[j])
+			state = UpdateCacheMap(state, policyOutputs[j])
+			state = UpdateOriginatorIndex(state, policyOutputs[j])
+			state = UpdateSuccessfulFound(state, policyOutputs[j])
+			state = UpdateFailedRequestsThreshold(state, policyOutputs[j])
+			state = UpdateFailedRequestsAccess(state, policyOutputs[j])
+			state = UpdateRouteListAndFlush(state, policyOutputs[j])
+			state = UpdateNetwork(state, policyOutputs[j])
+		}
 	}
-	PrintState(state)
+	elapsed := time.Since(start)
+	fmt.Println("Time taken:", elapsed)
+	// allReq, thresholdFails, requestsToBucketZero, rejectedBucketZero, rejectedFirstHop := ReadRoutes("routes.json")
+	// fmt.Println("allReq: ", allReq)
+	// fmt.Println("thresholdFails: ", thresholdFails)
+	// fmt.Println("requestsToBucketZero: ", requestsToBucketZero)
+	// fmt.Println("rejectedBucketZero: ", rejectedBucketZero)
+	// fmt.Println("rejectedFirstHop: ", rejectedFirstHop)
 	fmt.Print("end of main: ")
-	end := time.Since(start)
-	fmt.Println(end)
+	PrintState(state)
 }
 
 func PrintState(state State) {

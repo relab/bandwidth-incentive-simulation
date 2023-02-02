@@ -1,7 +1,6 @@
 package update
 
 import (
-	"fmt"
 	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/parts/policy"
 	. "go-incentive-simulation/model/parts/types"
@@ -12,7 +11,7 @@ import (
 const path = "../../../data/nodes_data_8_10000.txt"
 
 func MakePolicyOutput(state State) Policy {
-	fmt.Println("start of make initial policy")
+	//fmt.Println("start of make initial policy")
 	found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state)
 	policy := Policy{
 		Found:                found,
