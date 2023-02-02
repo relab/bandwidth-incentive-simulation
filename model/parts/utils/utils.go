@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/general"
 	. "go-incentive-simulation/model/parts/types"
@@ -20,7 +19,7 @@ func SortedKeys(m map[int]*Node) []int {
 }
 
 func CreateGraphNetwork(net *Network) (*Graph, error) {
-	fmt.Println("Creating graph network...")
+	//fmt.Println("Creating graph network...")
 	sortedNodeIds := SortedKeys(net.Nodes)
 	numNodes := len(net.Nodes)
 	graph := &Graph{
@@ -53,7 +52,7 @@ func CreateGraphNetwork(net *Network) (*Graph, error) {
 		}
 	}
 
-	fmt.Println("Graph network is created.")
+	//fmt.Println("Graph network is created.")
 	return graph, nil
 }
 
@@ -69,7 +68,7 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, g *Graph)
 			threshold = edgeDataFirst.Threshold
 		}
 		price := p2pFirst - p2pSecond + PeerPriceChunk(secondNodeId, chunkId)
-		fmt.Printf("price: %d ", price)
+		//fmt.Printf("price: %d ", price)
 		return price > threshold
 	}
 	return false
@@ -84,8 +83,8 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 	var payment Payment
 	resultInt := 1
 	lastDistance := firstNodeId ^ chunkId
-	fmt.Printf("\n last distance is : %d, chunk is: %d, first is: %d", lastDistance, chunkId, firstNodeId)
-	fmt.Printf("\n which bucket: %d \n", 16-BitLength(chunkId^firstNodeId))
+	//fmt.Printf("\n last distance is : %d, chunk is: %d, first is: %d", lastDistance, chunkId, firstNodeId)
+	//fmt.Printf("\n which bucket: %d \n", 16-BitLength(chunkId^firstNodeId))
 
 	currDist := lastDistance
 	payDist := lastDistance
@@ -225,7 +224,7 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 	}
 	// RASMUS: nil reference error
 	if nextNodeId != 0 {
-		fmt.Printf("\n next node is: %d", nextNodeId)
+		//fmt.Printf("\n next node is: %d", nextNodeId)
 	}
 	return resultInt, nextNodeId, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid
 }
@@ -259,7 +258,7 @@ func ConsumeTask(request *Request, graph *Graph, respNodes []int, rerouteMap Rer
 	out:
 		for !Contains(respNodes, originatorId) {
 			counter++
-			fmt.Printf("\n orig: %d, chunk_id: %d", mainOriginatorId, chunkId)
+			//fmt.Printf("\n orig: %d, chunk_id: %d", mainOriginatorId, chunkId)
 			// nextNodeId, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid = getNext(originator, chunkId, graph, mainOriginator, prevNodePaid, rerouteMap)
 			resultInt, nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originatorId, chunkId, graph, mainOriginatorId, prevNodePaid, rerouteMap)
 			if payment != (Payment{}) {
@@ -275,7 +274,7 @@ func ConsumeTask(request *Request, graph *Graph, respNodes []int, rerouteMap Rer
 			// if not isinstance(next_node, int), originale versjonen
 			if !(resultInt <= -1) && nextNodeId != 0 {
 				if Contains(respNodes, nextNodeId) {
-					fmt.Println("is not in cache")
+					//fmt.Println("is not in cache")
 					found = true
 					break out
 				}
@@ -284,7 +283,7 @@ func ConsumeTask(request *Request, graph *Graph, respNodes []int, rerouteMap Rer
 					chunkMap, ok := cacheMap[nextNode]
 					if ok {
 						if chunkMap[chunkId] > 1 {
-							fmt.Println("is in cache")
+							//fmt.Println("is in cache")
 							found = true
 							foundByCaching = true
 							break out
@@ -375,18 +374,18 @@ func PeerPriceChunk(firstNodeId int, chunkId int) int {
 }
 
 func CreateDownloadersList(g *Graph) []int {
-	fmt.Println("Creating downloaders list...")
+	//fmt.Println("Creating downloaders list...")
 
 	downloadersList := Choice(g.NodeIds, Constants.GetOriginators())
 
-	fmt.Println("Downloaders list create...!")
+	//fmt.Println("Downloaders list create...!")
 	return downloadersList
 }
 
 func CreateNodesList(g *Graph) []int {
-	fmt.Println("Creating nodes list...")
+	//fmt.Println("Creating nodes list...")
 	nodesValue := g.NodeIds
-	fmt.Println("Nodes list create...!")
+	//fmt.Println("Nodes list create...!")
 	return nodesValue
 }
 

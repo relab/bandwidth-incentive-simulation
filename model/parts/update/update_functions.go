@@ -216,7 +216,7 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 							edgeData2.A2B = 0
 						}
 					}
-					fmt.Println("-1", "Payment from ", payment.FirstNodeId, " to ", payment.PayNextId, " for chunk ", payment.ChunkId, " with price ", val) //Means that the first one is the originator
+					//fmt.Println("-1", "Payment from ", payment.FirstNodeId, " to ", payment.PayNextId, " for chunk ", payment.ChunkId, " with price ", val) //Means that the first one is the originator
 				}
 			}
 		}
@@ -238,7 +238,7 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 				}
 			}
 			if Constants.GetMaxPOCheckEnabled() {
-				fmt.Println("Route with price ", routeWithPrice)
+				//fmt.Println("Route with price ", routeWithPrice)
 			}
 		} else {
 			chunkId := route[len(route)-1]
@@ -255,7 +255,7 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 				}
 			}
 			if Constants.GetMaxPOCheckEnabled() {
-				fmt.Println("Route with price ", routeWithPrice)
+				//fmt.Println("Route with price ", routeWithPrice)
 			}
 		}
 	}
