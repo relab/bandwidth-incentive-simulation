@@ -26,27 +26,18 @@ func MakePolicyOutput(state State) Policy {
 
 func main() {
 	start := time.Now()
-	state := MakeInitialState("./data/nodes_data_16_10000.txt")
-	//stateArray := []State{state}
-	iterations := 10000000
-	const numRotines = 10000
-	// for i := 0; i < iterations; i++ {
-	//     policyOutput := MakePolicyOutput(state)
-	//     state = UpdatePendingMap(state, policyOutput)
-	//     state = UpdateRerouteMap(state, policyOutput)
-	//     state = UpdateCacheMap(state, policyOutput)
-	//     state = UpdateOriginatorIndex(state, policyOutput)
-	//     state = UpdateSuccessfulFound(state, policyOutput)
-	//     state = UpdateFailedRequestsThreshold(state, policyOutput)
-	//     state = UpdateFailedRequestsAccess(state, policyOutput)
-	//     state = UpdateRouteListAndFlush(state, policyOutput)
-	//     state = UpdateNetwork(state, policyOutput)
-	// }
-	for i := 0; i < iterations/numRotines; i++ {
+	state := MakeInitialState("./data/nodes_data_8_10000.txt")
+
+	const iterations = 1000000
+	const numRoutines = 100
+	numLoops := iterations / numRoutines
+	stateArray := make([]State, numLoops)
+
+	for i := 0; i < numLoops; i++ {
 		//fmt.Println("Start of lop ", time.Since(start))
-		var policyOutputs [numRotines]Policy
+		var policyOutputs [numRoutines]Policy
 		var wg sync.WaitGroup
-		for j := 0; j < numRotines; j++ {
+		for j := 0; j < numRoutines; j++ {
 			wg.Add(1)
 			go func(index int) {
 				defer wg.Done()
@@ -55,7 +46,7 @@ func main() {
 		}
 		wg.Wait()
 		//fmt.Println("end of lop ", time.Since(start))
-		for j := 0; j < numRotines; j++ {
+		for j := 0; j < numRoutines; j++ {
 			state = UpdatePendingMap(state, policyOutputs[j])
 			state = UpdateRerouteMap(state, policyOutputs[j])
 			state = UpdateCacheMap(state, policyOutputs[j])
@@ -66,6 +57,22 @@ func main() {
 			state = UpdateRouteListAndFlush(state, policyOutputs[j])
 			state = UpdateNetwork(state, policyOutputs[j])
 		}
+
+		curState := State{
+			Graph:                   state.Graph,
+			Originators:             state.Originators,
+			NodesId:                 state.NodesId,
+			RouteLists:              state.RouteLists,
+			PendingMap:              state.PendingMap,
+			RerouteMap:              state.RerouteMap,
+			CacheStruct:             state.CacheStruct,
+			OriginatorIndex:         state.OriginatorIndex,
+			SuccessfulFound:         state.SuccessfulFound,
+			FailedRequestsThreshold: state.FailedRequestsThreshold,
+			FailedRequestsAccess:    state.FailedRequestsAccess,
+			TimeStep:                state.TimeStep}
+
+		stateArray[i] = curState
 	}
 	elapsed := time.Since(start)
 	fmt.Println("Time taken:", elapsed)
