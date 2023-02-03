@@ -6,12 +6,12 @@ import (
 )
 
 func Choice(nodes []int, k int) []int {
-	res := make([]int, 0, k)
+	res := make([]int, k)
 
 	var val int
 	for i := 0; i < k; i++ {
-		val = rand.Intn(len(nodes))
-		res = append(res, nodes[val-1])
+		val = rand.Intn(len(nodes)) - 1
+		res[i] = nodes[val]
 	}
 	return res
 }

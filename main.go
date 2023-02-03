@@ -13,26 +13,11 @@ import (
 func MakePolicyOutput(state State, index int) Policy {
 	//fmt.Println("start of make initial policy")
 
-	curState := State{
-		Graph:                   state.Graph,
-		Originators:             state.Originators,
-		NodesId:                 state.NodesId,
-		RouteLists:              state.RouteLists,
-		PendingMap:              state.PendingMap,
-		RerouteMap:              state.RerouteMap,
-		CacheStruct:             state.CacheStruct,
-		OriginatorIndex:         state.OriginatorIndex,
-		SuccessfulFound:         state.SuccessfulFound,
-		FailedRequestsThreshold: state.FailedRequestsThreshold,
-		FailedRequestsAccess:    state.FailedRequestsAccess,
-		TimeStep:                state.TimeStep}
-
-	found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&curState)
+	found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state)
 	policy := Policy{
 		Found:                found,
 		Route:                route,
 		ThresholdFailedLists: thresholdFailed,
-		OriginatorIndex:      state.OriginatorIndex,
 		AccessFailed:         accessFailed,
 		PaymentList:          paymentsList,
 	}
