@@ -46,9 +46,9 @@ func CreateGraphNetwork(net *Network) (*Graph, error) {
 	sortedNodeIds := SortedKeys(net.Nodes)
 	numNodes := len(net.Nodes)
 	Edges := make(map[int]map[int]Edge)
-	for _, nodeId := range sortedNodeIds {
-		Edges[nodeId] = make(map[int]Edge)
-	}
+	//for _, nodeId := range sortedNodeIds {
+	//	Edges[nodeId] = make(map[int]Edge)
+	//}
 	respNodes := PrecomputeClosestNodes(sortedNodeIds)
 	graph := &Graph{
 		Network:   net,
@@ -60,8 +60,10 @@ func CreateGraphNetwork(net *Network) (*Graph, error) {
 	}
 
 	for _, nodeId := range sortedNodeIds {
+		graph.Edges[nodeId] = make(map[int]Edge)
+
 		node := net.Nodes[nodeId]
-		err1 := graph.AddNode(net.Nodes[nodeId])
+		err1 := graph.AddNode(node)
 		if err1 != nil {
 			return nil, err1
 		}
