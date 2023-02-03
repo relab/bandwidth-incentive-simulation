@@ -1,7 +1,6 @@
 package update
 
 import (
-	"fmt"
 	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/general"
 	. "go-incentive-simulation/model/parts/types"
@@ -40,6 +39,7 @@ func UpdateOriginatorIndex(prevState State, policyInput Policy) State {
 		return prevState
 	}
 	prevState.OriginatorIndex++
+	//prevState.OriginatorIndex = rand.Intn(Constants.GetOriginators() - 1)
 	return prevState
 }
 
@@ -77,9 +77,7 @@ func UpdateCacheMap(prevState State, policyInput Policy) State {
 				for i := 0; i < len(route)-3; i++ {
 					routeId := g.GetNode(route[i])
 					cacheHits++
-					if _, ok := cacheMap[routeId]; ok {
-						val := cacheMap[routeId]
-
+					if val, ok := cacheMap[routeId]; ok {
 						if _, ok := val[chunkAddr]; ok {
 							val[chunkAddr]++
 						} else {
@@ -94,10 +92,7 @@ func UpdateCacheMap(prevState State, policyInput Policy) State {
 			} else {
 				for i := 0; i < len(route)-2; i++ {
 					routeId := g.GetNode(route[i])
-					cacheHits++
-					if _, ok := cacheMap[routeId]; ok {
-						val := cacheMap[routeId]
-
+					if val, ok := cacheMap[routeId]; ok {
 						if _, ok := val[chunkAddr]; ok {
 							val[chunkAddr]++
 						} else {
@@ -195,11 +190,18 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 						continue
 					} else {
 						if !Constants.IsPayOnlyForCurrentRequest() {
-							edgeData1.A2B = 0
-							edgeData2.A2B = 0
+							//edgeData1.A2B = 0
+							//edgeData2.A2B = 0
+							newEdgeData1 := edgeData1
+							newEdgeData1.A2B = 0
+							network.SetEdgeData(payment.FirstNodeId, payment.PayNextId, newEdgeData1)
+
+							newEdgeData2 := edgeData2
+							newEdgeData2.A2B = 0
+							network.SetEdgeData(payment.PayNextId, payment.FirstNodeId, newEdgeData2)
 						}
 					}
-					fmt.Println("Payment from ", payment.FirstNodeId, " to ", payment.PayNextId, " for chunk ", payment.ChunkId, " with price ", val)
+					// fmt.Println("Payment from ", payment.FirstNodeId, " to ", payment.PayNextId, " for chunk ", payment.ChunkId, " with price ", val)
 				} else {
 					edgeData1 := network.GetEdgeData(payment.FirstNodeId, payment.PayNextId)
 					edgeData2 := network.GetEdgeData(payment.PayNextId, payment.FirstNodeId)
@@ -212,8 +214,15 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 						continue
 					} else {
 						if !Constants.IsPayOnlyForCurrentRequest() {
-							edgeData1.A2B = 0
-							edgeData2.A2B = 0
+							//edgeData1.A2B = 0
+							//edgeData2.A2B = 0
+							newEdgeData1 := edgeData1
+							newEdgeData1.A2B = 0
+							network.SetEdgeData(payment.FirstNodeId, payment.PayNextId, newEdgeData1)
+
+							newEdgeData2 := edgeData2
+							newEdgeData2.A2B = 0
+							network.SetEdgeData(payment.PayNextId, payment.FirstNodeId, newEdgeData2)
 						}
 					}
 					//fmt.Println("-1", "Payment from ", payment.FirstNodeId, " to ", payment.PayNextId, " for chunk ", payment.ChunkId, " with price ", val) //Means that the first one is the originator
@@ -229,8 +238,11 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 				requesterNode := route[i]
 				providerNode := route[i+1]
 				price := PeerPriceChunk(providerNode, chunkId)
-				edgeData1 := network.GetEdgeData(requesterNode, providerNode)
-				edgeData1.A2B += price
+				edgeData := network.GetEdgeData(requesterNode, providerNode)
+				//edgeData1.A2B += price
+				newEdgeData := edgeData
+				newEdgeData.A2B += price
+				network.SetEdgeData(requesterNode, providerNode, newEdgeData)
 				if Constants.GetMaxPOCheckEnabled() {
 					routeWithPrice = append(routeWithPrice, requesterNode)
 					routeWithPrice = append(routeWithPrice, price)
@@ -246,8 +258,11 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 				requesterNode := route[i]
 				providerNode := route[i+1]
 				price := PeerPriceChunk(providerNode, chunkId)
-				edgeData1 := network.GetEdgeData(requesterNode, providerNode)
-				edgeData1.A2B += price
+				edgeData := network.GetEdgeData(requesterNode, providerNode)
+				//edgeData.A2B += price
+				newEdgeData := edgeData
+				newEdgeData.A2B += price
+				network.SetEdgeData(requesterNode, providerNode, newEdgeData)
 				if Constants.GetMaxPOCheckEnabled() {
 					routeWithPrice = append(routeWithPrice, requesterNode)
 					routeWithPrice = append(routeWithPrice, price)
@@ -267,25 +282,33 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 					for _, couple := range thresholdFailedL {
 						requesterNode := couple[0]
 						providerNode := couple[1]
-						edgeData1 := network.GetEdgeData(requesterNode, providerNode)
-						passedTime := (currTimeStep - edgeData1.Last) / Constants.GetRequestsPerSecond()
+						edgeData := network.GetEdgeData(requesterNode, providerNode)
+						passedTime := (currTimeStep - edgeData.Last) / Constants.GetRequestsPerSecond()
 						if passedTime > 0 {
 							refreshRate := Constants.GetRefreshRate()
 							if Constants.IsAdjustableThreshold() {
-								refreshRate = int(math.Ceil(float64(edgeData1.Threshold / 2)))
+								refreshRate = int(math.Ceil(float64(edgeData.Threshold / 2)))
 							}
 							removedDeptAmount := passedTime * refreshRate
-							edgeData1.A2B -= removedDeptAmount
-							if edgeData1.A2B < 0 {
-								edgeData1.A2B = 0
+							//edgeData.A2B -= removedDeptAmount
+							//if edgeData.A2B < 0 {
+							//	edgeData.A2B = 0
+							//}
+							//edgeData.Last = currTimeStep
+							newEdgeData := edgeData
+							newEdgeData.A2B -= removedDeptAmount
+							if newEdgeData.A2B < 0 {
+								newEdgeData.A2B = 0
 							}
-							edgeData1.Last = currTimeStep
+							newEdgeData.Last = currTimeStep
+							network.SetEdgeData(requesterNode, providerNode, newEdgeData)
 						}
 					}
 				}
 			}
 		}
 	}
+	prevState.TimeStep = currTimeStep
 	prevState.Graph = network
 	return prevState
 }

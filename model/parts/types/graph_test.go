@@ -30,10 +30,16 @@ func TestAddEdge(t *testing.T) {
 		counter++
 		testNodes = append(testNodes, node)
 	}
-	graph := &Graph{Network: &network, Nodes: testNodes, Edges: map[int][]Edge{}, NodesMap: network.Nodes}
 
-	edge1 := Edge{testNodes[0].Id, testNodes[1].Id, EdgeAttrs{10, 20, 16}}
-	err := graph.AddEdge(edge1)
+	edges := make(map[int]map[int]Edge, 10)
+	for _, node := range testNodes {
+		edges[node.Id] = make(map[int]Edge, 10)
+	}
+
+	graph := &Graph{Network: &network, Nodes: testNodes, Edges: edges, NodesMap: network.Nodes}
+
+	edgeAttrs := EdgeAttrs{10, 20, 16}
+	err := graph.AddEdge(testNodes[0].Id, testNodes[1].Id, edgeAttrs)
 	if err != nil {
 		t.Error("addEdge function returned an error message: ", err)
 	}

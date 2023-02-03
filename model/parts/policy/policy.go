@@ -37,14 +37,15 @@ func findResponsibleNodes(nodesId []int, chunkAdd int) []int {
 func SendRequest(prevState *State) (bool, Route, [][]Threshold, bool, []Payment) {
 	// Gets one random chunkId from the range of addresses
 	chunkId := rand.Intn(Constants.GetRangeAddress() - 1)
-	var random int
+	var random float32
 
 	if Constants.IsCacheEnabled() == true {
-		random = rand.Intn(1)
-		if float32(random) < 0.5 {
-			chunkId = rand.Intn(1000)
+		numPreferredChunks := 1000
+		random = rand.Float32()
+		if float32(random) <= 0.5 {
+			chunkId = rand.Intn(numPreferredChunks)
 		} else {
-			chunkId = rand.Intn(Constants.GetRangeAddress()-1000) + 0
+			chunkId = rand.Intn(Constants.GetRangeAddress()-numPreferredChunks) + numPreferredChunks
 		}
 	}
 	responsibleNodes := findResponsibleNodes(prevState.NodesId, chunkId)

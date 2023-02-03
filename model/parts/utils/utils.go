@@ -22,10 +22,14 @@ func CreateGraphNetwork(net *Network) (*Graph, error) {
 	//fmt.Println("Creating graph network...")
 	sortedNodeIds := SortedKeys(net.Nodes)
 	numNodes := len(net.Nodes)
+	Edges := make(map[int]map[int]Edge, numNodes)
+	for _, nodeId := range sortedNodeIds {
+		Edges[nodeId] = make(map[int]Edge, numNodes)
+	}
 	graph := &Graph{
 		Network:  net,
 		Nodes:    make([]*Node, 0, numNodes),
-		Edges:    make(map[int][]Edge, numNodes),
+		Edges:    Edges,
 		NodeIds:  sortedNodeIds,
 		NodesMap: net.Nodes,
 	}
@@ -42,8 +46,7 @@ func CreateGraphNetwork(net *Network) (*Graph, error) {
 			for _, item := range adjItems {
 				threshold := BitLength(nodeId ^ item)
 				attrs := EdgeAttrs{A2B: 0, Last: 0, Threshold: threshold}
-				edge := Edge{FromNodeId: node.Id, ToNodeId: item, Attrs: attrs}
-				err := graph.AddEdge(edge)
+				err := graph.AddEdge(node.Id, item, attrs)
 				if err != nil {
 					return nil, err
 				}

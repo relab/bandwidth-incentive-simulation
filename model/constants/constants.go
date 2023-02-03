@@ -34,25 +34,25 @@ var Constants = constant{
 	networkSize:                      10000,
 	binSize:                          8,
 	rangeAddress:                     65536, // 2 * *Bits
-	originators:                      2000,  // int(0.001 * NetworkSize)
+	originators:                      1000,  // int(0.001 * NetworkSize)
 	refreshRate:                      8,
 	threshold:                        16,
 	randomSeed:                       123456789,
 	maxProximityOrder:                16,
 	price:                            1,
 	chunks:                           10000,
-	requestsPerSecond:                12500,
+	requestsPerSecond:                12500, // 12500
 	thresholdEnabled:                 true,
 	forgivenessEnabled:               true,
 	paymentEnabled:                   true,
-	maxPOCheckEnabled:                true,
+	maxPOCheckEnabled:                false,
 	waitingEnabled:                   false,
 	onlyOriginatorPays:               false,
 	payOnlyForCurrentRequest:         false,
 	payIfOrigPays:                    false,
 	forwarderPayForceOriginatorToPay: false,
 	retryWithAnotherPeer:             false,
-	cacheIsEnabled:                   true,
+	cacheIsEnabled:                   false,
 	adjustableThreshold:              false,
 }
 
