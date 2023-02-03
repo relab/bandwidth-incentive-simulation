@@ -6,11 +6,12 @@ import (
 
 // Graph structure, node Ids in array and edges in map
 type Graph struct {
-	Network  *Network
-	Nodes    []*Node
-	NodeIds  []int
-	Edges    map[int]map[int]Edge
-	NodesMap map[int]*Node
+	Network   *Network
+	Nodes     []*Node
+	NodeIds   []int
+	Edges     map[int]map[int]Edge
+	NodesMap  map[int]*Node
+	RespNodes [][4]int
 }
 
 // Edge that connects to Nodes with attributes about the connection
@@ -28,6 +29,10 @@ type EdgeAttrs struct {
 	A2B       int
 	Last      int
 	Threshold int
+}
+
+func (g *Graph) FindResponsibleNodes(chunkId int) [4]int {
+	return g.RespNodes[chunkId]
 }
 
 // AddNode will add a Node to a graph
