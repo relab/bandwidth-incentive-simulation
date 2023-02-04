@@ -51,14 +51,14 @@ func SendRequest(prevState *State) (bool, Route, [][]Threshold, bool, []Payment)
 	responsibleNodes := prevState.Graph.FindResponsibleNodes(chunkId)
 	originatorId := prevState.Originators[prevState.OriginatorIndex]
 
-	//if _, ok := prevState.PendingMap[originatorId]; ok {
-	//	chunkId = prevState.PendingMap[originatorId]
-	//	responsibleNodes = findResponsibleNodes(prevState.NodesId, chunkId)
-	//}
-	//if _, ok := prevState.RerouteMap[originatorId]; ok {
-	//	chunkId = prevState.RerouteMap[originatorId][len(prevState.RerouteMap[originatorId])-1]
-	//	responsibleNodes = findResponsibleNodes(prevState.NodesId, chunkId)
-	//}
+	if _, ok := prevState.PendingMap[originatorId]; ok {
+		chunkId = prevState.PendingMap[originatorId]
+		responsibleNodes = prevState.Graph.FindResponsibleNodes(chunkId)
+	}
+	if _, ok := prevState.RerouteMap[originatorId]; ok {
+		chunkId = prevState.RerouteMap[originatorId][len(prevState.RerouteMap[originatorId])-1]
+		responsibleNodes = prevState.Graph.FindResponsibleNodes(chunkId)
+	}
 
 	request := Request{OriginatorId: originatorId, ChunkId: chunkId}
 
