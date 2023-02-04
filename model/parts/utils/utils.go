@@ -112,7 +112,6 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 	var thresholdFailed bool
 	var accessFailed bool
 	var payment Payment
-	//resultInt := 1
 	lastDistance := firstNodeId ^ chunkId
 	//fmt.Printf("\n last distance is : %d, chunk is: %d, first is: %d", lastDistance, chunkId, firstNodeId)
 	//fmt.Printf("\n which bucket: %d \n", 16-BitLength(chunkId^firstNodeId))
@@ -170,10 +169,8 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 	} else {
 		if !thresholdFailed {
 			accessFailed = true
-			//resultInt = -2
 			nextNodeId = -2 // Access Failed
 		} else {
-			//resultInt = -1
 			nextNodeId = -1 // Threshold Failed
 		}
 		if Constants.GetPaymentEnabled() {
@@ -188,7 +185,6 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 						nextNodeId = payNextId
 					} else {
 						thresholdFailed = true
-						//resultInt = -1
 						nextNodeId = -1
 					}
 				} else if Constants.IsPayIfOrigPays() {
@@ -212,7 +208,6 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 							nextNodeId = payNextId
 						} else {
 							thresholdFailed = true
-							//resultInt = -1
 							nextNodeId = -1
 							payNextId = 0
 						}
@@ -259,7 +254,6 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 	if nextNodeId != 0 {
 		//fmt.Printf("\n next node is: %d", nextNodeId)
 	}
-	//return resultInt, nextNodeId, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid
 	return nextNodeId, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid
 }
 
@@ -334,8 +328,8 @@ func ConsumeTask(request *Request, graph *Graph, respNodes [4]int, rerouteMap Re
 	route = append(route, chunkId)
 
 	if Constants.IsForwarderPayForceOriginatorToPay() {
-		// if !Contains(route, -2) { // Gir ikke mening lengre
-		if nextNodeId != -2 {
+		//if nextNodeId != -2 {
+		if !Contains(route, -2) {
 			// NOT accessFailed
 			if len(paymentList) > 0 {
 				firstPayment := paymentList[0]
@@ -385,6 +379,7 @@ func ConsumeTask(request *Request, graph *Graph, respNodes [4]int, rerouteMap Re
 		} else {
 			paymentList = []Payment{}
 		}
+
 	}
 	if foundByCaching {
 		// route = append(route, "C") // TYPE MISMATCH

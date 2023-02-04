@@ -26,9 +26,9 @@ func MakePolicyOutput(state State, index int) Policy {
 
 func main() {
 	start := time.Now()
-	state := MakeInitialState("./data/nodes_data_8_10000.txt")
+	state := MakeInitialState("./data/nodes_data_16_10000.txt")
 
-	const iterations = 100000
+	const iterations = 250000
 	const numGoroutines = 1
 	numLoops := iterations / numGoroutines
 	stateArray := make([]State, numLoops)

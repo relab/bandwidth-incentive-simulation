@@ -32,7 +32,7 @@ var Constants = constant{
 	runs:                             1,
 	bits:                             16,
 	networkSize:                      10000,
-	binSize:                          8,
+	binSize:                          16,
 	rangeAddress:                     65536, // 2 * *Bits
 	originators:                      1000,  // int(0.001 * NetworkSize)
 	refreshRate:                      8,
@@ -44,7 +44,7 @@ var Constants = constant{
 	requestsPerSecond:                12500, // 12500
 	thresholdEnabled:                 true,
 	forgivenessEnabled:               true,
-	paymentEnabled:                   false,
+	paymentEnabled:                   true,
 	maxPOCheckEnabled:                false,
 	waitingEnabled:                   false,
 	onlyOriginatorPays:               false,
