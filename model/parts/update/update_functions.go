@@ -176,9 +176,8 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 
 	if Constants.GetPaymentEnabled() {
 		for _, payment := range paymentsList {
-			var p Payment
-			if payment != p {
-				if payment.FirstNodeId != -1 {
+			if payment != (Payment{}) {
+				if !payment.IsOriginator {
 					edgeData1 := network.GetEdgeData(payment.FirstNodeId, payment.PayNextId)
 					edgeData2 := network.GetEdgeData(payment.PayNextId, payment.FirstNodeId)
 					price := PeerPriceChunk(payment.PayNextId, payment.ChunkId)
@@ -231,7 +230,7 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 		}
 	}
 	if !Contains(route, -1) && !Contains(route, -2) {
-		routeWithPrice := []int{}
+		var routeWithPrice []int
 		if Contains(route, -3) {
 			chunkId := route[len(route)-2]
 			for i := 0; i < len(route)-3; i++ {

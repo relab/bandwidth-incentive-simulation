@@ -17,7 +17,6 @@ func MakePolicyOutput(state State) Policy {
 		Found:                found,
 		Route:                route,
 		ThresholdFailedLists: thresholdFailed,
-		OriginatorIndex:      state.OriginatorIndex,
 		AccessFailed:         accessFailed,
 		PaymentList:          paymentsList,
 	}
