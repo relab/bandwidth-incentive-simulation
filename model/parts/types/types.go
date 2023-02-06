@@ -45,7 +45,6 @@ type Policy struct {
 	Found                bool
 	Route                Route
 	ThresholdFailedLists [][]Threshold
-	OriginatorIndex      int
 	AccessFailed         bool
 	PaymentList          []Payment
 }

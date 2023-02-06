@@ -6,7 +6,6 @@ import (
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/utils"
 	"math/rand"
-	"os"
 )
 
 func MakeInitialState(path string) State {
@@ -14,8 +13,6 @@ func MakeInitialState(path string) State {
 	fmt.Println("start of make initial state")
 	rand.Seed(Constants.GetRandomSeed())
 	network := Network{}
-	pwd, _ := os.Getwd()
-	fmt.Println("current dir: ", pwd)
 	network.Load(path)
 	graph, err := CreateGraphNetwork(&network)
 	if err != nil {

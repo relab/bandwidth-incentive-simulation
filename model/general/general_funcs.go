@@ -6,18 +6,27 @@ import (
 )
 
 func Choice(nodes []int, k int) []int {
-	res := make([]int, 0, k)
+	res := make([]int, k)
 
 	var val int
 	for i := 0; i < k; i++ {
-		val = rand.Intn(len(nodes))
-		res = append(res, nodes[val-1])
+		val = rand.Intn(len(nodes)) - 1
+		res[i] = nodes[val]
 	}
 	return res
 }
 
 func BitLength(num int) int {
 	return bits.Len(uint(num))
+}
+
+func ArrContains[T comparable](elems [4]T, value T) bool {
+	for _, item := range elems {
+		if item == value {
+			return true
+		}
+	}
+	return false
 }
 
 func Contains[T comparable](elems []T, value T) bool {

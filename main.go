@@ -10,14 +10,14 @@ import (
 	"time"
 )
 
-func MakePolicyOutput(state State) Policy {
+func MakePolicyOutput(state State, index int) Policy {
 	//fmt.Println("start of make initial policy")
+
 	found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state)
 	policy := Policy{
 		Found:                found,
 		Route:                route,
 		ThresholdFailedLists: thresholdFailed,
-		OriginatorIndex:      state.OriginatorIndex,
 		AccessFailed:         accessFailed,
 		PaymentList:          paymentsList,
 	}
@@ -26,27 +26,27 @@ func MakePolicyOutput(state State) Policy {
 
 func main() {
 	start := time.Now()
-	state := MakeInitialState("./data/nodes_data_8_10000.txt")
+	state := MakeInitialState("./data/nodes_data_16_10000.txt")
 
-	const iterations = 1000000
-	const numRoutines = 100
-	numLoops := iterations / numRoutines
+	const iterations = 250000
+	const numGoroutines = 1
+	numLoops := iterations / numGoroutines
 	stateArray := make([]State, numLoops)
 
 	for i := 0; i < numLoops; i++ {
 		//fmt.Println("Start of lop ", time.Since(start))
-		var policyOutputs [numRoutines]Policy
+		var policyOutputs [numGoroutines]Policy
 		var wg sync.WaitGroup
-		for j := 0; j < numRoutines; j++ {
+		for j := 0; j < numGoroutines; j++ {
 			wg.Add(1)
 			go func(index int) {
 				defer wg.Done()
-				policyOutputs[index] = MakePolicyOutput(state)
+				policyOutputs[index] = MakePolicyOutput(state, index)
 			}(j)
 		}
 		wg.Wait()
 		//fmt.Println("end of lop ", time.Since(start))
-		for j := 0; j < numRoutines; j++ {
+		for j := 0; j < numGoroutines; j++ {
 			state = UpdatePendingMap(state, policyOutputs[j])
 			state = UpdateRerouteMap(state, policyOutputs[j])
 			state = UpdateCacheMap(state, policyOutputs[j])
@@ -74,15 +74,17 @@ func main() {
 
 		stateArray[i] = curState
 	}
+	fmt.Println("end of main: ")
 	elapsed := time.Since(start)
 	fmt.Println("Time taken:", elapsed)
+	fmt.Println("Number of iterations: ", iterations)
+	fmt.Println("Number of Goroutines: ", numGoroutines)
 	// allReq, thresholdFails, requestsToBucketZero, rejectedBucketZero, rejectedFirstHop := ReadRoutes("routes.json")
 	// fmt.Println("allReq: ", allReq)
 	// fmt.Println("thresholdFails: ", thresholdFails)
 	// fmt.Println("requestsToBucketZero: ", requestsToBucketZero)
 	// fmt.Println("rejectedBucketZero: ", rejectedBucketZero)
 	// fmt.Println("rejectedFirstHop: ", rejectedFirstHop)
-	fmt.Print("end of main: ")
 	PrintState(state)
 }
 
@@ -93,8 +95,8 @@ func PrintState(state State) {
 	fmt.Println("CacheHits:", state.CacheStruct.CacheHits)
 	fmt.Println("TimeStep: ", state.TimeStep)
 	fmt.Println("OriginatorIndex: ", state.OriginatorIndex)
-	fmt.Println("PendingMap: ", state.PendingMap)
-	fmt.Println("RerouteMap: ", state.RerouteMap)
+	//fmt.Println("PendingMap: ", state.PendingMap)
+	//fmt.Println("RerouteMap: ", state.RerouteMap)
 	//fmt.Println("RouteLists: ", state.RouteLists)
 	//fmt.Println("CacheMap: ", state.CacheStruct.CacheMap)
 }
