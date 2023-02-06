@@ -68,13 +68,13 @@ func TestUpdateOriginatorIndex(t *testing.T) {
 }
 
 func TestUpdateRouteListAndFlush(t *testing.T) {
-	//state := MakeInitialState(path)
-	//policy := MakePolicyOutput(state)
-	//state.TimeStep = 6249
-	//newState := UpdateRouteListAndFlush(state, policy)
-	//if len(newState.RouteLists) != 0 {
-	//	t.Errorf("UpdateRouteLists() failed, expected 0, got %d", len(newState.RouteLists))
-	//}
+	state := MakeInitialState(path)
+	policy := MakePolicyOutput(state)
+	state.TimeStep = 6249
+	newState := UpdateRouteListAndFlush(state, policy)
+	if len(newState.RouteLists) != 0 {
+		t.Errorf("UpdateRouteLists() failed, expected 0, got %d", len(newState.RouteLists))
+	}
 }
 
 func TestUpdateRouteList(t *testing.T) {
