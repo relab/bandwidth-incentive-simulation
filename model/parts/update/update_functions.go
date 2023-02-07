@@ -1,10 +1,12 @@
 package update
 
 import (
+	"encoding/json"
 	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/general"
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/utils"
+	"io/ioutil"
 	"math"
 )
 
@@ -43,21 +45,31 @@ func UpdateOriginatorIndex(prevState State, policyInput Policy) State {
 	return prevState
 }
 
-// TODO: function convert and dump to file
+func convertAndDumpToFile(routes []Route, currTimestep int) error {
+	type RouteData struct {
+		Timestep int     `json:"timestep"`
+		Routes   []Route `json:"routes"`
+	}
+	data := RouteData{currTimestep, routes}
+	file, _ := json.Marshal(data)
+	err := ioutil.WriteFile("routes.json", file, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 func UpdateRouteListAndFlush(prevState State, policyInput Policy) State {
 	prevState.RouteLists = append(prevState.RouteLists, policyInput.Route)
 	currTimestep := prevState.TimeStep + 1
 	if currTimestep%6250 == 0 {
-		// TODO: call convert_and_dump
+		convertAndDumpToFile(prevState.RouteLists, currTimestep)
 		prevState.RouteLists = []Route{}
 		return prevState
 	}
 	return prevState
 }
 
-// TODO: Implement this function
-// Does not work with current type of cacheMap
 func UpdateCacheMap(prevState State, policyInput Policy) State {
 	cacheMap := prevState.CacheStruct.CacheMap
 	cacheHits := prevState.CacheStruct.CacheHits
