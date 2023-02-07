@@ -97,6 +97,7 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, g *Graph)
 		if Constants.IsAdjustableThreshold() {
 			threshold = edgeDataFirst.Threshold
 		}
+
 		peerPriceChunk := PeerPriceChunk(secondNodeId, chunkId)
 		price := p2pFirst - p2pSecond + peerPriceChunk
 		// fmt.Printf("price: %d = p2pFirst: %d - p2pSecond: %d + PeerPriceChunk: %d \n", price, p2pFirst, p2pSecond, peerPriceChunk)
@@ -120,27 +121,23 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 	payDist := lastDistance
 
 	firstNode := graph.NodesMap[firstNodeId]
+	bucket := 16 - BitLength(firstNodeId^chunkId)
 
-	for _, adj := range firstNode.AdjIds {
-		for _, nodeId := range adj {
-			dist := nodeId ^ chunkId
-			if BitLength(dist) >= BitLength(lastDistance) {
-				continue
-			}
-			if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph) {
-				thresholdFailed = false
-				// Could probably clean this one up, but keeping it close to original for now
-				if dist < currDist {
-					if Constants.IsRetryWithAnotherPeer() {
-						_, ok := rerouteMap[mainOriginatorId]
-						if ok {
-							allExceptLast := len(rerouteMap[mainOriginatorId])
-							if Contains(rerouteMap[mainOriginatorId][:allExceptLast], nodeId) {
-								continue
-							} else {
-								currDist = dist
-								nextNodeId = nodeId
-							}
+	for _, nodeId := range firstNode.AdjIds[bucket] {
+		dist := nodeId ^ chunkId
+		if BitLength(dist) >= BitLength(lastDistance) {
+			continue
+		}
+		if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph) {
+			thresholdFailed = false
+			// Could probably clean this one up, but keeping it close to original for now
+			if dist < currDist {
+				if Constants.IsRetryWithAnotherPeer() {
+					_, ok := rerouteMap[mainOriginatorId]
+					if ok {
+						allExceptLast := len(rerouteMap[mainOriginatorId])
+						if Contains(rerouteMap[mainOriginatorId][:allExceptLast], nodeId) {
+							continue
 						} else {
 							currDist = dist
 							nextNodeId = nodeId
@@ -149,20 +146,25 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 						currDist = dist
 						nextNodeId = nodeId
 					}
+				} else {
+					currDist = dist
+					nextNodeId = nodeId
 				}
-			} else {
-				thresholdFailed = true
-				if Constants.GetPaymentEnabled() {
-					if dist < payDist {
-						payDist = dist
-						payNextId = nodeId
-					}
-				}
-				listItem := Threshold{firstNodeId, nodeId}
-				thresholdList = append(thresholdList, listItem)
 			}
+		} else {
+			thresholdFailed = true
+			if Constants.GetPaymentEnabled() {
+				if dist < payDist {
+					payDist = dist
+					payNextId = nodeId
+				}
+			}
+			listItem := Threshold{firstNodeId, nodeId}
+			thresholdList = append(thresholdList, listItem)
 		}
+
 	}
+
 	if nextNodeId != 0 {
 		thresholdFailed = false
 		accessFailed = false
