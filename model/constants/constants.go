@@ -44,7 +44,7 @@ var Constants = constant{
 	requestsPerSecond:                12500, // 12500
 	thresholdEnabled:                 true,
 	forgivenessEnabled:               true,
-	paymentEnabled:                   true,
+	paymentEnabled:                   false,
 	maxPOCheckEnabled:                false,
 	waitingEnabled:                   false,
 	onlyOriginatorPays:               false,
