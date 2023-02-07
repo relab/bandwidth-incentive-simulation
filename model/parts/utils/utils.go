@@ -318,7 +318,7 @@ func ConsumeTask(request *Request, graph *Graph, respNodes [4]int, rerouteMap Re
 						}
 					}
 				}
-				// NOTE
+				// NOTE !
 				originatorId = nextNodeId
 			} else {
 				break out
