@@ -46,6 +46,10 @@ func (g *Graph) AddNode(node *Node) error {
 	}
 }
 
+func (g *Graph) GetNodeAdj(nodeId int) [][]int {
+	return g.GetNode(nodeId).AdjIds
+}
+
 // AddEdge will add an edge from a node to a node
 func (g *Graph) AddEdge(fromNodeId int, toNodeId int, attrs EdgeAttrs) error {
 	toNode := g.GetNode(toNodeId)

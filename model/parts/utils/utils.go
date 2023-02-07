@@ -120,10 +120,11 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 	currDist := lastDistance
 	payDist := lastDistance
 
-	firstNode := graph.NodesMap[firstNodeId]
-	bucket := 16 - BitLength(firstNodeId^chunkId)
+	//firstNode := graph.NodesMap[firstNodeId]
+	bin := Constants.GetBits() - BitLength(firstNodeId^chunkId)
+	firstNodeAdjIds := graph.GetNodeAdj(firstNodeId)
 
-	for _, nodeId := range firstNode.AdjIds[bucket] {
+	for _, nodeId := range firstNodeAdjIds[bin] {
 		dist := nodeId ^ chunkId
 		if BitLength(dist) >= BitLength(lastDistance) {
 			continue
@@ -179,7 +180,7 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			if payNextId != 0 {
 				accessFailed = false
 				if Constants.IsOnlyOriginatorPays() {
-					if firstNode.Id == mainOriginatorId {
+					if firstNodeId == mainOriginatorId {
 						payment.IsOriginator = true
 						payment.FirstNodeId = firstNodeId
 						payment.PayNextId = payNextId
@@ -193,7 +194,7 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 					if prevNodePaid {
 						nextNodeId = payNextId
 						thresholdFailed = false
-						if firstNode.Id == mainOriginatorId {
+						if firstNodeId == mainOriginatorId {
 							payment.IsOriginator = true
 						} else {
 							payment.IsOriginator = false
@@ -202,7 +203,7 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 						payment.PayNextId = payNextId
 						payment.ChunkId = chunkId
 					} else {
-						if firstNode.Id == mainOriginatorId {
+						if firstNodeId == mainOriginatorId {
 							payment.IsOriginator = true
 							payment.FirstNodeId = firstNodeId
 							payment.PayNextId = payNextId
