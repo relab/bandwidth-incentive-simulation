@@ -29,7 +29,8 @@ func main() {
 	state := MakeInitialState("./data/nodes_data_16_10000.txt")
 
 	const iterations = 250000
-	const numGoroutines = 1000
+	const numGoroutines = 1
+
 	numLoops := iterations / numGoroutines
 	stateArray := make([]State, numLoops)
 
