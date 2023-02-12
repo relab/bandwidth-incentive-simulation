@@ -1,27 +1,35 @@
 package types
 
 import (
+	"fmt"
+	"math/rand"
 	"testing"
+	"time"
 )
 
-func TestNetwork(t *testing.T) {
-	path := "../../../data/nodes_data_8_10000.txt"
-	network := Network{}
-	bits, bin, nodes := network.Load(path)
+func TestGenerateAndLoad(t *testing.T) {
+	rand.Seed(time.Now().UnixNano())
+	bits := 16
+	bin := 8
+	size := 10000
+	network := &Network{Bits: bits, Bin: bin}
+	nodes := network.Generate(size)
 
-	t.Log("Bits:", bits)
-	t.Log("Bin:", bin)
-	//print the Nodes map
-	for k, v := range nodes {
-		t.Log("Nodes:", k, *v)
+	filename := fmt.Sprintf("nodes_data_%d_%d.txt", bin, size)
+	network.Dump(filename)
+
+	network2 := Network{}
+	bits2, bin2, nodes2 := network2.Load(filename)
+
+	//Check if bits2, bin2, nodes2 are the same as bits, bin, nodes
+	if bits2 != bits {
+		t.Error("Bits are different")
+	}
+	if bin2 != bin {
+		t.Error("Bin are different")
+	}
+	if len(nodes2) != len(nodes) {
+		t.Error("Nodes are different")
 	}
 
-	t.Log("Nodes[12381]:", *nodes[12381])
-
-	for _, bucket := range nodes[12381].AdjIds {
-		for _, nodeId := range bucket {
-			t.Log("Nodes[12381].adj:", nodeId)
-		}
-		t.Log("\n")
-	}
 }

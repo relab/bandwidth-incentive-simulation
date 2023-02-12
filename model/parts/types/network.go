@@ -2,9 +2,13 @@ package types
 
 import (
 	"encoding/json"
+	"fmt"
 	. "go-incentive-simulation/model/general"
+	"io/ioutil"
+	"math/rand"
 	"os"
 	"sort"
+	"time"
 )
 
 type Network struct {
@@ -74,6 +78,9 @@ func (network *Network) node(value int) *Node {
 		cacheSet:   []int{0},
 		canPay:     true,
 	}
+	if len(network.Nodes) == 0 {
+		network.Nodes = make(map[int]*Node)
+	}
 	if _, ok := network.Nodes[value]; !ok {
 		network.Nodes[value] = &res
 		return &res
@@ -82,8 +89,79 @@ func (network *Network) node(value int) *Node {
 
 }
 
-func (network *Network) generate(count int) {
-	// TODO: implement
+func (network *Network) Generate(count int) []*Node {
+	nodeIds := generateIds(count, (1<<network.Bits)-1)
+	nodes := make([]*Node, 0)
+	for _, nodeId := range nodeIds {
+		node := network.node(nodeId)
+		nodes = append(nodes, node)
+	}
+	fmt.Println("Nodes:", nodes)
+	pairs := make([][2]*Node, 0)
+	for i, node1 := range nodes {
+		for j := i + 1; j < len(nodes); j++ {
+			node2 := nodes[j]
+			pairs = append(pairs, [2]*Node{node1, node2})
+		}
+	}
+	shufflePairs(pairs)
+	for _, nodes := range pairs {
+		nodes[0].add(nodes[1])
+	}
+	return nodes
+}
+
+func (network *Network) Dump(path string) error {
+	type NetworkData struct {
+		Bits  int `json:"bits"`
+		Bin   int `json:"bin"`
+		Nodes []struct {
+			ID  int   `json:"id"`
+			Adj []int `json:"adj"`
+		} `json:"nodes"`
+	}
+	data := NetworkData{network.Bits, network.Bin, make([]struct {
+		ID  int   `json:"id"`
+		Adj []int `json:"adj"`
+	}, 0)}
+	for _, node := range network.Nodes {
+		var result []int
+		for _, list := range node.AdjIds {
+			result = append(result, list...)
+		}
+		data.Nodes = append(data.Nodes, struct {
+			ID  int   `json:"id"`
+			Adj []int `json:"adj"`
+		}{node.Id, result})
+	}
+	file, _ := json.Marshal(data)
+	err := ioutil.WriteFile(path, file, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func shufflePairs(pairs [][2]*Node) {
+	rand.Shuffle(len(pairs), func(i, j int) {
+		pairs[i], pairs[j] = pairs[j], pairs[i]
+	})
+}
+
+func generateIds(totalNumbers int, maxValue int) []int {
+	rand.Seed(time.Now().UnixNano())
+	generatedNumbers := make(map[int]bool)
+	for len(generatedNumbers) < totalNumbers {
+		num := rand.Intn(maxValue + 1)
+		generatedNumbers[num] = true
+	}
+
+	result := make([]int, 0, totalNumbers)
+	for num := range generatedNumbers {
+		result = append(result, num)
+	}
+	return result
 }
 
 func (node *Node) add(other *Node) bool {
