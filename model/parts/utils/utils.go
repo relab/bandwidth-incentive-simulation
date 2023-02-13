@@ -45,7 +45,7 @@ func CreateGraphNetwork(net *Network) (*Graph, error) {
 	//fmt.Println("Creating graph network...")
 	sortedNodeIds := SortedKeys(net.Nodes)
 	numNodes := len(net.Nodes)
-	Edges := make(map[int]map[int]Edge)
+	Edges := make(map[int]map[int]*Edge)
 	//for _, nodeId := range sortedNodeIds {
 	//	Edges[nodeId] = make(map[int]Edge)
 	//}
@@ -60,7 +60,7 @@ func CreateGraphNetwork(net *Network) (*Graph, error) {
 	}
 
 	for _, nodeId := range sortedNodeIds {
-		graph.Edges[nodeId] = make(map[int]Edge)
+		graph.Edges[nodeId] = make(map[int]*Edge)
 
 		node := net.Nodes[nodeId]
 		err1 := graph.AddNode(node)
@@ -328,6 +328,22 @@ func ConsumeTask(request *Request, graph *Graph, respNodes [4]int, rerouteMap Re
 			}
 		}
 	}
+	if Constants.GetEdgeLock() {
+		if !Contains(route, -1) && !Contains(route, -2) {
+			graph.EdgeLockMutex.Lock()
+			for i := 0; i < len(route)-1; i++ {
+				graph.LockEdge(route[i], route[i+1])
+				graph.LockEdge(route[i+1], route[i])
+			}
+			graph.EdgeLockMutex.Unlock()
+		}
+	}
+	//} else {
+	//	for i := 0; i < len(route)-2; i++ {
+	//		graph.LockEdge(route[i], route[i+1])
+	//		graph.LockEdge(route[i+1], route[i])
+	//	}
+	//}
 
 	route = append(route, chunkId)
 

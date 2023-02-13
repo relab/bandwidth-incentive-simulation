@@ -2,16 +2,20 @@ package types
 
 import (
 	"fmt"
+	"sync"
 )
 
 // Graph structure, node Ids in array and edges in map
 type Graph struct {
-	Network   *Network
-	Nodes     []*Node
-	NodeIds   []int
-	Edges     map[int]map[int]Edge
-	NodesMap  map[int]*Node
-	RespNodes [][4]int
+	Network         *Network
+	Nodes           []*Node
+	NodeIds         []int
+	Edges           map[int]map[int]*Edge
+	NodesMap        map[int]*Node
+	RespNodes       [][4]int
+	EdgeLockMutex   sync.RWMutex
+	EdgeUnlockMutex sync.RWMutex
+	UpdateMutex     sync.Mutex
 }
 
 // Edge that connects to Nodes with attributes about the connection
@@ -19,6 +23,7 @@ type Edge struct {
 	FromNodeId int
 	ToNodeId   int
 	Attrs      EdgeAttrs
+	mutex      sync.Mutex
 }
 
 // EdgeAttrs Edge attributes structure,
@@ -62,17 +67,25 @@ func (g *Graph) AddEdge(fromNodeId int, toNodeId int, attrs EdgeAttrs) error {
 	} else {
 		//newEdges := append(g.Edges[edge.FromNodeId], edge)
 		//g.Edges[edge.FromNodeId] = newEdges
-		newEdge := Edge{FromNodeId: fromNodeId, ToNodeId: toNodeId, Attrs: attrs}
+		newEdge := &Edge{FromNodeId: fromNodeId, ToNodeId: toNodeId, Attrs: attrs}
 		g.Edges[fromNodeId][toNodeId] = newEdge
 		return nil
 	}
 }
 
-func (g *Graph) GetEdge(fromNodeId int, toNodeId int) Edge {
+func (g *Graph) LockEdge(nodeA int, nodeB int) {
+	g.GetEdge(nodeA, nodeB).mutex.Lock()
+}
+
+func (g *Graph) UnlockEdge(nodeA int, nodeB int) {
+	g.GetEdge(nodeA, nodeB).mutex.Unlock()
+}
+
+func (g *Graph) GetEdge(fromNodeId int, toNodeId int) *Edge {
 	if g.EdgeExists(fromNodeId, toNodeId) {
 		return g.Edges[fromNodeId][toNodeId]
 	}
-	return Edge{}
+	return &Edge{}
 }
 
 func (g *Graph) GetEdgeData(fromNodeId int, toNodeId int) EdgeAttrs {
@@ -91,8 +104,7 @@ func (g *Graph) EdgeExists(fromNodeId int, toNodeId int) bool {
 
 func (g *Graph) SetEdgeData(fromNodeId int, toNodeId int, edgeAttrs EdgeAttrs) bool {
 	if g.EdgeExists(fromNodeId, toNodeId) {
-		newEdge := Edge{FromNodeId: fromNodeId, ToNodeId: toNodeId, Attrs: edgeAttrs}
-		g.Edges[fromNodeId][toNodeId] = newEdge
+		g.Edges[fromNodeId][toNodeId].Attrs = edgeAttrs
 		return true
 	}
 	return false

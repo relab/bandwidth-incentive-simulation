@@ -40,7 +40,9 @@ func UpdateOriginatorIndex(prevState State, policyInput Policy) State {
 		prevState.OriginatorIndex = 0
 		return prevState
 	}
+	//if prevState.TimeStep%100 == 0 {
 	prevState.OriginatorIndex++
+	//}
 	//prevState.OriginatorIndex = rand.Intn(Constants.GetOriginators() - 1)
 	return prevState
 }
@@ -254,6 +256,14 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 				newEdgeData := edgeData
 				newEdgeData.A2B += price
 				network.SetEdgeData(requesterNode, providerNode, newEdgeData)
+
+				if Constants.GetEdgeLock() {
+					prevState.Graph.EdgeUnlockMutex.Lock()
+					prevState.Graph.UnlockEdge(requesterNode, providerNode)
+					prevState.Graph.UnlockEdge(providerNode, requesterNode)
+					prevState.Graph.EdgeUnlockMutex.Unlock()
+				}
+
 				if Constants.GetMaxPOCheckEnabled() {
 					routeWithPrice = append(routeWithPrice, requesterNode)
 					routeWithPrice = append(routeWithPrice, price)
@@ -274,6 +284,14 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 				newEdgeData := edgeData
 				newEdgeData.A2B += price
 				network.SetEdgeData(requesterNode, providerNode, newEdgeData)
+
+				if Constants.GetEdgeLock() {
+					prevState.Graph.EdgeUnlockMutex.Lock()
+					prevState.Graph.UnlockEdge(requesterNode, providerNode)
+					prevState.Graph.UnlockEdge(providerNode, requesterNode)
+					prevState.Graph.EdgeUnlockMutex.Unlock()
+				}
+
 				if Constants.GetMaxPOCheckEnabled() {
 					routeWithPrice = append(routeWithPrice, requesterNode)
 					routeWithPrice = append(routeWithPrice, price)
@@ -319,6 +337,17 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 			}
 		}
 	}
+
+	//if !Contains(route, -1) && !Contains(route, -2) {
+	//	for i := 0; i < len(route)-1; i++ {
+	//		prevState.Graph.UnlockEdge(route[i], route[i+1])
+	//	}
+	//} else {
+	//	for i := 0; i < len(route)-2; i++ {
+	//		prevState.Graph.UnlockEdge(route[i], route[i+1])
+	//	}
+	//}
+
 	prevState.TimeStep = currTimeStep
 	prevState.Graph = network
 	return prevState

@@ -33,7 +33,7 @@ import (
 //	return returnNodes
 //}
 
-func SendRequest(prevState *State) (bool, Route, [][]Threshold, bool, []Payment) {
+func SendRequest(prevState *State, index int) (bool, Route, [][]Threshold, bool, []Payment) {
 	// Gets one random chunkId from the range of addresses
 	chunkId := rand.Intn(Constants.GetRangeAddress() - 1)
 	var random float32
@@ -50,7 +50,8 @@ func SendRequest(prevState *State) (bool, Route, [][]Threshold, bool, []Payment)
 
 	//responsibleNodes := findResponsibleNodes(prevState.NodesId, chunkId)
 	responsibleNodes := prevState.Graph.FindResponsibleNodes(chunkId)
-	originatorId := prevState.Originators[prevState.OriginatorIndex]
+	originatorId := prevState.Originators[(prevState.OriginatorIndex+index)%Constants.GetOriginators()]
+	//originatorId := prevState.Originators[prevState.OriginatorIndex]
 
 	if _, ok := prevState.PendingMap[originatorId]; ok {
 		chunkId = prevState.PendingMap[originatorId]

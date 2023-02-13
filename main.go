@@ -13,7 +13,9 @@ import (
 func MakePolicyOutput(state State, index int) Policy {
 	//fmt.Println("start of make initial policy")
 
-	found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state)
+	//found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state, index)
+	found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state, index)
+
 	policy := Policy{
 		Found:                found,
 		Route:                route,
@@ -29,35 +31,52 @@ func main() {
 	state := MakeInitialState("./data/nodes_data_16_10000.txt")
 
 	const iterations = 250000
-	const numGoroutines = 1
+	const numGoroutines = 100
 
 	numLoops := iterations / numGoroutines
 	stateArray := make([]State, numLoops)
 
+	var wg sync.WaitGroup
+
 	for i := 0; i < numLoops; i++ {
 		//fmt.Println("Start of lop ", time.Since(start))
 		var policyOutputs [numGoroutines]Policy
-		var wg sync.WaitGroup
+		var stateMutex sync.Mutex
 		for j := 0; j < numGoroutines; j++ {
 			wg.Add(1)
 			go func(index int) {
 				defer wg.Done()
 				policyOutputs[index] = MakePolicyOutput(state, index)
+				//policy := MakePolicyOutput(state, index)
+				stateMutex.Lock()
+
+				state = UpdatePendingMap(state, policyOutputs[index])
+				state = UpdateRerouteMap(state, policyOutputs[index])
+				state = UpdateCacheMap(state, policyOutputs[index])
+				state = UpdateOriginatorIndex(state, policyOutputs[index])
+				state = UpdateSuccessfulFound(state, policyOutputs[index])
+				state = UpdateFailedRequestsThreshold(state, policyOutputs[index])
+				state = UpdateFailedRequestsAccess(state, policyOutputs[index])
+				state = UpdateRouteListAndFlush(state, policyOutputs[index])
+				state = UpdateNetwork(state, policyOutputs[index])
+				fmt.Println(state.TimeStep)
+
+				stateMutex.Unlock()
 			}(j)
 		}
 		wg.Wait()
 		//fmt.Println("end of lop ", time.Since(start))
-		for j := 0; j < numGoroutines; j++ {
-			state = UpdatePendingMap(state, policyOutputs[j])
-			state = UpdateRerouteMap(state, policyOutputs[j])
-			state = UpdateCacheMap(state, policyOutputs[j])
-			state = UpdateOriginatorIndex(state, policyOutputs[j])
-			state = UpdateSuccessfulFound(state, policyOutputs[j])
-			state = UpdateFailedRequestsThreshold(state, policyOutputs[j])
-			state = UpdateFailedRequestsAccess(state, policyOutputs[j])
-			state = UpdateRouteListAndFlush(state, policyOutputs[j])
-			state = UpdateNetwork(state, policyOutputs[j])
-		}
+		//for j := 0; j < numGoroutines; j++ {
+		//state = UpdatePendingMap(state, policyOutputs[j])
+		//state = UpdateRerouteMap(state, policyOutputs[j])
+		//state = UpdateCacheMap(state, policyOutputs[j])
+		//state = UpdateOriginatorIndex(state, policyOutputs[j])
+		//state = UpdateSuccessfulFound(state, policyOutputs[j])
+		//state = UpdateFailedRequestsThreshold(state, policyOutputs[j])
+		//state = UpdateFailedRequestsAccess(state, policyOutputs[j])
+		//state = UpdateRouteListAndFlush(state, policyOutputs[j])
+		//	state = UpdateNetwork(state, policyOutputs[j])
+		//}
 
 		curState := State{
 			Graph:                   state.Graph,
