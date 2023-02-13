@@ -258,10 +258,10 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 				network.SetEdgeData(requesterNode, providerNode, newEdgeData)
 
 				if Constants.GetEdgeLock() {
-					prevState.Graph.EdgeUnlockMutex.Lock()
+					prevState.Graph.EdgeLockMutex.Lock()
 					prevState.Graph.UnlockEdge(requesterNode, providerNode)
 					prevState.Graph.UnlockEdge(providerNode, requesterNode)
-					prevState.Graph.EdgeUnlockMutex.Unlock()
+					prevState.Graph.EdgeLockMutex.Unlock()
 				}
 
 				if Constants.GetMaxPOCheckEnabled() {
