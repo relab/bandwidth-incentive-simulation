@@ -12,7 +12,7 @@ const path = "../../../data/nodes_data_8_10000.txt"
 
 func MakePolicyOutput(state State) Policy {
 	//fmt.Println("start of make initial policy")
-	found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state)
+	found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state, 1)
 	policy := Policy{
 		Found:                found,
 		Route:                route,

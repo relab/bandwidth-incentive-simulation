@@ -31,9 +31,9 @@ func TestAddEdge(t *testing.T) {
 		testNodes = append(testNodes, node)
 	}
 
-	edges := make(map[int]map[int]Edge, 10)
+	edges := make(map[int]map[int]*Edge, 10)
 	for _, node := range testNodes {
-		edges[node.Id] = make(map[int]Edge, 10)
+		edges[node.Id] = make(map[int]*Edge, 10)
 	}
 
 	graph := &Graph{Network: &network, Nodes: testNodes, Edges: edges, NodesMap: network.Nodes}
