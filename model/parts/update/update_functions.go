@@ -40,9 +40,7 @@ func UpdateOriginatorIndex(prevState State, policyInput Policy) State {
 		prevState.OriginatorIndex = 0
 		return prevState
 	}
-	//if prevState.TimeStep%100 == 0 {
 	prevState.OriginatorIndex++
-	//}
 	//prevState.OriginatorIndex = rand.Intn(Constants.GetOriginators() - 1)
 	return prevState
 }
@@ -257,13 +255,6 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 				newEdgeData.A2B += price
 				network.SetEdgeData(requesterNode, providerNode, newEdgeData)
 
-				if Constants.GetEdgeLock() {
-					prevState.Graph.EdgeLockMutex.Lock()
-					prevState.Graph.UnlockEdge(requesterNode, providerNode)
-					prevState.Graph.UnlockEdge(providerNode, requesterNode)
-					prevState.Graph.EdgeLockMutex.Unlock()
-				}
-
 				if Constants.GetMaxPOCheckEnabled() {
 					routeWithPrice = append(routeWithPrice, requesterNode)
 					routeWithPrice = append(routeWithPrice, price)
@@ -285,13 +276,6 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 				newEdgeData.A2B += price
 				network.SetEdgeData(requesterNode, providerNode, newEdgeData)
 
-				if Constants.GetEdgeLock() {
-					prevState.Graph.EdgeUnlockMutex.Lock()
-					prevState.Graph.UnlockEdge(requesterNode, providerNode)
-					prevState.Graph.UnlockEdge(providerNode, requesterNode)
-					prevState.Graph.EdgeUnlockMutex.Unlock()
-				}
-
 				if Constants.GetMaxPOCheckEnabled() {
 					routeWithPrice = append(routeWithPrice, requesterNode)
 					routeWithPrice = append(routeWithPrice, price)
@@ -300,6 +284,32 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 			}
 			if Constants.GetMaxPOCheckEnabled() {
 				//fmt.Println("Route with price ", routeWithPrice)
+			}
+		}
+	}
+	if Constants.GetEdgeLock() {
+		if !Contains(route, -1) && !Contains(route, -2) {
+			if Contains(route, -3) {
+				for i := 0; i < len(route)-3; i++ {
+					prevState.Graph.EdgeUnlockMutex.Lock()
+					prevState.Graph.UnlockEdge(route[i], route[i+1])
+					prevState.Graph.UnlockEdge(route[i+1], route[i])
+					prevState.Graph.EdgeUnlockMutex.Unlock()
+				}
+			} else {
+				for i := 0; i < len(route)-2; i++ {
+					prevState.Graph.EdgeUnlockMutex.Lock()
+					prevState.Graph.UnlockEdge(route[i], route[i+1])
+					prevState.Graph.UnlockEdge(route[i+1], route[i])
+					prevState.Graph.EdgeUnlockMutex.Unlock()
+				}
+			}
+		} else {
+			for i := 0; i < len(route)-3; i++ {
+				prevState.Graph.EdgeUnlockMutex.Lock()
+				prevState.Graph.UnlockEdge(route[i], route[i+1])
+				prevState.Graph.UnlockEdge(route[i+1], route[i])
+				prevState.Graph.EdgeUnlockMutex.Unlock()
 			}
 		}
 	}

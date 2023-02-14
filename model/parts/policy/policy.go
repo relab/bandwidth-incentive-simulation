@@ -7,32 +7,6 @@ import (
 	"math/rand"
 )
 
-//func findResponsibleNodes(nodesId []int, chunkAdd int) []int {
-//	//numNodes := Constants.GetBits()
-//	numNodes := 100
-//	distances := make([]int, 0, numNodes)
-//	var distance int
-//	nodesMap := make(map[int]int)
-//	returnNodes := make([]int, 4)
-//
-//	closestNodes := BinarySearchClosest(nodesId, chunkAdd, numNodes)
-//
-//	for _, nodeId := range closestNodes {
-//		distance = nodeId ^ chunkAdd
-//		// fmt.Println(distance, nodeId)
-//		distances = append(distances, distance)
-//		nodesMap[distance] = nodeId
-//	}
-//
-//	sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
-//
-//	for i := 0; i < 4; i++ {
-//		distance = distances[i]
-//		returnNodes[i] = nodesMap[distance]
-//	}
-//	return returnNodes
-//}
-
 func SendRequest(prevState *State, index int) (bool, Route, [][]Threshold, bool, []Payment) {
 	// Gets one random chunkId from the range of addresses
 	chunkId := rand.Intn(Constants.GetRangeAddress() - 1)
@@ -48,10 +22,9 @@ func SendRequest(prevState *State, index int) (bool, Route, [][]Threshold, bool,
 		}
 	}
 
-	//responsibleNodes := findResponsibleNodes(prevState.NodesId, chunkId)
 	responsibleNodes := prevState.Graph.FindResponsibleNodes(chunkId)
-	//originatorId := prevState.Originators[(prevState.OriginatorIndex+index)%Constants.GetOriginators()]
-	originatorId := prevState.Originators[prevState.OriginatorIndex]
+	originatorId := prevState.Originators[(prevState.OriginatorIndex+index)%Constants.GetOriginators()]
+	//originatorId := prevState.Originators[prevState.OriginatorIndex]
 
 	if _, ok := prevState.PendingMap[originatorId]; ok {
 		chunkId = prevState.PendingMap[originatorId]

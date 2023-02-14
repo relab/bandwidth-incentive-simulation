@@ -129,10 +129,22 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 		if BitLength(dist) >= BitLength(lastDistance) {
 			continue
 		}
+		if Constants.GetEdgeLock() {
+			graph.LockEdge(firstNodeId, nodeId)
+			graph.LockEdge(nodeId, firstNodeId)
+		}
 		if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph) {
 			thresholdFailed = false
 			// Could probably clean this one up, but keeping it close to original for now
 			if dist < currDist {
+				if currDist != lastDistance {
+					if Constants.GetEdgeLock() {
+						graph.EdgeUnlockMutex.Lock()
+						graph.UnlockEdge(firstNodeId, nextNodeId)
+						graph.UnlockEdge(nextNodeId, firstNodeId)
+						graph.EdgeUnlockMutex.Unlock()
+					}
+				}
 				if Constants.IsRetryWithAnotherPeer() {
 					_, ok := rerouteMap[mainOriginatorId]
 					if ok {
@@ -151,8 +163,21 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 					currDist = dist
 					nextNodeId = nodeId
 				}
+			} else {
+				if Constants.GetEdgeLock() {
+					graph.EdgeUnlockMutex.Lock()
+					graph.UnlockEdge(firstNodeId, nodeId)
+					graph.UnlockEdge(nodeId, firstNodeId)
+					graph.EdgeUnlockMutex.Unlock()
+				}
 			}
 		} else {
+			if Constants.GetEdgeLock() {
+				graph.EdgeUnlockMutex.Lock()
+				graph.UnlockEdge(firstNodeId, nodeId)
+				graph.UnlockEdge(nodeId, firstNodeId)
+				graph.EdgeUnlockMutex.Unlock()
+			}
 			thresholdFailed = true
 			if Constants.GetPaymentEnabled() {
 				if dist < payDist {
@@ -163,7 +188,6 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			listItem := Threshold{firstNodeId, nodeId}
 			thresholdList = append(thresholdList, listItem)
 		}
-
 	}
 
 	if nextNodeId != 0 {
@@ -328,24 +352,26 @@ func ConsumeTask(request *Request, graph *Graph, respNodes [4]int, rerouteMap Re
 			}
 		}
 	}
-	if Constants.GetEdgeLock() {
-		if !Contains(route, -1) && !Contains(route, -2) {
-			graph.EdgeLockMutex.Lock()
-			for i := 0; i < len(route)-1; i++ {
-				graph.LockEdge(route[i], route[i+1])
-				graph.LockEdge(route[i+1], route[i])
-			}
-			graph.EdgeLockMutex.Unlock()
-		}
-	}
-	//} else {
-	//	for i := 0; i < len(route)-2; i++ {
-	//		graph.LockEdge(route[i], route[i+1])
-	//		graph.LockEdge(route[i+1], route[i])
+	//if Constants.GetEdgeLock() {
+	//	if !Contains(route, -1) && !Contains(route, -2) {
+	//		for i := 0; i < len(route)-1; i++ {
+	//			graph.LockEdge(route[i], route[i+1])
+	//			graph.LockEdge(route[i+1], route[i])
+	//		}
+	//	} else {
+	//		for i := 0; i < len(route)-2; i++ {
+	//			graph.LockEdge(route[i], route[i+1])
+	//			graph.LockEdge(route[i+1], route[i])
+	//		}
 	//	}
 	//}
 
 	route = append(route, chunkId)
+
+	//for i := 0; i < len(route)-2; i++ {
+	//	test := graph.Edges[route[i]][route[i+1]]
+	//	fmt.Println(test)
+	//}
 
 	if Constants.IsForwarderPayForceOriginatorToPay() {
 		//if nextNodeId != -2 {

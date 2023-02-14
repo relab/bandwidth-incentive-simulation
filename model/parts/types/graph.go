@@ -23,7 +23,7 @@ type Edge struct {
 	FromNodeId int
 	ToNodeId   int
 	Attrs      EdgeAttrs
-	mutex      sync.Mutex
+	Mutex      sync.Mutex
 }
 
 // EdgeAttrs Edge attributes structure,
@@ -74,11 +74,11 @@ func (g *Graph) AddEdge(fromNodeId int, toNodeId int, attrs EdgeAttrs) error {
 }
 
 func (g *Graph) LockEdge(nodeA int, nodeB int) {
-	g.GetEdge(nodeA, nodeB).mutex.Lock()
+	g.GetEdge(nodeA, nodeB).Mutex.Lock()
 }
 
 func (g *Graph) UnlockEdge(nodeA int, nodeB int) {
-	g.GetEdge(nodeA, nodeB).mutex.Unlock()
+	g.GetEdge(nodeA, nodeB).Mutex.Unlock()
 }
 
 func (g *Graph) GetEdge(fromNodeId int, toNodeId int) *Edge {

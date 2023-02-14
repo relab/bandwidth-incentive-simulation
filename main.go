@@ -30,18 +30,18 @@ func main() {
 	start := time.Now()
 	state := MakeInitialState("./data/nodes_data_16_10000.txt")
 
-	const iterations = 250000
-	const numGoroutines = 100
+	const iterations = 1000000
+	const numGoroutines = 10
 
 	numLoops := iterations / numGoroutines
 	stateArray := make([]State, numLoops)
 
 	var wg sync.WaitGroup
+	var policyOutputs [numGoroutines]Policy
+	var stateMutex sync.Mutex
 
 	for i := 0; i < numLoops; i++ {
 		//fmt.Println("Start of lop ", time.Since(start))
-		var policyOutputs [numGoroutines]Policy
-		var stateMutex sync.Mutex
 		for j := 0; j < numGoroutines; j++ {
 			wg.Add(1)
 			go func(index int) {
@@ -59,12 +59,28 @@ func main() {
 				state = UpdateFailedRequestsAccess(state, policyOutputs[index])
 				state = UpdateRouteListAndFlush(state, policyOutputs[index])
 				state = UpdateNetwork(state, policyOutputs[index])
+
 				fmt.Println(state.TimeStep)
+				//fmt.Println(state.OriginatorIndex)
 
 				stateMutex.Unlock()
 			}(j)
 		}
 		wg.Wait()
+
+		//counter := 0
+		//for _, edges := range state.Graph.Edges {
+		//	for _, edge := range edges {
+		//		test := reflect.ValueOf(&edge.Mutex).Elem().FieldByName("state").Int()
+		//		if test == 1 {
+		//			counter++
+		//		}
+		//	}
+		//}
+		//if counter != 0 {
+		//	fmt.Println("Counter is: ", counter)
+		//}
+
 		//fmt.Println("end of lop ", time.Since(start))
 		//for j := 0; j < numGoroutines; j++ {
 		//state = UpdatePendingMap(state, policyOutputs[j])
