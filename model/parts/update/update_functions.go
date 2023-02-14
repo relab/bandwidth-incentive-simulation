@@ -40,7 +40,9 @@ func UpdateOriginatorIndex(prevState State, policyInput Policy) State {
 		prevState.OriginatorIndex = 0
 		return prevState
 	}
-	prevState.OriginatorIndex++
+	//if prevState.TimeStep%100 == 0 {
+	prevState.OriginatorIndex += Constants.GetNumGoroutines() / 2
+	//}
 	//prevState.OriginatorIndex = rand.Intn(Constants.GetOriginators() - 1)
 	return prevState
 }
@@ -293,14 +295,14 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 				for i := 0; i < len(route)-3; i++ {
 					//prevState.Graph.EdgeUnlockMutex.Lock()
 					prevState.Graph.UnlockEdge(route[i], route[i+1])
-					prevState.Graph.UnlockEdge(route[i+1], route[i])
+					//prevState.Graph.UnlockEdge(route[i+1], route[i])
 					//prevState.Graph.EdgeUnlockMutex.Unlock()
 				}
 			} else {
 				for i := 0; i < len(route)-2; i++ {
 					//prevState.Graph.EdgeUnlockMutex.Lock()
 					prevState.Graph.UnlockEdge(route[i], route[i+1])
-					prevState.Graph.UnlockEdge(route[i+1], route[i])
+					//prevState.Graph.UnlockEdge(route[i+1], route[i])
 					//prevState.Graph.EdgeUnlockMutex.Unlock()
 				}
 			}
@@ -308,7 +310,7 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 			for i := 0; i < len(route)-3; i++ {
 				//prevState.Graph.EdgeUnlockMutex.Lock()
 				prevState.Graph.UnlockEdge(route[i], route[i+1])
-				prevState.Graph.UnlockEdge(route[i+1], route[i])
+				//prevState.Graph.UnlockEdge(route[i+1], route[i])
 				//prevState.Graph.EdgeUnlockMutex.Unlock()
 			}
 		}
@@ -347,16 +349,6 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 			}
 		}
 	}
-
-	//if !Contains(route, -1) && !Contains(route, -2) {
-	//	for i := 0; i < len(route)-1; i++ {
-	//		prevState.Graph.UnlockEdge(route[i], route[i+1])
-	//	}
-	//} else {
-	//	for i := 0; i < len(route)-2; i++ {
-	//		prevState.Graph.UnlockEdge(route[i], route[i+1])
-	//	}
-	//}
 
 	prevState.TimeStep = currTimeStep
 	prevState.Graph = network

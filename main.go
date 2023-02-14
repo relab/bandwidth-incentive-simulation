@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/parts/policy"
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/update"
@@ -30,15 +31,17 @@ func main() {
 	start := time.Now()
 	state := MakeInitialState("./data/nodes_data_16_10000.txt")
 
-	const iterations = 1000000
-	const numGoroutines = 10
+	const iterations = 10000000
+	numGoroutines := constants.Constants.GetNumGoroutines()
 
 	//numLoops := iterations / numGoroutines
-	stateArray := make([]State, iterations+1000)
+	stateArray := make([]State, iterations+1)
 
 	var wg sync.WaitGroup
 	//var policyOutputs [numGoroutines]Policy
 	var stateMutex sync.Mutex
+	//counter := 0
+	//prevOrigIndex := 0
 
 	for j := 0; j < numGoroutines; j++ {
 		wg.Add(1)
@@ -48,6 +51,7 @@ func main() {
 				policyOutput := MakePolicyOutput(state, index)
 
 				stateMutex.Lock()
+				//prevOrigIndex = state.OriginatorIndex
 
 				state = UpdatePendingMap(state, policyOutput)
 				state = UpdateRerouteMap(state, policyOutput)
@@ -59,8 +63,15 @@ func main() {
 				state = UpdateRouteListAndFlush(state, policyOutput)
 				state = UpdateNetwork(state, policyOutput)
 
-				fmt.Println(state.TimeStep)
+				//fmt.Println(state.TimeStep)
 				//fmt.Println(state.OriginatorIndex)
+				//if state.OriginatorIndex == prevOrigIndex {
+				//	counter++
+				//} else {
+				//	counter = 0
+				//}
+				//fmt.Println(counter)
+
 				curState := State{
 					Graph:                   state.Graph,
 					Originators:             state.Originators,

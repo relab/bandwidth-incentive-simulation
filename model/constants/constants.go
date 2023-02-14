@@ -27,6 +27,7 @@ type constant struct {
 	cacheIsEnabled                   bool
 	adjustableThreshold              bool
 	edgeLock                         bool
+	numGoroutines                    int
 }
 
 var Constants = constant{
@@ -55,7 +56,8 @@ var Constants = constant{
 	retryWithAnotherPeer:             false,
 	cacheIsEnabled:                   false,
 	adjustableThreshold:              false,
-	edgeLock:                         true,
+	edgeLock:                         false,
+	numGoroutines:                    100,
 }
 
 // func CreateRangeAddress(c *constant){
@@ -168,4 +170,8 @@ func (c *constant) GetPrice() int {
 
 func (c *constant) GetEdgeLock() bool {
 	return c.edgeLock
+}
+
+func (c *constant) GetNumGoroutines() int {
+	return c.numGoroutines
 }

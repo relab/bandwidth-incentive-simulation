@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/general"
 	. "go-incentive-simulation/model/parts/types"
@@ -131,13 +130,14 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			continue
 		}
 		if Constants.GetEdgeLock() {
-			fmt.Println("trying to lock: ", firstNodeId, nodeId, "chunk ID: ", chunkId)
 			//graph.EdgeLockMutex.Lock()
+			//fmt.Println("before locking: ", firstNodeId, nodeId, graph.GetEdge(firstNodeId, nodeId), "chunkID: ", chunkId)
+			//fmt.Println("before locking: ", nodeId, firstNodeId, graph.GetEdge(nodeId, firstNodeId), "chunkID: ", chunkId)
 			graph.LockEdge(firstNodeId, nodeId)
-			fmt.Println("trying to lock: ", nodeId, firstNodeId, "chunk ID: ", chunkId)
-			graph.LockEdge(nodeId, firstNodeId)
 			//graph.EdgeLockMutex.Unlock()
-			fmt.Println("finished locking: ", firstNodeId, nodeId, "both ways. ", "chunk ID: ", chunkId)
+			//fmt.Println("after locking: ", firstNodeId, nodeId, graph.GetEdge(firstNodeId, nodeId), "chunkID: ", chunkId)
+			//fmt.Println("after locking: ", nodeId, firstNodeId, graph.GetEdge(nodeId, firstNodeId), "chunkID: ", chunkId)
+
 		}
 		if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph) {
 			thresholdFailed = false
@@ -147,7 +147,7 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 					if Constants.GetEdgeLock() {
 						//graph.EdgeUnlockMutex.Lock()
 						graph.UnlockEdge(firstNodeId, nextNodeId)
-						graph.UnlockEdge(nextNodeId, firstNodeId)
+						//graph.UnlockEdge(nextNodeId, firstNodeId)
 						//graph.EdgeUnlockMutex.Unlock()
 					}
 				}
@@ -173,7 +173,7 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 				if Constants.GetEdgeLock() {
 					//graph.EdgeUnlockMutex.Lock()
 					graph.UnlockEdge(firstNodeId, nodeId)
-					graph.UnlockEdge(nodeId, firstNodeId)
+					//graph.UnlockEdge(nodeId, firstNodeId)
 					//graph.EdgeUnlockMutex.Unlock()
 				}
 			}
@@ -181,7 +181,7 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			if Constants.GetEdgeLock() {
 				//graph.EdgeUnlockMutex.Lock()
 				graph.UnlockEdge(firstNodeId, nodeId)
-				graph.UnlockEdge(nodeId, firstNodeId)
+				//graph.UnlockEdge(nodeId, firstNodeId)
 				//graph.EdgeUnlockMutex.Unlock()
 			}
 			thresholdFailed = true

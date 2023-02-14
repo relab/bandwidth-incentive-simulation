@@ -23,7 +23,7 @@ type Edge struct {
 	FromNodeId int
 	ToNodeId   int
 	Attrs      EdgeAttrs
-	Mutex      sync.Mutex
+	Mutex      *sync.Mutex
 }
 
 // EdgeAttrs Edge attributes structure,
@@ -67,7 +67,11 @@ func (g *Graph) AddEdge(fromNodeId int, toNodeId int, attrs EdgeAttrs) error {
 	} else {
 		//newEdges := append(g.Edges[edge.FromNodeId], edge)
 		//g.Edges[edge.FromNodeId] = newEdges
-		newEdge := &Edge{FromNodeId: fromNodeId, ToNodeId: toNodeId, Attrs: attrs}
+		mutex := &sync.Mutex{}
+		if g.EdgeExists(toNodeId, fromNodeId) {
+			mutex = g.GetEdge(toNodeId, fromNodeId).Mutex
+		}
+		newEdge := &Edge{FromNodeId: fromNodeId, ToNodeId: toNodeId, Attrs: attrs, Mutex: mutex}
 		g.Edges[fromNodeId][toNodeId] = newEdge
 		return nil
 	}
