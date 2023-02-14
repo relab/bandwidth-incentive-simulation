@@ -1,7 +1,6 @@
 package policy
 
 import (
-	"fmt"
 	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/utils"
@@ -24,9 +23,7 @@ func SendRequest(prevState *State, index int) (bool, Route, [][]Threshold, bool,
 	}
 
 	responsibleNodes := prevState.Graph.FindResponsibleNodes(chunkId)
-	originatorId := prevState.Originators[(prevState.OriginatorIndex+index)%Constants.GetOriginators()]
-	fmt.Println((prevState.OriginatorIndex + index) % Constants.GetOriginators())
-	//originatorId := prevState.Originators[prevState.OriginatorIndex]
+	originatorId := prevState.Originators[prevState.OriginatorIndex]
 	//originatorId := prevState.Originators[rand.Intn(Constants.GetOriginators())]
 
 	if _, ok := prevState.PendingMap[originatorId]; ok {

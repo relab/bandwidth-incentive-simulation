@@ -56,8 +56,8 @@ var Constants = constant{
 	retryWithAnotherPeer:             false,
 	cacheIsEnabled:                   false,
 	adjustableThreshold:              false,
-	edgeLock:                         false,
-	numGoroutines:                    100,
+	edgeLock:                         true,
+	numGoroutines:                    5,
 }
 
 // func CreateRangeAddress(c *constant){
