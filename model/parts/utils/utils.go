@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/general"
 	. "go-incentive-simulation/model/parts/types"
@@ -130,8 +131,13 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			continue
 		}
 		if Constants.GetEdgeLock() {
+			fmt.Println("trying to lock: ", firstNodeId, nodeId, "chunk ID: ", chunkId)
+			//graph.EdgeLockMutex.Lock()
 			graph.LockEdge(firstNodeId, nodeId)
+			fmt.Println("trying to lock: ", nodeId, firstNodeId, "chunk ID: ", chunkId)
 			graph.LockEdge(nodeId, firstNodeId)
+			//graph.EdgeLockMutex.Unlock()
+			fmt.Println("finished locking: ", firstNodeId, nodeId, "both ways. ", "chunk ID: ", chunkId)
 		}
 		if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph) {
 			thresholdFailed = false
@@ -139,10 +145,10 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			if dist < currDist {
 				if currDist != lastDistance {
 					if Constants.GetEdgeLock() {
-						graph.EdgeUnlockMutex.Lock()
+						//graph.EdgeUnlockMutex.Lock()
 						graph.UnlockEdge(firstNodeId, nextNodeId)
 						graph.UnlockEdge(nextNodeId, firstNodeId)
-						graph.EdgeUnlockMutex.Unlock()
+						//graph.EdgeUnlockMutex.Unlock()
 					}
 				}
 				if Constants.IsRetryWithAnotherPeer() {
@@ -165,18 +171,18 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 				}
 			} else {
 				if Constants.GetEdgeLock() {
-					graph.EdgeUnlockMutex.Lock()
+					//graph.EdgeUnlockMutex.Lock()
 					graph.UnlockEdge(firstNodeId, nodeId)
 					graph.UnlockEdge(nodeId, firstNodeId)
-					graph.EdgeUnlockMutex.Unlock()
+					//graph.EdgeUnlockMutex.Unlock()
 				}
 			}
 		} else {
 			if Constants.GetEdgeLock() {
-				graph.EdgeUnlockMutex.Lock()
+				//graph.EdgeUnlockMutex.Lock()
 				graph.UnlockEdge(firstNodeId, nodeId)
 				graph.UnlockEdge(nodeId, firstNodeId)
-				graph.EdgeUnlockMutex.Unlock()
+				//graph.EdgeUnlockMutex.Unlock()
 			}
 			thresholdFailed = true
 			if Constants.GetPaymentEnabled() {

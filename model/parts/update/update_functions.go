@@ -291,25 +291,25 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 		if !Contains(route, -1) && !Contains(route, -2) {
 			if Contains(route, -3) {
 				for i := 0; i < len(route)-3; i++ {
-					prevState.Graph.EdgeUnlockMutex.Lock()
+					//prevState.Graph.EdgeUnlockMutex.Lock()
 					prevState.Graph.UnlockEdge(route[i], route[i+1])
 					prevState.Graph.UnlockEdge(route[i+1], route[i])
-					prevState.Graph.EdgeUnlockMutex.Unlock()
+					//prevState.Graph.EdgeUnlockMutex.Unlock()
 				}
 			} else {
 				for i := 0; i < len(route)-2; i++ {
-					prevState.Graph.EdgeUnlockMutex.Lock()
+					//prevState.Graph.EdgeUnlockMutex.Lock()
 					prevState.Graph.UnlockEdge(route[i], route[i+1])
 					prevState.Graph.UnlockEdge(route[i+1], route[i])
-					prevState.Graph.EdgeUnlockMutex.Unlock()
+					//prevState.Graph.EdgeUnlockMutex.Unlock()
 				}
 			}
 		} else {
 			for i := 0; i < len(route)-3; i++ {
-				prevState.Graph.EdgeUnlockMutex.Lock()
+				//prevState.Graph.EdgeUnlockMutex.Lock()
 				prevState.Graph.UnlockEdge(route[i], route[i+1])
 				prevState.Graph.UnlockEdge(route[i+1], route[i])
-				prevState.Graph.EdgeUnlockMutex.Unlock()
+				//prevState.Graph.EdgeUnlockMutex.Unlock()
 			}
 		}
 	}

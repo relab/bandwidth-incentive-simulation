@@ -33,41 +33,54 @@ func main() {
 	const iterations = 1000000
 	const numGoroutines = 10
 
-	numLoops := iterations / numGoroutines
-	stateArray := make([]State, numLoops)
+	//numLoops := iterations / numGoroutines
+	stateArray := make([]State, iterations+1000)
 
 	var wg sync.WaitGroup
-	var policyOutputs [numGoroutines]Policy
+	//var policyOutputs [numGoroutines]Policy
 	var stateMutex sync.Mutex
 
-	for i := 0; i < numLoops; i++ {
-		//fmt.Println("Start of lop ", time.Since(start))
-		for j := 0; j < numGoroutines; j++ {
-			wg.Add(1)
-			go func(index int) {
-				defer wg.Done()
-				policyOutputs[index] = MakePolicyOutput(state, index)
-				//policy := MakePolicyOutput(state, index)
+	for j := 0; j < numGoroutines; j++ {
+		wg.Add(1)
+		go func(index int) {
+			for i := 0; i < iterations/numGoroutines; i++ {
+				//policyOutputs[index] := MakePolicyOutput(state, index)
+				policyOutput := MakePolicyOutput(state, index)
+
 				stateMutex.Lock()
 
-				state = UpdatePendingMap(state, policyOutputs[index])
-				state = UpdateRerouteMap(state, policyOutputs[index])
-				state = UpdateCacheMap(state, policyOutputs[index])
-				state = UpdateOriginatorIndex(state, policyOutputs[index])
-				state = UpdateSuccessfulFound(state, policyOutputs[index])
-				state = UpdateFailedRequestsThreshold(state, policyOutputs[index])
-				state = UpdateFailedRequestsAccess(state, policyOutputs[index])
-				state = UpdateRouteListAndFlush(state, policyOutputs[index])
-				state = UpdateNetwork(state, policyOutputs[index])
+				state = UpdatePendingMap(state, policyOutput)
+				state = UpdateRerouteMap(state, policyOutput)
+				state = UpdateCacheMap(state, policyOutput)
+				state = UpdateOriginatorIndex(state, policyOutput)
+				state = UpdateSuccessfulFound(state, policyOutput)
+				state = UpdateFailedRequestsThreshold(state, policyOutput)
+				state = UpdateFailedRequestsAccess(state, policyOutput)
+				state = UpdateRouteListAndFlush(state, policyOutput)
+				state = UpdateNetwork(state, policyOutput)
 
 				fmt.Println(state.TimeStep)
 				//fmt.Println(state.OriginatorIndex)
+				curState := State{
+					Graph:                   state.Graph,
+					Originators:             state.Originators,
+					NodesId:                 state.NodesId,
+					RouteLists:              state.RouteLists,
+					PendingMap:              state.PendingMap,
+					RerouteMap:              state.RerouteMap,
+					CacheStruct:             state.CacheStruct,
+					OriginatorIndex:         state.OriginatorIndex,
+					SuccessfulFound:         state.SuccessfulFound,
+					FailedRequestsThreshold: state.FailedRequestsThreshold,
+					FailedRequestsAccess:    state.FailedRequestsAccess,
+					TimeStep:                state.TimeStep}
+
+				stateArray[state.TimeStep] = curState
 
 				stateMutex.Unlock()
-			}(j)
-		}
-		wg.Wait()
-
+			}
+			wg.Done()
+		}(j)
 		//counter := 0
 		//for _, edges := range state.Graph.Edges {
 		//	for _, edge := range edges {
@@ -94,22 +107,8 @@ func main() {
 		//	state = UpdateNetwork(state, policyOutputs[j])
 		//}
 
-		curState := State{
-			Graph:                   state.Graph,
-			Originators:             state.Originators,
-			NodesId:                 state.NodesId,
-			RouteLists:              state.RouteLists,
-			PendingMap:              state.PendingMap,
-			RerouteMap:              state.RerouteMap,
-			CacheStruct:             state.CacheStruct,
-			OriginatorIndex:         state.OriginatorIndex,
-			SuccessfulFound:         state.SuccessfulFound,
-			FailedRequestsThreshold: state.FailedRequestsThreshold,
-			FailedRequestsAccess:    state.FailedRequestsAccess,
-			TimeStep:                state.TimeStep}
-
-		stateArray[i] = curState
 	}
+	wg.Wait()
 	fmt.Println("end of main: ")
 	elapsed := time.Since(start)
 	fmt.Println("Time taken:", elapsed)
