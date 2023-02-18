@@ -29,7 +29,7 @@ func TestGenerateAndLoad(t *testing.T) {
 		t.Error("Bin are different")
 	}
 	if len(nodes2) != len(nodes) {
-		t.Error("Nodes are different")
+		t.Error("NodesMap are different")
 	}
 
 }

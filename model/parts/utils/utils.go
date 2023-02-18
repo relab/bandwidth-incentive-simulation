@@ -43,26 +43,22 @@ func SortedKeys(m map[int]*Node) []int {
 
 func CreateGraphNetwork(net *Network) (*Graph, error) {
 	//fmt.Println("Creating graph network...")
-	sortedNodeIds := SortedKeys(net.Nodes)
-	numNodes := len(net.Nodes)
+	sortedNodeIds := SortedKeys(net.NodesMap)
+	numNodes := len(net.NodesMap)
 	Edges := make(map[int]map[int]*Edge)
-	//for _, nodeId := range sortedNodeIds {
-	//	Edges[nodeId] = make(map[int]Edge)
-	//}
 	respNodes := PrecomputeClosestNodes(sortedNodeIds)
 	graph := &Graph{
 		Network:   net,
 		Nodes:     make([]*Node, 0, numNodes),
 		Edges:     Edges,
 		NodeIds:   sortedNodeIds,
-		NodesMap:  net.Nodes,
 		RespNodes: respNodes,
 	}
 
 	for _, nodeId := range sortedNodeIds {
 		graph.Edges[nodeId] = make(map[int]*Edge)
 
-		node := net.Nodes[nodeId]
+		node := net.NodesMap[nodeId]
 		err1 := graph.AddNode(node)
 		if err1 != nil {
 			return nil, err1
@@ -432,7 +428,7 @@ func CreateDownloadersList(g *Graph) []int {
 func CreateNodesList(g *Graph) []int {
 	//fmt.Println("Creating nodes list...")
 	nodesValue := g.NodeIds
-	//fmt.Println("Nodes list create...!")
+	//fmt.Println("NodesMap list create...!")
 	return nodesValue
 }
 

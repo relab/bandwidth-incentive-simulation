@@ -36,7 +36,7 @@ func TestAddEdge(t *testing.T) {
 		edges[node.Id] = make(map[int]*Edge, 10)
 	}
 
-	graph := &Graph{Network: &network, Nodes: testNodes, Edges: edges, NodesMap: network.Nodes}
+	graph := &Graph{Network: &network, Nodes: testNodes, Edges: edges}
 
 	edgeAttrs := EdgeAttrs{10, 20, 16}
 	err := graph.AddEdge(testNodes[0].Id, testNodes[1].Id, edgeAttrs)

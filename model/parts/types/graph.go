@@ -7,15 +7,14 @@ import (
 
 // Graph structure, node Ids in array and edges in map
 type Graph struct {
-	Network   *Network
+	*Network
 	Nodes     []*Node
 	NodeIds   []int
 	Edges     map[int]map[int]*Edge
-	NodesMap  map[int]*Node
 	RespNodes [][4]int
 }
 
-// Edge that connects to Nodes with attributes about the connection
+// Edge that connects to NodesMap with attributes about the connection
 type Edge struct {
 	FromNodeId int
 	ToNodeId   int

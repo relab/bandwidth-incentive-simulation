@@ -12,9 +12,9 @@ import (
 )
 
 type Network struct {
-	Bits  int
-	Bin   int
-	Nodes map[int]*Node
+	Bits     int
+	Bin      int
+	NodesMap map[int]*Node
 }
 
 type Node struct {
@@ -52,7 +52,7 @@ func (network *Network) Load(path string) (int, int, map[int]*Node) {
 
 	network.Bits = test.Bits
 	network.Bin = test.Bin
-	network.Nodes = make(map[int]*Node)
+	network.NodesMap = make(map[int]*Node)
 
 	for _, node := range test.Nodes {
 		node1 := network.node(node.ID)
@@ -63,7 +63,7 @@ func (network *Network) Load(path string) (int, int, map[int]*Node) {
 		}
 	}
 
-	return network.Bits, network.Bin, network.Nodes
+	return network.Bits, network.Bin, network.NodesMap
 }
 
 func (network *Network) node(value int) *Node {
@@ -78,14 +78,14 @@ func (network *Network) node(value int) *Node {
 		cacheSet:   []int{0},
 		canPay:     true,
 	}
-	if len(network.Nodes) == 0 {
-		network.Nodes = make(map[int]*Node)
+	if len(network.NodesMap) == 0 {
+		network.NodesMap = make(map[int]*Node)
 	}
-	if _, ok := network.Nodes[value]; !ok {
-		network.Nodes[value] = &res
+	if _, ok := network.NodesMap[value]; !ok {
+		network.NodesMap[value] = &res
 		return &res
 	}
-	return network.Nodes[value]
+	return network.NodesMap[value]
 
 }
 
@@ -96,7 +96,7 @@ func (network *Network) Generate(count int) []*Node {
 		node := network.node(nodeId)
 		nodes = append(nodes, node)
 	}
-	fmt.Println("Nodes:", nodes)
+	fmt.Println("NodesMap:", nodes)
 	pairs := make([][2]*Node, 0)
 	for i, node1 := range nodes {
 		for j := i + 1; j < len(nodes); j++ {
@@ -124,7 +124,7 @@ func (network *Network) Dump(path string) error {
 		ID  int   `json:"id"`
 		Adj []int `json:"adj"`
 	}, 0)}
-	for _, node := range network.Nodes {
+	for _, node := range network.NodesMap {
 		var result []int
 		for _, list := range node.AdjIds {
 			result = append(result, list...)
