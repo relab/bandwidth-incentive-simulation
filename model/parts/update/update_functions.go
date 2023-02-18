@@ -293,32 +293,6 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 			}
 		}
 	}
-	if Constants.GetEdgeLock() {
-		if !Contains(route, -1) && !Contains(route, -2) {
-			if Contains(route, -3) {
-				for i := 0; i < len(route)-3; i++ {
-					//prevState.Graph.EdgeUnlockMutex.Lock()
-					prevState.Graph.UnlockEdge(route[i], route[i+1])
-					//prevState.Graph.UnlockEdge(route[i+1], route[i])
-					//prevState.Graph.EdgeUnlockMutex.Unlock()
-				}
-			} else {
-				for i := 0; i < len(route)-2; i++ {
-					//prevState.Graph.EdgeUnlockMutex.Lock()
-					prevState.Graph.UnlockEdge(route[i], route[i+1])
-					//prevState.Graph.UnlockEdge(route[i+1], route[i])
-					//prevState.Graph.EdgeUnlockMutex.Unlock()
-				}
-			}
-		} else {
-			for i := 0; i < len(route)-3; i++ {
-				//prevState.Graph.EdgeUnlockMutex.Lock()
-				prevState.Graph.UnlockEdge(route[i], route[i+1])
-				//prevState.Graph.UnlockEdge(route[i+1], route[i])
-				//prevState.Graph.EdgeUnlockMutex.Unlock()
-			}
-		}
-	}
 	if Constants.GetThresholdEnabled() && Constants.IsForgivenessEnabled() {
 		thresholdFailedLists := policyInput.ThresholdFailedLists
 		if len(thresholdFailedLists) > 0 {
@@ -350,6 +324,24 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 						}
 					}
 				}
+			}
+		}
+	}
+	// Unlocks all the edges between the nodes in the route
+	if Constants.GetEdgeLock() {
+		if !Contains(route, -1) && !Contains(route, -2) {
+			if Contains(route, -3) {
+				for i := 0; i < len(route)-3; i++ {
+					prevState.Graph.UnlockEdge(route[i], route[i+1])
+				}
+			} else {
+				for i := 0; i < len(route)-2; i++ {
+					prevState.Graph.UnlockEdge(route[i], route[i+1])
+				}
+			}
+		} else {
+			for i := 0; i < len(route)-3; i++ {
+				prevState.Graph.UnlockEdge(route[i], route[i+1])
 			}
 		}
 	}

@@ -14,7 +14,7 @@ import (
 func MakePolicyOutput(state State, index int) Policy {
 	//fmt.Println("start of make initial policy")
 
-	//found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state, index)
+	//found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state)
 	found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state, index)
 
 	policy := Policy{
@@ -31,28 +31,25 @@ func main() {
 	start := time.Now()
 	state := MakeInitialState("./data/nodes_data_16_10000.txt")
 
-	const iterations = 10000000
+	const iterations = 1000000
 	numGoroutines := constants.Constants.GetNumGoroutines()
 
-	//numLoops := iterations / numGoroutines
+	numLoops := iterations / numGoroutines
 	stateArray := make([]State, iterations+1)
+	stateArray[0] = state
+	//var policyOutputs [numGoroutines]Policy
 
 	var wg sync.WaitGroup
-	//var policyOutputs [numGoroutines]Policy
 	var stateMutex sync.Mutex
-	//counter := 0
-	//prevOrigIndex := 0
 
 	for j := 0; j < numGoroutines; j++ {
 		wg.Add(1)
 		go func(index int) {
-			for i := 0; i < iterations/numGoroutines; i++ {
+			for i := 0; i < numLoops; i++ {
 				//policyOutputs[index] := MakePolicyOutput(state, index)
 				policyOutput := MakePolicyOutput(state, index)
 
 				stateMutex.Lock()
-				//prevOrigIndex = state.OriginatorIndex
-
 				state = UpdatePendingMap(state, policyOutput)
 				state = UpdateRerouteMap(state, policyOutput)
 				state = UpdateCacheMap(state, policyOutput)
@@ -62,15 +59,6 @@ func main() {
 				state = UpdateFailedRequestsAccess(state, policyOutput)
 				state = UpdateRouteListAndFlush(state, policyOutput)
 				state = UpdateNetwork(state, policyOutput)
-
-				//fmt.Println(state.TimeStep)
-				//fmt.Println(state.OriginatorIndex)
-				//if state.OriginatorIndex == prevOrigIndex {
-				//	counter++
-				//} else {
-				//	counter = 0
-				//}
-				//fmt.Println(counter)
 
 				curState := State{
 					Graph:                   state.Graph,
@@ -92,19 +80,6 @@ func main() {
 			}
 			wg.Done()
 		}(j)
-		//counter := 0
-		//for _, edges := range state.Graph.Edges {
-		//	for _, edge := range edges {
-		//		test := reflect.ValueOf(&edge.Mutex).Elem().FieldByName("state").Int()
-		//		if test == 1 {
-		//			counter++
-		//		}
-		//	}
-		//}
-		//if counter != 0 {
-		//	fmt.Println("Counter is: ", counter)
-		//}
-
 		//fmt.Println("end of lop ", time.Since(start))
 		//for j := 0; j < numGoroutines; j++ {
 		//state = UpdatePendingMap(state, policyOutputs[j])
@@ -115,9 +90,8 @@ func main() {
 		//state = UpdateFailedRequestsThreshold(state, policyOutputs[j])
 		//state = UpdateFailedRequestsAccess(state, policyOutputs[j])
 		//state = UpdateRouteListAndFlush(state, policyOutputs[j])
-		//	state = UpdateNetwork(state, policyOutputs[j])
+		//tate = UpdateNetwork(state, policyOutputs[j])
 		//}
-
 	}
 	wg.Wait()
 	fmt.Println("end of main: ")

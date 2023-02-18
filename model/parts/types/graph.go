@@ -7,15 +7,12 @@ import (
 
 // Graph structure, node Ids in array and edges in map
 type Graph struct {
-	Network         *Network
-	Nodes           []*Node
-	NodeIds         []int
-	Edges           map[int]map[int]*Edge
-	NodesMap        map[int]*Node
-	RespNodes       [][4]int
-	EdgeLockMutex   sync.RWMutex
-	EdgeUnlockMutex sync.RWMutex
-	UpdateMutex     sync.Mutex
+	Network   *Network
+	Nodes     []*Node
+	NodeIds   []int
+	Edges     map[int]map[int]*Edge
+	NodesMap  map[int]*Node
+	RespNodes [][4]int
 }
 
 // Edge that connects to Nodes with attributes about the connection
