@@ -36,16 +36,12 @@ func UpdateFailedRequestsAccess(prevState State, policyInput Policy) State {
 }
 
 func UpdateOriginatorIndex(prevState State, policyInput Policy) State {
-	//if prevState.OriginatorIndex+1 >= Constants.GetOriginators() {
-	//	prevState.OriginatorIndex = 0
-	//	return prevState
-	//}
+
 	//if prevState.TimeStep%100 == 0 {
 	prevState.OriginatorIndex += 1
 	if prevState.OriginatorIndex >= Constants.GetOriginators() {
 		prevState.OriginatorIndex = 0
 	}
-	//}
 	//}
 	//prevState.OriginatorIndex = rand.Intn(Constants.GetOriginators() - 1)
 	return prevState

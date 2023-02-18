@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"go-incentive-simulation/model/constants"
+	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/parts/policy"
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/update"
@@ -31,8 +31,8 @@ func main() {
 	start := time.Now()
 	state := MakeInitialState("./data/nodes_data_16_10000.txt")
 
-	const iterations = 1000000
-	numGoroutines := constants.Constants.GetNumGoroutines()
+	const iterations = 10000000
+	numGoroutines := Constants.GetNumGoroutines()
 
 	numLoops := iterations / numGoroutines
 	stateArray := make([]State, iterations+1)
@@ -60,7 +60,7 @@ func main() {
 				state = UpdateRouteListAndFlush(state, policyOutput)
 				state = UpdateNetwork(state, policyOutput)
 
-				curState := State{
+				stateArray[state.TimeStep] = State{
 					Graph:                   state.Graph,
 					Originators:             state.Originators,
 					NodesId:                 state.NodesId,
@@ -72,9 +72,8 @@ func main() {
 					SuccessfulFound:         state.SuccessfulFound,
 					FailedRequestsThreshold: state.FailedRequestsThreshold,
 					FailedRequestsAccess:    state.FailedRequestsAccess,
-					TimeStep:                state.TimeStep}
-
-				stateArray[state.TimeStep] = curState
+					TimeStep:                state.TimeStep,
+				}
 
 				stateMutex.Unlock()
 			}
