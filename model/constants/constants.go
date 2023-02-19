@@ -25,6 +25,7 @@ type constant struct {
 	forwarderPayForceOriginatorToPay bool
 	retryWithAnotherPeer             bool
 	cacheIsEnabled                   bool
+	preferredChunks                  bool
 	adjustableThreshold              bool
 	edgeLock                         bool
 	numGoroutines                    int
@@ -45,7 +46,7 @@ var Constants = constant{
 	chunks:                           10000,
 	requestsPerSecond:                12500, // 12500
 	thresholdEnabled:                 true,
-	forgivenessEnabled:               false,
+	forgivenessEnabled:               true,
 	paymentEnabled:                   false,
 	maxPOCheckEnabled:                false,
 	waitingEnabled:                   false,
@@ -54,7 +55,8 @@ var Constants = constant{
 	payIfOrigPays:                    false,
 	forwarderPayForceOriginatorToPay: false,
 	retryWithAnotherPeer:             false,
-	cacheIsEnabled:                   false,
+	cacheIsEnabled:                   true,
+	preferredChunks:                  false,
 	adjustableThreshold:              false,
 	edgeLock:                         true,
 	numGoroutines:                    5,
@@ -78,6 +80,10 @@ func (c *constant) IsForgivenessEnabled() bool {
 
 func (c *constant) IsCacheEnabled() bool {
 	return c.cacheIsEnabled
+}
+
+func (c *constant) IsPreferredChunksEnabled() bool {
+	return c.preferredChunks
 }
 
 func (c *constant) IsRetryWithAnotherPeer() bool {

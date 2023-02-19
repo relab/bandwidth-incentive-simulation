@@ -117,7 +117,6 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 	payDist := lastDistance
 
 	var lockedEdges []int
-	var unlockedEdges []int
 
 	//firstNode := graph.NodesMap[firstNodeId]
 	bin := Constants.GetBits() - BitLength(firstNodeId^chunkId)
@@ -136,12 +135,6 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			thresholdFailed = false
 			// Could probably clean this one up, but keeping it close to original for now
 			if dist < currDist {
-				if currDist != lastDistance {
-					if Constants.GetEdgeLock() {
-						graph.UnlockEdge(firstNodeId, nextNodeId)
-						unlockedEdges = append(unlockedEdges, nextNodeId)
-					}
-				}
 				if Constants.IsRetryWithAnotherPeer() {
 					_, ok := rerouteMap[mainOriginatorId]
 					if ok {
@@ -160,17 +153,8 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 					currDist = dist
 					nextNodeId = nodeId
 				}
-			} else {
-				if Constants.GetEdgeLock() {
-					graph.UnlockEdge(firstNodeId, nodeId)
-					unlockedEdges = append(unlockedEdges, nodeId)
-				}
 			}
 		} else {
-			if Constants.GetEdgeLock() {
-				graph.UnlockEdge(firstNodeId, nodeId)
-				unlockedEdges = append(unlockedEdges, nodeId)
-			}
 			thresholdFailed = true
 			if Constants.GetPaymentEnabled() {
 				if dist < payDist {
@@ -247,17 +231,13 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			}
 		}
 	}
-	//if Constants.GetEdgeLock() {
-	//	for _, nodeId := range lockedEdges {
-	//		if nodeId != nextNodeId {
-	//			graph.UnlockEdge(firstNodeId, nodeId)
-	//			unlockedEdges = append(unlockedEdges, nodeId)
-	//		}
-	//	}
-	//}
-	// this is to confirm we only end up locking the returned node from this function
-	if nextNodeId > 0 && lockedEdges != nil && len(lockedEdges)-1 != len(unlockedEdges) {
-		panic("lock mismatch")
+	// unlocks all nodes except the nextNodeId lock
+	if Constants.GetEdgeLock() {
+		for _, nodeId := range lockedEdges {
+			if nodeId != nextNodeId {
+				graph.UnlockEdge(firstNodeId, nodeId)
+			}
+		}
 	}
 
 	// TODO: Usikker på dette

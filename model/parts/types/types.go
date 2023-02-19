@@ -13,30 +13,31 @@ type PendingMap map[int]int
 
 type RerouteMap map[int][]int
 
-type CacheMap map[int]map[int]int
+type CacheMapArray []map[int]int
 
 type CacheStruct struct {
 	CacheHits  int
-	CacheMap   CacheMap
+	CacheMap   CacheMapArray
 	CacheMutex *sync.Mutex
 }
+
+// TODO: cache is now slower on than off because of the concurrency
 
 func (c *CacheStruct) Contains(nodeId int, chunkId int) bool {
 	c.CacheMutex.Lock()
 	defer c.CacheMutex.Unlock()
-	if nodeMap, ok := c.CacheMap[nodeId]; ok {
-		if nodeMap[chunkId] > 0 {
-			return true
-		}
+	nodeMap := c.CacheMap[nodeId]
+	if nodeMap != nil && nodeMap[chunkId] > 0 {
+		return true
 	}
 	return false
 }
 
-func (c *CacheStruct) Add(nodeId int, chunkId int) {
+func (c *CacheStruct) AddToCache(nodeId int, chunkId int) {
 	c.CacheMutex.Lock()
 	defer c.CacheMutex.Unlock()
-	c.CacheHits++
-	if nodeMap, ok := c.CacheMap[nodeId]; ok {
+	nodeMap := c.CacheMap[nodeId]
+	if nodeMap != nil {
 		if _, ok2 := nodeMap[chunkId]; ok2 {
 			nodeMap[chunkId]++
 		} else {

@@ -80,6 +80,8 @@ func UpdateCacheMap(prevState State, policyInput Policy) State {
 	if Constants.IsCacheEnabled() {
 		route := policyInput.Route
 		if Contains(route, -3) {
+			// -3 means found by caching
+			cacheStruct.CacheHits++
 			chunkId = route[len(route)-2]
 		} else {
 			chunkId = route[len(route)-1]
@@ -88,12 +90,12 @@ func UpdateCacheMap(prevState State, policyInput Policy) State {
 			if Contains(route, -3) {
 				for i := 0; i < len(route)-3; i++ {
 					nodeId := route[i]
-					cacheStruct.Add(nodeId, chunkId)
+					cacheStruct.AddToCache(nodeId, chunkId)
 				}
 			} else {
 				for i := 0; i < len(route)-2; i++ {
 					nodeId := route[i]
-					cacheStruct.Add(nodeId, chunkId)
+					cacheStruct.AddToCache(nodeId, chunkId)
 				}
 			}
 		}

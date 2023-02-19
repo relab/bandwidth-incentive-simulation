@@ -37,15 +37,17 @@ import (
 func SendRequest(prevState *State, index int) (bool, Route, [][]Threshold, bool, []Payment) {
 	// Gets one random chunkId from the range of addresses
 	chunkId := rand.Intn(Constants.GetRangeAddress() - 1)
-	var random float32
 
-	if Constants.IsCacheEnabled() == true {
-		numPreferredChunks := 1000
-		random = rand.Float32()
-		if float32(random) <= 0.5 {
-			chunkId = rand.Intn(numPreferredChunks)
-		} else {
-			chunkId = rand.Intn(Constants.GetRangeAddress()-numPreferredChunks) + numPreferredChunks
+	if Constants.IsPreferredChunksEnabled() {
+		var random float32
+		if Constants.IsCacheEnabled() == true {
+			numPreferredChunks := 1000
+			random = rand.Float32()
+			if float32(random) <= 0.5 {
+				chunkId = rand.Intn(numPreferredChunks)
+			} else {
+				chunkId = rand.Intn(Constants.GetRangeAddress()-numPreferredChunks) + numPreferredChunks
+			}
 		}
 	}
 

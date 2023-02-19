@@ -117,5 +117,5 @@ func PrintState(state State) {
 	//fmt.Println("PendingMap: ", state.PendingMap)
 	//fmt.Println("RerouteMap: ", state.RerouteMap)
 	//fmt.Println("RouteLists: ", state.RouteLists)
-	//fmt.Println("CacheMap: ", state.CacheStruct.CacheMap)
+	//fmt.Println("CacheMapArray: ", state.CacheStruct.CacheMapArray)
 }
