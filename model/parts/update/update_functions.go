@@ -72,6 +72,22 @@ func UpdateRouteListAndFlush(prevState State, policyInput Policy) State {
 	return prevState
 }
 
+//func addToCache(node *Node, chunkId int) {
+//	node.Mutex.Lock()
+//	defer node.Mutex.Unlock()
+//	if node.CacheMap != nil {
+//		cacheMap := node.CacheMap
+//		if _, ok := cacheMap[chunkId]; ok {
+//			cacheMap[chunkId]++
+//		} else {
+//			cacheMap[chunkId] = 1
+//		}
+//	} else {
+//		node.CacheMap = map[int]int{node.Id: 1}
+//	}
+//	return
+//}
+
 func UpdateCacheMap(prevState State, policyInput Policy) State {
 	cacheStruct := prevState.CacheStruct
 	chunkId := 0
@@ -90,12 +106,38 @@ func UpdateCacheMap(prevState State, policyInput Policy) State {
 			if Contains(route, -3) {
 				for i := 0; i < len(route)-3; i++ {
 					nodeId := route[i]
-					cacheStruct.AddToCache(nodeId, chunkId)
+					//cacheStruct.AddToCache(nodeId, chunkId)
+					node := prevState.Graph.GetNode(nodeId)
+					node.Mutex.Lock()
+					if node.CacheMap != nil {
+						cacheMap := node.CacheMap
+						if _, ok := cacheMap[chunkId]; ok {
+							cacheMap[chunkId]++
+						} else {
+							cacheMap[chunkId] = 1
+						}
+					} else {
+						node.CacheMap = map[int]int{node.Id: 1}
+					}
+					node.Mutex.Unlock()
 				}
 			} else {
 				for i := 0; i < len(route)-2; i++ {
 					nodeId := route[i]
-					cacheStruct.AddToCache(nodeId, chunkId)
+					//cacheStruct.AddToCache(nodeId, chunkId)
+					node := prevState.Graph.GetNode(nodeId)
+					node.Mutex.Lock()
+					if node.CacheMap != nil {
+						cacheMap := node.CacheMap
+						if _, ok := cacheMap[chunkId]; ok {
+							cacheMap[chunkId]++
+						} else {
+							cacheMap[chunkId] = 1
+						}
+					} else {
+						node.CacheMap = map[int]int{node.Id: 1}
+					}
+					node.Mutex.Unlock()
 				}
 			}
 		}

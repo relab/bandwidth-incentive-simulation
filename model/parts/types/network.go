@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"sort"
+	"sync"
 	"time"
 )
 
@@ -21,6 +22,8 @@ type Node struct {
 	Network    *Network
 	Id         int
 	AdjIds     [][]int
+	CacheMap   map[int]int
+	Mutex      *sync.Mutex
 	storageSet []int
 	cacheSet   []int
 	canPay     bool
@@ -74,6 +77,8 @@ func (network *Network) node(value int) *Node {
 		Network:    network,
 		Id:         value,
 		AdjIds:     make([][]int, network.Bits),
+		CacheMap:   make(map[int]int),
+		Mutex:      &sync.Mutex{},
 		storageSet: []int{0},
 		cacheSet:   []int{0},
 		canPay:     true,

@@ -13,6 +13,7 @@ type Graph struct {
 	NodeIds   []int
 	Edges     map[int]map[int]*Edge
 	RespNodes [][4]int
+	Mutex     sync.Mutex
 }
 
 // Edge that connects to NodesMap with attributes about the connection
@@ -115,6 +116,8 @@ func (g *Graph) SetEdgeData(fromNodeId int, toNodeId int, edgeAttrs EdgeAttrs) b
 
 // GetNode getNode will return a node point if exists or return nil
 func (g *Graph) GetNode(nodeId int) *Node {
+	//g.Mutex.Lock()
+	//defer g.Mutex.Unlock()
 	node, ok := g.NodesMap[nodeId]
 	if ok {
 		return node
