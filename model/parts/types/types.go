@@ -1,5 +1,9 @@
 package types
 
+import (
+	"sync"
+)
+
 type Request struct {
 	OriginatorId int
 	ChunkId      int
@@ -9,12 +13,41 @@ type PendingMap map[int]int
 
 type RerouteMap map[int][]int
 
-type CacheMap map[*Node]map[int]int
+type CacheMap map[int]map[int]int
 
 type CacheStruct struct {
-	CacheHits int
-	CacheMap  CacheMap
+	CacheHits  int
+	CacheMap   CacheMap
+	CacheMutex *sync.Mutex
 }
+
+func (c *CacheStruct) Contains(nodeId int, chunkId int) bool {
+	c.CacheMutex.Lock()
+	defer c.CacheMutex.Unlock()
+	if nodeMap, ok := c.CacheMap[nodeId]; ok {
+		if nodeMap[chunkId] > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *CacheStruct) Add(nodeId int, chunkId int) {
+	c.CacheMutex.Lock()
+	defer c.CacheMutex.Unlock()
+	c.CacheHits++
+	if nodeMap, ok := c.CacheMap[nodeId]; ok {
+		if _, ok2 := nodeMap[chunkId]; ok2 {
+			nodeMap[chunkId]++
+		} else {
+			nodeMap[chunkId] = 1
+		}
+	} else {
+		c.CacheMap[nodeId] = map[int]int{chunkId: 1}
+	}
+	return
+}
+
 type Route []int
 
 type Payment struct {

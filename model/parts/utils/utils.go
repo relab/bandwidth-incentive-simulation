@@ -115,7 +115,7 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 
 	currDist := lastDistance
 	payDist := lastDistance
-	
+
 	var lockedEdges []int
 	var unlockedEdges []int
 
@@ -136,6 +136,12 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			thresholdFailed = false
 			// Could probably clean this one up, but keeping it close to original for now
 			if dist < currDist {
+				if currDist != lastDistance {
+					if Constants.GetEdgeLock() {
+						graph.UnlockEdge(firstNodeId, nextNodeId)
+						unlockedEdges = append(unlockedEdges, nextNodeId)
+					}
+				}
 				if Constants.IsRetryWithAnotherPeer() {
 					_, ok := rerouteMap[mainOriginatorId]
 					if ok {
@@ -155,8 +161,16 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 					nextNodeId = nodeId
 				}
 			} else {
+				if Constants.GetEdgeLock() {
+					graph.UnlockEdge(firstNodeId, nodeId)
+					unlockedEdges = append(unlockedEdges, nodeId)
+				}
 			}
 		} else {
+			if Constants.GetEdgeLock() {
+				graph.UnlockEdge(firstNodeId, nodeId)
+				unlockedEdges = append(unlockedEdges, nodeId)
+			}
 			thresholdFailed = true
 			if Constants.GetPaymentEnabled() {
 				if dist < payDist {
@@ -233,14 +247,16 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			}
 		}
 	}
-	for _, nodeId := range lockedEdges {
-		if nodeId != nextNodeId {
-			graph.UnlockEdge(firstNodeId, nodeId)
-			unlockedEdges = append(unlockedEdges, nodeId)
-		}
-	}
+	//if Constants.GetEdgeLock() {
+	//	for _, nodeId := range lockedEdges {
+	//		if nodeId != nextNodeId {
+	//			graph.UnlockEdge(firstNodeId, nodeId)
+	//			unlockedEdges = append(unlockedEdges, nodeId)
+	//		}
+	//	}
+	//}
 	// this is to confirm we only end up locking the returned node from this function
-	if lockedEdges != nil && len(lockedEdges)-1 != len(unlockedEdges) {
+	if nextNodeId > 0 && lockedEdges != nil && len(lockedEdges)-1 != len(unlockedEdges) {
 		panic("lock mismatch")
 	}
 
@@ -276,7 +292,7 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 }
 
 // ConsumeTask cacheDict is map of nodes containing an array of maps with key as a chunkAddr and a popularity counter
-func ConsumeTask(request *Request, graph *Graph, respNodes [4]int, rerouteMap RerouteMap, cacheMap CacheMap) (bool, Route, [][]Threshold, bool, []Payment) {
+func ConsumeTask(request *Request, graph *Graph, respNodes [4]int, rerouteMap RerouteMap, cacheStruct CacheStruct) (bool, Route, [][]Threshold, bool, []Payment) {
 	var thresholdFailedList [][]Threshold
 	var paymentList []Payment
 	originatorId := request.OriginatorId
@@ -325,15 +341,11 @@ func ConsumeTask(request *Request, graph *Graph, respNodes [4]int, rerouteMap Re
 					break out
 				}
 				if Constants.IsCacheEnabled() {
-					nextNode := graph.NodesMap[nextNodeId]
-					chunkMap, ok := cacheMap[nextNode]
-					if ok {
-						if chunkMap[chunkId] > 1 {
-							//fmt.Println("is in cache")
-							found = true
-							foundByCaching = true
-							break out
-						}
+					if ok := cacheStruct.Contains(nextNodeId, chunkId); ok {
+						//fmt.Println("is in cache")
+						found = true
+						foundByCaching = true
+						break out
 					}
 				}
 				// NOTE !

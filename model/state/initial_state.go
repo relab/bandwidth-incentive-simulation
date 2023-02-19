@@ -6,6 +6,7 @@ import (
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/utils"
 	"math/rand"
+	"sync"
 )
 
 func MakeInitialState(path string) State {
@@ -18,7 +19,7 @@ func MakeInitialState(path string) State {
 	if err != nil {
 		fmt.Println("create graph network returned an error: ", err)
 	}
-	cacheStruct := CacheStruct{CacheHits: 0, CacheMap: make(CacheMap, 0)}
+	cacheStruct := CacheStruct{CacheHits: 0, CacheMap: make(CacheMap, 0), CacheMutex: &sync.Mutex{}}
 	initialState := State{
 		Graph:                   graph,
 		Originators:             CreateDownloadersList(graph),

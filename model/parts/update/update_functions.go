@@ -73,56 +73,32 @@ func UpdateRouteListAndFlush(prevState State, policyInput Policy) State {
 }
 
 func UpdateCacheMap(prevState State, policyInput Policy) State {
-	cacheMap := prevState.CacheStruct.CacheMap
-	cacheHits := prevState.CacheStruct.CacheHits
-	g := prevState.Graph
-	chunkAddr := 0
+	cacheStruct := prevState.CacheStruct
+	chunkId := 0
 	//val := make(map[int]int)
 
 	if Constants.IsCacheEnabled() {
 		route := policyInput.Route
 		if Contains(route, -3) {
-			chunkAddr = route[len(route)-2]
+			chunkId = route[len(route)-2]
 		} else {
-			chunkAddr = route[len(route)-1]
+			chunkId = route[len(route)-1]
 		}
 		if !Contains(route, -1) && !Contains(route, -2) {
 			if Contains(route, -3) {
 				for i := 0; i < len(route)-3; i++ {
-					routeId := g.GetNode(route[i])
-					cacheHits++
-					if val, ok := cacheMap[routeId]; ok {
-						if _, ok := val[chunkAddr]; ok {
-							val[chunkAddr]++
-						} else {
-							val[chunkAddr] = 1
-						}
-					} else {
-						cacheMap[routeId] = map[int]int{}
-						val := cacheMap[routeId]
-						val[chunkAddr] = 1
-					}
+					nodeId := route[i]
+					cacheStruct.Add(nodeId, chunkId)
 				}
 			} else {
 				for i := 0; i < len(route)-2; i++ {
-					routeId := g.GetNode(route[i])
-					if val, ok := cacheMap[routeId]; ok {
-						if _, ok := val[chunkAddr]; ok {
-							val[chunkAddr]++
-						} else {
-							val[chunkAddr] = 1
-						}
-					} else {
-						cacheMap[routeId] = map[int]int{}
-						val := cacheMap[routeId]
-						val[chunkAddr] = 1
-					}
+					nodeId := route[i]
+					cacheStruct.Add(nodeId, chunkId)
 				}
 			}
 		}
 	}
-	prevState.CacheStruct.CacheMap = cacheMap
-	prevState.CacheStruct.CacheHits = cacheHits
+	prevState.CacheStruct = cacheStruct
 	return prevState
 }
 
