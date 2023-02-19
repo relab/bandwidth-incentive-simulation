@@ -45,8 +45,8 @@ var Constants = constant{
 	chunks:                           10000,
 	requestsPerSecond:                12500, // 12500
 	thresholdEnabled:                 true,
-	forgivenessEnabled:               true,
-	paymentEnabled:                   false,
+	forgivenessEnabled:               false,
+	paymentEnabled:                   true,
 	maxPOCheckEnabled:                false,
 	waitingEnabled:                   false,
 	onlyOriginatorPays:               false,
@@ -57,7 +57,7 @@ var Constants = constant{
 	cacheIsEnabled:                   false,
 	adjustableThreshold:              false,
 	edgeLock:                         true,
-	numGoroutines:                    5,
+	numGoroutines:                    10,
 }
 
 // func CreateRangeAddress(c *constant){

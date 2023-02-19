@@ -8,6 +8,7 @@ import (
 // Graph structure, node Ids in array and edges in map
 type Graph struct {
 	*Network
+	CurState  State
 	Nodes     []*Node
 	NodeIds   []int
 	Edges     map[int]map[int]*Edge
@@ -74,11 +75,13 @@ func (g *Graph) AddEdge(fromNodeId int, toNodeId int, attrs EdgeAttrs) error {
 }
 
 func (g *Graph) LockEdge(nodeA int, nodeB int) {
-	g.GetEdge(nodeA, nodeB).Mutex.Lock()
+	edge := g.GetEdge(nodeA, nodeB)
+	edge.Mutex.Lock()
 }
 
 func (g *Graph) UnlockEdge(nodeA int, nodeB int) {
-	g.GetEdge(nodeA, nodeB).Mutex.Unlock()
+	edge := g.GetEdge(nodeA, nodeB)
+	edge.Mutex.Unlock()
 }
 
 func (g *Graph) GetEdge(fromNodeId int, toNodeId int) *Edge {

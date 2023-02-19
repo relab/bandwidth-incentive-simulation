@@ -115,6 +115,9 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 
 	currDist := lastDistance
 	payDist := lastDistance
+	
+	var lockedEdges []int
+	var unlockedEdges []int
 
 	//firstNode := graph.NodesMap[firstNodeId]
 	bin := Constants.GetBits() - BitLength(firstNodeId^chunkId)
@@ -127,16 +130,12 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 		}
 		if Constants.GetEdgeLock() {
 			graph.LockEdge(firstNodeId, nodeId)
+			lockedEdges = append(lockedEdges, nodeId)
 		}
 		if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph) {
 			thresholdFailed = false
 			// Could probably clean this one up, but keeping it close to original for now
 			if dist < currDist {
-				if currDist != lastDistance {
-					if Constants.GetEdgeLock() {
-						graph.UnlockEdge(firstNodeId, nextNodeId)
-					}
-				}
 				if Constants.IsRetryWithAnotherPeer() {
 					_, ok := rerouteMap[mainOriginatorId]
 					if ok {
@@ -156,14 +155,8 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 					nextNodeId = nodeId
 				}
 			} else {
-				if Constants.GetEdgeLock() {
-					graph.UnlockEdge(firstNodeId, nodeId)
-				}
 			}
 		} else {
-			if Constants.GetEdgeLock() {
-				graph.UnlockEdge(firstNodeId, nodeId)
-			}
 			thresholdFailed = true
 			if Constants.GetPaymentEnabled() {
 				if dist < payDist {
@@ -240,6 +233,17 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			}
 		}
 	}
+	for _, nodeId := range lockedEdges {
+		if nodeId != nextNodeId {
+			graph.UnlockEdge(firstNodeId, nodeId)
+			unlockedEdges = append(unlockedEdges, nodeId)
+		}
+	}
+	// this is to confirm we only end up locking the returned node from this function
+	if lockedEdges != nil && len(lockedEdges)-1 != len(unlockedEdges) {
+		panic("lock mismatch")
+	}
+
 	// TODO: Usikker på dette
 	if Constants.GetPaymentEnabled() {
 	out:
@@ -258,6 +262,7 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			}
 		}
 	}
+
 	if payment != (Payment{}) {
 		prevNodePaid = true
 	} else {
@@ -265,7 +270,7 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 	}
 	// RASMUS: nil reference error
 	if nextNodeId != 0 {
-		//fmt.Printf("\n next node is: %d", nextNodeId)
+		// fmt.Println("Next node is: ", nextNodeId)
 	}
 	return nextNodeId, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid
 }
