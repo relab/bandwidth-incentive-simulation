@@ -268,6 +268,7 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 	if nextNodeId != 0 {
 		// fmt.Println("Next node is: ", nextNodeId)
 	}
+	//nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid
 	return nextNodeId, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid
 }
 
@@ -301,8 +302,15 @@ func ConsumeTask(request *Request, graph *Graph, respNodes [4]int, rerouteMap Re
 		for !ArrContains(respNodes, originatorId) {
 			counter++
 			//fmt.Printf("\n orig: %d, chunk_id: %d", mainOriginatorId, chunkId)
-			// nextNodeId, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid = getNext(originator, chunkId, graph, mainOriginator, prevNodePaid, rerouteMap)
+			//nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originatorId, chunkId, graph, mainOriginatorId, prevNodePaid, rerouteMap)
+
 			nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originatorId, chunkId, graph, mainOriginatorId, prevNodePaid, rerouteMap)
+
+			//if nextNodeId == -2 {
+			//	// Access Failed
+			//	fmt.Println("Access Failed")
+			//}
+
 			if payment != (Payment{}) {
 				paymentList = append(paymentList, payment)
 			}
@@ -345,44 +353,44 @@ func ConsumeTask(request *Request, graph *Graph, respNodes [4]int, rerouteMap Re
 			if len(paymentList) > 0 {
 				firstPayment := paymentList[0]
 				if !firstPayment.IsOriginator {
-					// TODO: Dobbelsjekk at logikken under her matcher originalen
 					for i := range route[:len(route)-1] {
 						p := Payment{FirstNodeId: route[i], PayNextId: route[i+1], ChunkId: route[len(route)-1]}
-						for j, tmp := range paymentList {
+
+						for _, tmp := range paymentList {
 							if p.PayNextId == tmp.PayNextId && p.FirstNodeId == tmp.FirstNodeId && p.ChunkId == tmp.ChunkId {
 								break
-							}
-							if j == len(paymentList) {
-								// payment is now definitely not in paymentList
-								if i == 0 {
-									p.IsOriginator = true
-								}
-								if i != len(route)-2 {
-									paymentList = append(paymentList[:i+1], paymentList[i:]...)
-									paymentList[i] = p
-								} else {
-									continue
-								}
 							}
 						}
+						// payment is now not in paymentList
+						if i == 0 {
+							p.IsOriginator = true
+						}
+						if i != len(route)-2 {
+							if i != len(route)-3 {
+								paymentList = append(paymentList[:i+1], paymentList[i:]...)
+							}
+							paymentList[i] = p
+						} else {
+							continue
+						}
+
 					}
 				} else {
-					// TODO: Dobbelsjekk at logikken under her matcher originalen
 					for i := range route[1 : len(route)-1] {
 						p := Payment{FirstNodeId: route[i], PayNextId: route[i+1], ChunkId: route[len(route)-1]}
-						for j, tmp := range paymentList {
+						for _, tmp := range paymentList {
 							if p.PayNextId == tmp.PayNextId && p.FirstNodeId == tmp.FirstNodeId && p.ChunkId == tmp.ChunkId {
 								break
 							}
-							if j == len(paymentList) {
-								// payment is now definitely not in paymentList
-								if i != len(route)-2 {
-									paymentList = append(paymentList[:i+1], paymentList[i:]...)
-									paymentList[i] = p
-								} else {
-									continue
-								}
+						}
+						// payment is now not in paymentList
+						if i != len(route)-2 {
+							if i != len(route)-3 {
+								paymentList = append(paymentList[:i+1], paymentList[i:]...)
 							}
+							paymentList[i] = p
+						} else {
+							continue
 						}
 					}
 				}
