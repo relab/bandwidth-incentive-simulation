@@ -25,7 +25,10 @@ type constant struct {
 	forwarderPayForceOriginatorToPay bool
 	retryWithAnotherPeer             bool
 	cacheIsEnabled                   bool
+	preferredChunks                  bool
 	adjustableThreshold              bool
+	edgeLock                         bool
+	numGoroutines                    int
 }
 
 var Constants = constant{
@@ -43,17 +46,20 @@ var Constants = constant{
 	chunks:                           10000,
 	requestsPerSecond:                12500, // 12500
 	thresholdEnabled:                 true,
-	forgivenessEnabled:               false,
-	paymentEnabled:                   true,
-	maxPOCheckEnabled:                true,
+	forgivenessEnabled:               true,
+	paymentEnabled:                   false,
+	maxPOCheckEnabled:                false,
 	waitingEnabled:                   false,
 	onlyOriginatorPays:               false,
 	payOnlyForCurrentRequest:         false,
 	payIfOrigPays:                    false,
-	forwarderPayForceOriginatorToPay: true,
+	forwarderPayForceOriginatorToPay: false,
 	retryWithAnotherPeer:             false,
 	cacheIsEnabled:                   false,
-	adjustableThreshold:              true,
+	preferredChunks:                  false,
+	adjustableThreshold:              false,
+	edgeLock:                         true,
+	numGoroutines:                    5,
 }
 
 // func CreateRangeAddress(c *constant){
@@ -74,6 +80,10 @@ func (c *constant) IsForgivenessEnabled() bool {
 
 func (c *constant) IsCacheEnabled() bool {
 	return c.cacheIsEnabled
+}
+
+func (c *constant) IsPreferredChunksEnabled() bool {
+	return c.preferredChunks
 }
 
 func (c *constant) IsRetryWithAnotherPeer() bool {
@@ -162,4 +172,12 @@ func (c *constant) GetMaxProximityOrder() int {
 
 func (c *constant) GetPrice() int {
 	return c.price
+}
+
+func (c *constant) GetEdgeLock() bool {
+	return c.edgeLock
+}
+
+func (c *constant) GetNumGoroutines() int {
+	return c.numGoroutines
 }

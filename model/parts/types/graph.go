@@ -2,23 +2,29 @@ package types
 
 import (
 	"fmt"
+	. "go-incentive-simulation/model/constants"
+	. "go-incentive-simulation/model/general"
+	"sort"
+	"sync"
 )
 
 // Graph structure, node Ids in array and edges in map
 type Graph struct {
-	Network   *Network
+	*Network
+	CurState  State
 	Nodes     []*Node
 	NodeIds   []int
-	Edges     map[int]map[int]Edge
-	NodesMap  map[int]*Node
+	Edges     map[int]map[int]*Edge
 	RespNodes [][4]int
+	Mutex     sync.Mutex
 }
 
-// Edge that connects to Nodes with attributes about the connection
+// Edge that connects to NodesMap with attributes about the connection
 type Edge struct {
 	FromNodeId int
 	ToNodeId   int
 	Attrs      EdgeAttrs
+	Mutex      *sync.Mutex
 }
 
 // EdgeAttrs Edge attributes structure,
@@ -31,8 +37,33 @@ type EdgeAttrs struct {
 	Threshold int
 }
 
+//func (g *Graph) FindResponsibleNodes(chunkId int) [4]int {
+//	return g.RespNodes[chunkId]
+//}
+
 func (g *Graph) FindResponsibleNodes(chunkId int) [4]int {
-	return g.RespNodes[chunkId]
+	if g.RespNodes[chunkId][0] != 0 {
+		return g.RespNodes[chunkId]
+
+	} else {
+		numNodesSearch := Constants.GetBits()
+		closestNodes := BinarySearchClosest(g.NodeIds, chunkId, numNodesSearch)
+		distances := make([]int, len(closestNodes))
+		result := [4]int{}
+
+		for i, nodeId := range closestNodes {
+			distances[i] = nodeId ^ chunkId
+		}
+
+		sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
+
+		for i := 0; i < 4; i++ {
+			result[i] = distances[i] ^ chunkId // this results in the nodeId again
+		}
+		g.RespNodes[chunkId] = result
+
+		return result
+	}
 }
 
 // AddNode will add a Node to a graph
@@ -62,17 +93,31 @@ func (g *Graph) AddEdge(fromNodeId int, toNodeId int, attrs EdgeAttrs) error {
 	} else {
 		//newEdges := append(g.Edges[edge.FromNodeId], edge)
 		//g.Edges[edge.FromNodeId] = newEdges
-		newEdge := Edge{FromNodeId: fromNodeId, ToNodeId: toNodeId, Attrs: attrs}
+		mutex := &sync.Mutex{}
+		if g.EdgeExists(toNodeId, fromNodeId) {
+			mutex = g.GetEdge(toNodeId, fromNodeId).Mutex
+		}
+		newEdge := &Edge{FromNodeId: fromNodeId, ToNodeId: toNodeId, Attrs: attrs, Mutex: mutex}
 		g.Edges[fromNodeId][toNodeId] = newEdge
 		return nil
 	}
 }
 
-func (g *Graph) GetEdge(fromNodeId int, toNodeId int) Edge {
+func (g *Graph) LockEdge(nodeA int, nodeB int) {
+	edge := g.GetEdge(nodeA, nodeB)
+	edge.Mutex.Lock()
+}
+
+func (g *Graph) UnlockEdge(nodeA int, nodeB int) {
+	edge := g.GetEdge(nodeA, nodeB)
+	edge.Mutex.Unlock()
+}
+
+func (g *Graph) GetEdge(fromNodeId int, toNodeId int) *Edge {
 	if g.EdgeExists(fromNodeId, toNodeId) {
 		return g.Edges[fromNodeId][toNodeId]
 	}
-	return Edge{}
+	return &Edge{}
 }
 
 func (g *Graph) GetEdgeData(fromNodeId int, toNodeId int) EdgeAttrs {
@@ -91,8 +136,7 @@ func (g *Graph) EdgeExists(fromNodeId int, toNodeId int) bool {
 
 func (g *Graph) SetEdgeData(fromNodeId int, toNodeId int, edgeAttrs EdgeAttrs) bool {
 	if g.EdgeExists(fromNodeId, toNodeId) {
-		newEdge := Edge{FromNodeId: fromNodeId, ToNodeId: toNodeId, Attrs: edgeAttrs}
-		g.Edges[fromNodeId][toNodeId] = newEdge
+		g.Edges[fromNodeId][toNodeId].Attrs = edgeAttrs
 		return true
 	}
 	return false
@@ -100,6 +144,8 @@ func (g *Graph) SetEdgeData(fromNodeId int, toNodeId int, edgeAttrs EdgeAttrs) b
 
 // GetNode getNode will return a node point if exists or return nil
 func (g *Graph) GetNode(nodeId int) *Node {
+	//g.Mutex.Lock()
+	//defer g.Mutex.Unlock()
 	node, ok := g.NodesMap[nodeId]
 	if ok {
 		return node

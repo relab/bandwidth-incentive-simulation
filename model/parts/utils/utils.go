@@ -7,28 +7,28 @@ import (
 	"sort"
 )
 
-func PrecomputeClosestNodes(nodesId []int) [][4]int {
-	numPossibleChunks := Constants.GetRangeAddress()
-	result := make([][4]int, numPossibleChunks)
-	numNodesSearch := Constants.GetBits()
-
-	for chunkId := 0; chunkId < numPossibleChunks; chunkId++ {
-
-		closestNodes := BinarySearchClosest(nodesId, chunkId, numNodesSearch)
-		distances := make([]int, len(closestNodes))
-
-		for i, nodeId := range closestNodes {
-			distances[i] = nodeId ^ chunkId
-		}
-
-		sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
-
-		for i := 0; i < 4; i++ {
-			result[chunkId][i] = distances[i] ^ chunkId // this results in the nodeId again
-		}
-	}
-	return result
-}
+//func PrecomputeClosestNodes(nodesId []int) [][4]int {
+//	numPossibleChunks := Constants.GetRangeAddress()
+//	result := make([][4]int, numPossibleChunks)
+//	numNodesSearch := Constants.GetBits()
+//
+//	for chunkId := 0; chunkId < numPossibleChunks; chunkId++ {
+//
+//		closestNodes := BinarySearchClosest(nodesId, chunkId, numNodesSearch)
+//		distances := make([]int, len(closestNodes))
+//
+//		for i, nodeId := range closestNodes {
+//			distances[i] = nodeId ^ chunkId
+//		}
+//
+//		sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
+//
+//		for i := 0; i < 4; i++ {
+//			result[chunkId][i] = distances[i] ^ chunkId // this results in the nodeId again
+//		}
+//	}
+//	return result
+//}
 
 func SortedKeys(m map[int]*Node) []int {
 	keys := make([]int, len(m))
@@ -43,26 +43,22 @@ func SortedKeys(m map[int]*Node) []int {
 
 func CreateGraphNetwork(net *Network) (*Graph, error) {
 	//fmt.Println("Creating graph network...")
-	sortedNodeIds := SortedKeys(net.Nodes)
-	numNodes := len(net.Nodes)
-	Edges := make(map[int]map[int]Edge)
-	//for _, nodeId := range sortedNodeIds {
-	//	Edges[nodeId] = make(map[int]Edge)
-	//}
-	respNodes := PrecomputeClosestNodes(sortedNodeIds)
+	sortedNodeIds := SortedKeys(net.NodesMap)
+	numNodes := len(net.NodesMap)
+	Edges := make(map[int]map[int]*Edge)
+	//respNodes := PrecomputeClosestNodes(sortedNodeIds)
 	graph := &Graph{
 		Network:   net,
 		Nodes:     make([]*Node, 0, numNodes),
 		Edges:     Edges,
 		NodeIds:   sortedNodeIds,
-		NodesMap:  net.Nodes,
-		RespNodes: respNodes,
+		RespNodes: make([][4]int, Constants.GetRangeAddress()),
 	}
 
 	for _, nodeId := range sortedNodeIds {
-		graph.Edges[nodeId] = make(map[int]Edge)
+		graph.Edges[nodeId] = make(map[int]*Edge)
 
-		node := net.Nodes[nodeId]
+		node := net.NodesMap[nodeId]
 		err1 := graph.AddNode(node)
 		if err1 != nil {
 			return nil, err1
@@ -120,6 +116,8 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 	currDist := lastDistance
 	payDist := lastDistance
 
+	var lockedEdges []int
+
 	//firstNode := graph.NodesMap[firstNodeId]
 	bin := Constants.GetBits() - BitLength(firstNodeId^chunkId)
 	firstNodeAdjIds := graph.GetNodeAdj(firstNodeId)
@@ -128,6 +126,10 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 		dist := nodeId ^ chunkId
 		if BitLength(dist) >= BitLength(lastDistance) {
 			continue
+		}
+		if Constants.GetEdgeLock() {
+			graph.LockEdge(firstNodeId, nodeId)
+			lockedEdges = append(lockedEdges, nodeId)
 		}
 		if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph) {
 			thresholdFailed = false
@@ -163,7 +165,6 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			listItem := Threshold{firstNodeId, nodeId}
 			thresholdList = append(thresholdList, listItem)
 		}
-
 	}
 
 	if nextNodeId != 0 {
@@ -230,6 +231,15 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			}
 		}
 	}
+	// unlocks all nodes except the nextNodeId lock
+	if Constants.GetEdgeLock() {
+		for _, nodeId := range lockedEdges {
+			if nodeId != nextNodeId {
+				graph.UnlockEdge(firstNodeId, nodeId)
+			}
+		}
+	}
+
 	// TODO: Usikker på dette
 	if Constants.GetPaymentEnabled() {
 	out:
@@ -248,6 +258,7 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			}
 		}
 	}
+
 	if payment != (Payment{}) {
 		prevNodePaid = true
 	} else {
@@ -255,14 +266,14 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 	}
 	// RASMUS: nil reference error
 	if nextNodeId != 0 {
-		//fmt.Printf("\n next node is: %d", nextNodeId)
+		// fmt.Println("Next node is: ", nextNodeId)
 	}
 	//nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid
 	return nextNodeId, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid
 }
 
 // ConsumeTask cacheDict is map of nodes containing an array of maps with key as a chunkAddr and a popularity counter
-func ConsumeTask(request *Request, graph *Graph, respNodes [4]int, rerouteMap RerouteMap, cacheMap CacheMap) (bool, Route, [][]Threshold, bool, []Payment) {
+func ConsumeTask(request *Request, graph *Graph, respNodes [4]int, rerouteMap RerouteMap, cacheStruct CacheStruct) (bool, Route, [][]Threshold, bool, []Payment) {
 	var thresholdFailedList [][]Threshold
 	var paymentList []Payment
 	originatorId := request.OriginatorId
@@ -318,16 +329,21 @@ func ConsumeTask(request *Request, graph *Graph, respNodes [4]int, rerouteMap Re
 					break out
 				}
 				if Constants.IsCacheEnabled() {
-					nextNode := graph.NodesMap[nextNodeId]
-					chunkMap, ok := cacheMap[nextNode]
-					if ok {
-						if chunkMap[chunkId] > 1 {
-							//fmt.Println("is in cache")
-							found = true
-							foundByCaching = true
-							break out
-						}
+					//if ok := cacheStruct.Contains(nextNodeId, chunkId); ok {
+					//	found = true
+					//	foundByCaching = true
+					//	break out
+					//}
+					node := graph.GetNode(nextNodeId)
+					node.Mutex.Lock()
+					if _, ok := node.CacheMap[chunkId]; ok {
+						//fmt.Println("is in cache")
+						found = true
+						foundByCaching = true
+						node.Mutex.Unlock()
+						break out
 					}
+					node.Mutex.Unlock()
 				}
 				// NOTE !
 				originatorId = nextNodeId
@@ -426,7 +442,7 @@ func CreateDownloadersList(g *Graph) []int {
 func CreateNodesList(g *Graph) []int {
 	//fmt.Println("Creating nodes list...")
 	nodesValue := g.NodeIds
-	//fmt.Println("Nodes list create...!")
+	//fmt.Println("NodesMap list create...!")
 	return nodesValue
 }
 

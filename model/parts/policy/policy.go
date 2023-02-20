@@ -7,7 +7,8 @@ import (
 	"math/rand"
 )
 
-//func findResponsibleNodes(nodesId []int, chunkAdd int) []int {
+// TODO: keeping this here to compare with other implmentation later
+//func oldFindResponsibleNodes(nodesId []int, chunkAdd int) []int {
 //	//numNodes := Constants.GetBits()
 //	numNodes := 100
 //	distances := make([]int, 0, numNodes)
@@ -33,12 +34,12 @@ import (
 //	return returnNodes
 //}
 
-func SendRequest(prevState *State) (bool, Route, [][]Threshold, bool, []Payment) {
+func SendRequest(prevState *State, index int) (bool, Route, [][]Threshold, bool, []Payment) {
 	// Gets one random chunkId from the range of addresses
 	chunkId := rand.Intn(Constants.GetRangeAddress() - 1)
-	var random float32
 
-	if Constants.IsCacheEnabled() == true {
+	if Constants.IsPreferredChunksEnabled() {
+		var random float32
 		numPreferredChunks := 1000
 		random = rand.Float32()
 		if float32(random) <= 0.5 {
@@ -48,9 +49,9 @@ func SendRequest(prevState *State) (bool, Route, [][]Threshold, bool, []Payment)
 		}
 	}
 
-	//responsibleNodes := findResponsibleNodes(prevState.NodesId, chunkId)
 	responsibleNodes := prevState.Graph.FindResponsibleNodes(chunkId)
 	originatorId := prevState.Originators[prevState.OriginatorIndex]
+	//originatorId := prevState.Originators[rand.Intn(Constants.GetOriginators())]
 
 	if _, ok := prevState.PendingMap[originatorId]; ok {
 		chunkId = prevState.PendingMap[originatorId]
@@ -63,7 +64,7 @@ func SendRequest(prevState *State) (bool, Route, [][]Threshold, bool, []Payment)
 
 	request := Request{OriginatorId: originatorId, ChunkId: chunkId}
 
-	found, route, thresholdFailed, accessFailed, paymentsList := ConsumeTask(&request, prevState.Graph, responsibleNodes, prevState.RerouteMap, prevState.CacheStruct.CacheMap)
+	found, route, thresholdFailed, accessFailed, paymentsList := ConsumeTask(&request, prevState.Graph, responsibleNodes, prevState.RerouteMap, prevState.CacheStruct)
 
 	return found, route, thresholdFailed, accessFailed, paymentsList
 }
