@@ -330,6 +330,10 @@ func ConsumeTask(request *Request, graph *Graph, respNodes [4]int, rerouteMap Re
 				}
 				if Constants.IsCacheEnabled() {
 					//if ok := cacheStruct.Contains(nextNodeId, chunkId); ok {
+					//	found = true
+					//	foundByCaching = true
+					//	break out
+					//}
 					node := graph.GetNode(nextNodeId)
 					node.Mutex.Lock()
 					if _, ok := node.CacheMap[chunkId]; ok {

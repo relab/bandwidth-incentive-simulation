@@ -13,11 +13,11 @@ type PendingMap map[int]int
 
 type RerouteMap map[int][]int
 
-type CacheMapArray []map[int]int
+type CacheMap map[int]map[int]int
 
 type CacheStruct struct {
 	CacheHits  int
-	CacheMap   CacheMapArray
+	CacheMap   CacheMap
 	CacheMutex *sync.Mutex
 }
 

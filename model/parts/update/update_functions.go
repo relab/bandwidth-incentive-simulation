@@ -10,32 +10,29 @@ import (
 	"math"
 )
 
-func UpdateSuccessfulFound(prevState State, policyInput Policy) State {
+func UpdateSuccessfulFound(prevState *State, policyInput Policy) {
 	if policyInput.Found {
 		prevState.SuccessfulFound++
 	}
-	return prevState
 }
 
-func UpdateFailedRequestsThreshold(prevState State, policyInput Policy) State {
+func UpdateFailedRequestsThreshold(prevState *State, policyInput Policy) {
 	found := policyInput.Found
 	// thresholdFailedList := policyInput.thresholdFailedList
 	accessFailed := policyInput.AccessFailed
 	if !found && !accessFailed {
 		prevState.FailedRequestsThreshold++
 	}
-	return prevState
 }
 
-func UpdateFailedRequestsAccess(prevState State, policyInput Policy) State {
+func UpdateFailedRequestsAccess(prevState *State, policyInput Policy) {
 	accessFailed := policyInput.AccessFailed
 	if accessFailed {
 		prevState.FailedRequestsAccess++
 	}
-	return prevState
 }
 
-func UpdateOriginatorIndex(prevState State, policyInput Policy) State {
+func UpdateOriginatorIndex(prevState *State, policyInput Policy) {
 
 	//if prevState.TimeStep%100 == 0 {
 	prevState.OriginatorIndex += 1
@@ -44,7 +41,6 @@ func UpdateOriginatorIndex(prevState State, policyInput Policy) State {
 	}
 	//}
 	//prevState.OriginatorIndex = rand.Intn(Constants.GetOriginators() - 1)
-	return prevState
 }
 
 func convertAndDumpToFile(routes []Route, currTimestep int) error {
@@ -61,34 +57,16 @@ func convertAndDumpToFile(routes []Route, currTimestep int) error {
 	return nil
 }
 
-func UpdateRouteListAndFlush(prevState State, policyInput Policy) State {
+func UpdateRouteListAndFlush(prevState *State, policyInput Policy) {
 	prevState.RouteLists = append(prevState.RouteLists, policyInput.Route)
 	currTimestep := prevState.TimeStep + 1
 	if currTimestep%6250 == 0 {
 		convertAndDumpToFile(prevState.RouteLists, currTimestep)
 		prevState.RouteLists = []Route{}
-		return prevState
 	}
-	return prevState
 }
 
-//func addToCache(node *Node, chunkId int) {
-//	node.Mutex.Lock()
-//	defer node.Mutex.Unlock()
-//	if node.CacheMap != nil {
-//		cacheMap := node.CacheMap
-//		if _, ok := cacheMap[chunkId]; ok {
-//			cacheMap[chunkId]++
-//		} else {
-//			cacheMap[chunkId] = 1
-//		}
-//	} else {
-//		node.CacheMap = map[int]int{node.Id: 1}
-//	}
-//	return
-//}
-
-func UpdateCacheMap(prevState State, policyInput Policy) State {
+func UpdateCacheMap(prevState *State, policyInput Policy) {
 	cacheStruct := prevState.CacheStruct
 	chunkId := 0
 	//val := make(map[int]int)
@@ -109,8 +87,8 @@ func UpdateCacheMap(prevState State, policyInput Policy) State {
 					//cacheStruct.AddToCache(nodeId, chunkId)
 					node := prevState.Graph.GetNode(nodeId)
 					node.Mutex.Lock()
-					if node.CacheMap != nil {
-						cacheMap := node.CacheMap
+					cacheMap := node.CacheMap
+					if cacheMap != nil {
 						if _, ok := cacheMap[chunkId]; ok {
 							cacheMap[chunkId]++
 						} else {
@@ -127,8 +105,8 @@ func UpdateCacheMap(prevState State, policyInput Policy) State {
 					//cacheStruct.AddToCache(nodeId, chunkId)
 					node := prevState.Graph.GetNode(nodeId)
 					node.Mutex.Lock()
-					if node.CacheMap != nil {
-						cacheMap := node.CacheMap
+					cacheMap := node.CacheMap
+					if cacheMap != nil {
 						if _, ok := cacheMap[chunkId]; ok {
 							cacheMap[chunkId]++
 						} else {
@@ -143,10 +121,9 @@ func UpdateCacheMap(prevState State, policyInput Policy) State {
 		}
 	}
 	prevState.CacheStruct = cacheStruct
-	return prevState
 }
 
-func UpdateRerouteMap(prevState State, policyInput Policy) State {
+func UpdateRerouteMap(prevState *State, policyInput Policy) {
 	rerouteMap := prevState.RerouteMap
 	if Constants.IsRetryWithAnotherPeer() {
 		route := policyInput.Route
@@ -179,10 +156,9 @@ func UpdateRerouteMap(prevState State, policyInput Policy) State {
 		}
 	}
 	prevState.RerouteMap = rerouteMap
-	return prevState
 }
 
-func UpdatePendingMap(prevState State, policyInput Policy) State {
+func UpdatePendingMap(prevState *State, policyInput Policy) {
 	pendingMap := prevState.PendingMap
 	if Constants.IsWaitingEnabled() {
 		route := policyInput.Route
@@ -199,12 +175,12 @@ func UpdatePendingMap(prevState State, policyInput Policy) State {
 		}
 	}
 	prevState.PendingMap = pendingMap
-	return prevState
 }
 
-func UpdateNetwork(prevState State, policyInput Policy) State {
+func UpdateNetwork(prevState *State, policyInput Policy) {
 	network := prevState.Graph
-	currTimeStep := prevState.TimeStep + 1
+	prevState.TimeStep++
+	currTimeStep := prevState.TimeStep
 	route := policyInput.Route
 	paymentsList := policyInput.PaymentList
 
@@ -364,5 +340,4 @@ func UpdateNetwork(prevState State, policyInput Policy) State {
 
 	prevState.TimeStep = currTimeStep
 	prevState.Graph = network
-	return prevState
 }

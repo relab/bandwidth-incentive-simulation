@@ -19,7 +19,7 @@ func MakeInitialState(path string) State {
 	if err != nil {
 		fmt.Println("create graph network returned an error: ", err)
 	}
-	cacheStruct := CacheStruct{CacheHits: 0, CacheMap: make(CacheMapArray, Constants.GetRangeAddress()), CacheMutex: &sync.Mutex{}}
+	cacheStruct := CacheStruct{CacheHits: 0, CacheMap: make(CacheMap), CacheMutex: &sync.Mutex{}}
 	initialState := State{
 		Graph:                   graph,
 		Originators:             CreateDownloadersList(graph),

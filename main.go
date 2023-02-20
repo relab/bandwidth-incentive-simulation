@@ -50,17 +50,8 @@ func main() {
 				policyOutput := MakePolicyOutput(state, index)
 
 				stateMutex.Lock()
-				state = UpdatePendingMap(state, policyOutput)
-				state = UpdateRerouteMap(state, policyOutput)
-				state = UpdateCacheMap(state, policyOutput)
-				state = UpdateOriginatorIndex(state, policyOutput)
-				state = UpdateSuccessfulFound(state, policyOutput)
-				state = UpdateFailedRequestsThreshold(state, policyOutput)
-				state = UpdateFailedRequestsAccess(state, policyOutput)
-				state = UpdateRouteListAndFlush(state, policyOutput)
-				state = UpdateNetwork(state, policyOutput)
 
-				stateArray[state.TimeStep] = State{
+				newstate := &State{
 					Graph:                   state.Graph,
 					Originators:             state.Originators,
 					NodesId:                 state.NodesId,
@@ -74,6 +65,19 @@ func main() {
 					FailedRequestsAccess:    state.FailedRequestsAccess,
 					TimeStep:                state.TimeStep,
 				}
+				
+				UpdatePendingMap(newstate, policyOutput)
+				UpdateRerouteMap(newstate, policyOutput)
+				UpdateCacheMap(newstate, policyOutput)
+				UpdateOriginatorIndex(newstate, policyOutput)
+				UpdateSuccessfulFound(newstate, policyOutput)
+				UpdateFailedRequestsThreshold(newstate, policyOutput)
+				UpdateFailedRequestsAccess(newstate, policyOutput)
+				UpdateRouteListAndFlush(newstate, policyOutput)
+				UpdateNetwork(newstate, policyOutput)
+
+				stateArray[state.TimeStep] = *newstate
+				state = *newstate
 
 				stateMutex.Unlock()
 			}
