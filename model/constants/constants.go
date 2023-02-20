@@ -55,7 +55,7 @@ var Constants = constant{
 	payIfOrigPays:                    false,
 	forwarderPayForceOriginatorToPay: false,
 	retryWithAnotherPeer:             false,
-	cacheIsEnabled:                   true,
+	cacheIsEnabled:                   false,
 	preferredChunks:                  false,
 	adjustableThreshold:              false,
 	edgeLock:                         true,

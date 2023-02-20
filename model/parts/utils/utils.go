@@ -7,28 +7,28 @@ import (
 	"sort"
 )
 
-func PrecomputeClosestNodes(nodesId []int) [][4]int {
-	numPossibleChunks := Constants.GetRangeAddress()
-	result := make([][4]int, numPossibleChunks)
-	numNodesSearch := Constants.GetBits()
-
-	for chunkId := 0; chunkId < numPossibleChunks; chunkId++ {
-
-		closestNodes := BinarySearchClosest(nodesId, chunkId, numNodesSearch)
-		distances := make([]int, len(closestNodes))
-
-		for i, nodeId := range closestNodes {
-			distances[i] = nodeId ^ chunkId
-		}
-
-		sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
-
-		for i := 0; i < 4; i++ {
-			result[chunkId][i] = distances[i] ^ chunkId // this results in the nodeId again
-		}
-	}
-	return result
-}
+//func PrecomputeClosestNodes(nodesId []int) [][4]int {
+//	numPossibleChunks := Constants.GetRangeAddress()
+//	result := make([][4]int, numPossibleChunks)
+//	numNodesSearch := Constants.GetBits()
+//
+//	for chunkId := 0; chunkId < numPossibleChunks; chunkId++ {
+//
+//		closestNodes := BinarySearchClosest(nodesId, chunkId, numNodesSearch)
+//		distances := make([]int, len(closestNodes))
+//
+//		for i, nodeId := range closestNodes {
+//			distances[i] = nodeId ^ chunkId
+//		}
+//
+//		sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
+//
+//		for i := 0; i < 4; i++ {
+//			result[chunkId][i] = distances[i] ^ chunkId // this results in the nodeId again
+//		}
+//	}
+//	return result
+//}
 
 func SortedKeys(m map[int]*Node) []int {
 	keys := make([]int, len(m))
@@ -46,13 +46,13 @@ func CreateGraphNetwork(net *Network) (*Graph, error) {
 	sortedNodeIds := SortedKeys(net.NodesMap)
 	numNodes := len(net.NodesMap)
 	Edges := make(map[int]map[int]*Edge)
-	respNodes := PrecomputeClosestNodes(sortedNodeIds)
+	//respNodes := PrecomputeClosestNodes(sortedNodeIds)
 	graph := &Graph{
 		Network:   net,
 		Nodes:     make([]*Node, 0, numNodes),
 		Edges:     Edges,
 		NodeIds:   sortedNodeIds,
-		RespNodes: respNodes,
+		RespNodes: make([][4]int, Constants.GetRangeAddress()),
 	}
 
 	for _, nodeId := range sortedNodeIds {
