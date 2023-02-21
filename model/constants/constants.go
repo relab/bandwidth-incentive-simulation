@@ -58,8 +58,8 @@ var Constants = constant{
 	cacheIsEnabled:                   false,
 	preferredChunks:                  false,
 	adjustableThreshold:              false,
-	edgeLock:                         true,
-	numGoroutines:                    5,
+	edgeLock:                         false,
+	numGoroutines:                    20,
 }
 
 // func CreateRangeAddress(c *constant){
