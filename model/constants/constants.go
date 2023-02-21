@@ -58,7 +58,7 @@ var Constants = constant{
 	cacheIsEnabled:                   false,
 	preferredChunks:                  false,
 	adjustableThreshold:              false,
-	edgeLock:                         false,
+	edgeLock:                         true,
 	numGoroutines:                    20,
 }
 
