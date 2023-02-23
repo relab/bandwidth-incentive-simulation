@@ -59,7 +59,7 @@ var Constants = constant{
 	preferredChunks:                  false,
 	adjustableThreshold:              false,
 	edgeLock:                         true,
-	numGoroutines:                    5,
+	numGoroutines:                    20,
 }
 
 // func CreateRangeAddress(c *constant){
