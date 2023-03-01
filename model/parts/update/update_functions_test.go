@@ -57,8 +57,7 @@ func TestFailedRequestsAccess(t *testing.T) {
 
 func TestUpdateOriginatorIndex(t *testing.T) {
 	state := MakeInitialState(path)
-	policy := MakePolicyOutput(state)
-	UpdateOriginatorIndex(&state, policy)
+	UpdateOriginatorIndex(&state)
 	if state.OriginatorIndex >= Constants.GetOriginators() {
 		if state.OriginatorIndex != 0 {
 			t.Errorf("UpdateOriginatorIndex() failed, expected < %d, got %d", 0, state.OriginatorIndex)
