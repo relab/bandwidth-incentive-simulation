@@ -32,7 +32,7 @@ func UpdateFailedRequestsAccess(prevState *State, policyInput Policy) {
 	}
 }
 
-func UpdateOriginatorIndex(prevState *State, policyInput Policy) {
+func UpdateOriginatorIndex(prevState *State) {
 
 	//if prevState.TimeStep%100 == 0 {
 	prevState.OriginatorIndex += 1

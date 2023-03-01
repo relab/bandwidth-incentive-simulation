@@ -7,6 +7,7 @@ import (
 type Request struct {
 	OriginatorId int
 	ChunkId      int
+	RespNodes    [4]int
 }
 
 type PendingMap map[int]int

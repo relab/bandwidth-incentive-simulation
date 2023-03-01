@@ -273,11 +273,12 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 }
 
 // ConsumeTask cacheDict is map of nodes containing an array of maps with key as a chunkAddr and a popularity counter
-func ConsumeTask(request *Request, graph *Graph, respNodes [4]int, rerouteMap RerouteMap, cacheStruct CacheStruct) (bool, Route, [][]Threshold, bool, []Payment) {
+func ConsumeTask(request *Request, graph *Graph, rerouteMap RerouteMap, cacheStruct CacheStruct) (bool, Route, [][]Threshold, bool, []Payment) {
 	var thresholdFailedList [][]Threshold
 	var paymentList []Payment
 	originatorId := request.OriginatorId
 	chunkId := request.ChunkId
+	respNodes := request.RespNodes
 	mainOriginatorId := originatorId
 	found := false
 	foundByCaching := false

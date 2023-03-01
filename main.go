@@ -5,7 +5,7 @@ import (
 	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/parts/policy"
 	. "go-incentive-simulation/model/parts/types"
-	. "go-incentive-simulation/model/parts/update"
+	. "go-incentive-simulation/model/parts/workers"
 	. "go-incentive-simulation/model/state"
 	"sync"
 	"time"
@@ -27,42 +27,6 @@ func MakePolicyOutput(state *State, index int) Policy {
 	return policy
 }
 
-func UpdateWorker(stateChan chan *State, policyChan chan Policy, globalState *State, stateArray []State, iterations int) {
-
-	for {
-		policyOutput := <-policyChan
-
-		UpdatePendingMap(globalState, policyOutput)
-		UpdateRerouteMap(globalState, policyOutput)
-		UpdateCacheMap(globalState, policyOutput)
-		UpdateOriginatorIndex(globalState, policyOutput)
-		UpdateSuccessfulFound(globalState, policyOutput)
-		UpdateFailedRequestsThreshold(globalState, policyOutput)
-		UpdateFailedRequestsAccess(globalState, policyOutput)
-		UpdateRouteListAndFlush(globalState, policyOutput)
-		UpdateNetwork(globalState, policyOutput)
-
-		newState := State{
-			Graph:                   globalState.Graph,
-			Originators:             globalState.Originators,
-			NodesId:                 globalState.NodesId,
-			RouteLists:              globalState.RouteLists,
-			PendingMap:              globalState.PendingMap,
-			RerouteMap:              globalState.RerouteMap,
-			CacheStruct:             globalState.CacheStruct,
-			OriginatorIndex:         globalState.OriginatorIndex,
-			SuccessfulFound:         globalState.SuccessfulFound,
-			FailedRequestsThreshold: globalState.FailedRequestsThreshold,
-			FailedRequestsAccess:    globalState.FailedRequestsAccess,
-			TimeStep:                globalState.TimeStep,
-		}
-
-		stateArray[newState.TimeStep] = newState
-
-		stateChan <- &newState
-	}
-}
-
 func main() {
 	start := time.Now()
 	globalState := MakeInitialState("./data/nodes_data_16_10000.txt")
@@ -74,25 +38,35 @@ func main() {
 	stateArray := make([]State, iterations+1)
 	stateArray[0] = globalState
 
-	var wg sync.WaitGroup
+	wg := &sync.WaitGroup{}
 	policyChan := make(chan Policy, numGoroutines)
 	stateChan := make(chan *State, numGoroutines)
+	requestChan := make(chan Request, iterations)
 
+	go RequestWorker(stateChan, requestChan, &globalState, iterations)
 	go UpdateWorker(stateChan, policyChan, &globalState, stateArray, iterations)
 
 	for j := 0; j < numGoroutines; j++ {
 		wg.Add(1)
-		go func(index int) {
-			curState := &globalState
-			for i := 0; i < numLoops; i++ {
-				policyChan <- MakePolicyOutput(curState, index)
-				// waiting for new state from UpdateWorker
-				curState = <-stateChan
-			}
-			wg.Done()
-		}(j)
+		go RoutingWorker(requestChan, policyChan, &globalState, wg, numLoops)
 	}
+	stateChan <- &globalState
+
 	wg.Wait()
+
+	//for j := 0; j < numGoroutines; j++ {
+	//	wg.Add(1)
+	//	go func(index int) {
+	//		curState := &globalState
+	//		for i := 0; i < numLoops; i++ {
+	//			policyChan <- MakePolicyOutput(curState, index)
+	//			// waiting for new state from UpdateWorker
+	//			curState = <-stateChan
+	//		}
+	//		wg.Done()
+	//	}(j)
+	//}
+	//wg.Wait()
 	fmt.Println("end of main: ")
 	elapsed := time.Since(start)
 	fmt.Println("Time taken:", elapsed)
