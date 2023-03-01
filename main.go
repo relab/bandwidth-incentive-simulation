@@ -40,6 +40,7 @@ func UpdateWorker(stateChan chan *State, policyChan chan Policy, globalState *St
 		UpdateFailedRequestsThreshold(globalState, policyOutput)
 		UpdateFailedRequestsAccess(globalState, policyOutput)
 		UpdateRouteListAndFlush(globalState, policyOutput)
+		stateArray = UpdateStateArrayAndFlush(stateArray, globalState, policyOutput)
 		UpdateNetwork(globalState, policyOutput)
 
 		newState := State{
@@ -57,7 +58,7 @@ func UpdateWorker(stateChan chan *State, policyChan chan Policy, globalState *St
 			TimeStep:                globalState.TimeStep,
 		}
 
-		stateArray[newState.TimeStep] = newState
+		stateArray = append(stateArray, newState)
 
 		stateChan <- &newState
 	}
@@ -67,13 +68,12 @@ func main() {
 	start := time.Now()
 	globalState := MakeInitialState("./data/nodes_data_16_10000.txt")
 
-	const iterations = 10000000
+	const iterations = 250000
 	numGoroutines := Constants.GetNumGoroutines()
 
 	numLoops := iterations / numGoroutines
-	stateArray := make([]State, iterations+1)
-	stateArray[0] = globalState
-
+	stateArray := make([]State, 0)
+	stateArray = append(stateArray, globalState)
 	var wg sync.WaitGroup
 	policyChan := make(chan Policy, numGoroutines)
 	stateChan := make(chan *State, numGoroutines)
@@ -114,8 +114,7 @@ func PrintState(state State) {
 	fmt.Println("CacheHits:", state.CacheStruct.CacheHits)
 	fmt.Println("TimeStep: ", state.TimeStep)
 	fmt.Println("OriginatorIndex: ", state.OriginatorIndex)
-	//fmt.Println("PendingMap: ", state.PendingMap)
-	//fmt.Println("RerouteMap: ", state.RerouteMap)
+	fmt.Println("PendingMap: ", state.PendingMap)
+	fmt.Println("RerouteMap: ", state.RerouteMap)
 	//fmt.Println("RouteLists: ", state.RouteLists)
-	//fmt.Println("CacheMapArray: ", state.CacheStruct.CacheMapArray)
 }

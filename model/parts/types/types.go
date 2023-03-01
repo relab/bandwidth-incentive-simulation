@@ -60,6 +60,17 @@ type Payment struct {
 
 type Threshold [2]int
 
+type StateSubset struct {
+	OriginatorIndex         int
+	PendingMap              PendingMap
+	RerouteMap              RerouteMap
+	CacheStruct             CacheStruct
+	SuccessfulFound         int
+	FailedRequestsThreshold int
+	FailedRequestsAccess    int
+	TimeStep                int
+}
+
 type State struct {
 	Graph                   *Graph
 	Originators             []int

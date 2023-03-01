@@ -6,8 +6,8 @@ import (
 	. "go-incentive-simulation/model/general"
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/utils"
-	"io/ioutil"
 	"math"
+	"os"
 )
 
 func UpdateSuccessfulFound(prevState *State, policyInput Policy) {
@@ -50,7 +50,21 @@ func convertAndDumpToFile(routes []Route, currTimestep int) error {
 	}
 	data := RouteData{currTimestep, routes}
 	file, _ := json.Marshal(data)
-	err := ioutil.WriteFile("routes.json", file, 0644)
+	err := os.WriteFile("routes.json", file, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func convertAndDumpToFileStateArray(stateArray []StateSubset, currTimestep int) error {
+	type StateData struct {
+		Timestep int           `json:"timestep"`
+		States   []StateSubset `json:"states"`
+	}
+	data := StateData{currTimestep, stateArray}
+	file, _ := json.MarshalIndent(data, "", "  ")
+	err := os.WriteFile("states.json", file, 0644)
 	if err != nil {
 		return err
 	}
@@ -66,6 +80,26 @@ func UpdateRouteListAndFlush(prevState *State, policyInput Policy) {
 	}
 }
 
+func UpdateStateArrayAndFlush(stateArray []State, prevState *State, policyInput Policy) []State {
+	currTimeStep := prevState.TimeStep + 1
+	subList := make([]StateSubset, len(stateArray))
+	for i, state := range stateArray {
+		subList[i] = StateSubset{
+			OriginatorIndex:         state.OriginatorIndex,
+			PendingMap:              state.PendingMap,
+			RerouteMap:              state.RerouteMap,
+			SuccessfulFound:         state.SuccessfulFound,
+			FailedRequestsThreshold: state.FailedRequestsThreshold,
+			FailedRequestsAccess:    state.FailedRequestsAccess,
+			TimeStep:                state.TimeStep,
+		}
+	}
+	if currTimeStep%500 == 0 {
+		convertAndDumpToFileStateArray(subList, currTimeStep)
+		stateArray = []State{}
+	}
+	return stateArray
+}
 func UpdateCacheMap(prevState *State, policyInput Policy) {
 	cacheStruct := prevState.CacheStruct
 	chunkId := 0
@@ -84,7 +118,7 @@ func UpdateCacheMap(prevState *State, policyInput Policy) {
 			if Contains(route, -3) {
 				for i := 0; i < len(route)-3; i++ {
 					nodeId := route[i]
-					//cacheStruct.AddToCache(nodeId, chunkId)
+					cacheStruct.AddToCache(nodeId, chunkId)
 					node := prevState.Graph.GetNode(nodeId)
 					node.Mutex.Lock()
 					cacheMap := node.CacheMap
@@ -102,7 +136,7 @@ func UpdateCacheMap(prevState *State, policyInput Policy) {
 			} else {
 				for i := 0; i < len(route)-2; i++ {
 					nodeId := route[i]
-					//cacheStruct.AddToCache(nodeId, chunkId)
+					cacheStruct.AddToCache(nodeId, chunkId)
 					node := prevState.Graph.GetNode(nodeId)
 					node.Mutex.Lock()
 					cacheMap := node.CacheMap
