@@ -40,7 +40,6 @@ func UpdateWorker(stateChan chan *State, policyChan chan Policy, globalState *St
 		UpdateFailedRequestsThreshold(globalState, policyOutput)
 		UpdateFailedRequestsAccess(globalState, policyOutput)
 		UpdateRouteListAndFlush(globalState, policyOutput)
-		stateArray = UpdateStateArrayAndFlush(stateArray, globalState, policyOutput)
 		UpdateNetwork(globalState, policyOutput)
 
 		newState := State{
@@ -58,7 +57,7 @@ func UpdateWorker(stateChan chan *State, policyChan chan Policy, globalState *St
 			TimeStep:                globalState.TimeStep,
 		}
 
-		stateArray = append(stateArray, newState)
+		stateArray = UpdateStateArrayAndFlush(stateArray, &newState, policyOutput)
 
 		stateChan <- &newState
 	}
@@ -68,7 +67,7 @@ func main() {
 	start := time.Now()
 	globalState := MakeInitialState("./data/nodes_data_16_10000.txt")
 
-	const iterations = 250000
+	const iterations = 10000000
 	numGoroutines := Constants.GetNumGoroutines()
 
 	numLoops := iterations / numGoroutines
