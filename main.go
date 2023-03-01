@@ -40,18 +40,17 @@ func main() {
 
 	wg := &sync.WaitGroup{}
 	policyChan := make(chan Policy, numGoroutines)
-	stateChan := make(chan *State, numGoroutines)
-	requestChan := make(chan Request, iterations)
+	newStateChan := make(chan bool, numGoroutines)
+	requestChan := make(chan Request, iterations+1)
 
-	go RequestWorker(stateChan, requestChan, &globalState, iterations)
-	go UpdateWorker(stateChan, policyChan, &globalState, stateArray, iterations)
+	go RequestWorker(newStateChan, requestChan, &globalState, iterations)
+	go UpdateWorker(newStateChan, policyChan, &globalState, stateArray, iterations)
 
-	for j := 0; j < numGoroutines; j++ {
+	for i := 0; i < numGoroutines; i++ {
 		wg.Add(1)
 		go RoutingWorker(requestChan, policyChan, &globalState, wg, numLoops)
 	}
-	stateChan <- &globalState
-
+	//newStateChan <- true
 	wg.Wait()
 
 	//for j := 0; j < numGoroutines; j++ {

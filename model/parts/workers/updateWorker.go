@@ -5,7 +5,7 @@ import (
 	. "go-incentive-simulation/model/parts/update"
 )
 
-func UpdateWorker(stateChan chan *State, policyChan chan Policy, globalState *State, stateArray []State, iterations int) {
+func UpdateWorker(newStateChan chan bool, policyChan chan Policy, globalState *State, stateArray []State, iterations int) {
 
 	for {
 		policyOutput := <-policyChan
@@ -38,6 +38,6 @@ func UpdateWorker(stateChan chan *State, policyChan chan Policy, globalState *St
 		stateArray[newState.TimeStep] = newState
 		//fmt.Println(newState.TimeStep)
 
-		//stateChan <- &newState
+		//newStateChan <- true
 	}
 }
