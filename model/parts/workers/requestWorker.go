@@ -12,12 +12,13 @@ func RequestWorker(newStateChan chan bool, requestChan chan Request, globalState
 	//curState := globalState
 	counter := 0
 	for counter < iterations {
-		if len(requestChan) < Constants.GetNumGoroutines() {
-
-			UpdateOriginatorIndex(globalState)
+		//if len(requestChan) < Constants.GetNumGoroutines() {
+		if len(requestChan) < 10 {
 
 			//curState = <-stateChan
 			//<-newStateChan
+
+			UpdateOriginatorIndex(globalState)
 
 			chunkId := rand.Intn(Constants.GetRangeAddress() - 1)
 

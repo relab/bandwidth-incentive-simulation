@@ -2,11 +2,12 @@ package workers
 
 import (
 	. "go-incentive-simulation/model/parts/types"
+	. "go-incentive-simulation/model/parts/update"
 	. "go-incentive-simulation/model/parts/utils"
 	"sync"
 )
 
-func RoutingWorker(requestChan chan Request, policyChan chan Policy, globalState *State, wg *sync.WaitGroup, numLoops int) {
+func RoutingWorker(requestChan chan Request, newStateChan chan bool, globalState *State, stateArray []State, wg *sync.WaitGroup, numLoops int) {
 
 	defer wg.Done()
 	var request Request
@@ -15,7 +16,7 @@ func RoutingWorker(requestChan chan Request, policyChan chan Policy, globalState
 
 		found, route, thresholdFailed, accessFailed, paymentsList := ConsumeTask(&request, globalState.Graph, globalState.RerouteMap, globalState.CacheStruct)
 
-		policy := Policy{
+		policyOutput := Policy{
 			Found:                found,
 			Route:                route,
 			ThresholdFailedLists: thresholdFailed,
@@ -23,7 +24,37 @@ func RoutingWorker(requestChan chan Request, policyChan chan Policy, globalState
 			PaymentList:          paymentsList,
 		}
 
-		policyChan <- policy
+		//policyChan <- policy
+
+		curTimeStep := UpdateTimestep(globalState)
+		UpdateNetwork(globalState, policyOutput, curTimeStep)
+		UpdatePendingMap(globalState, policyOutput)
+		UpdateRerouteMap(globalState, policyOutput)
+		UpdateCacheMap(globalState, policyOutput)
+		//UpdateOriginatorIndex(globalState)
+		UpdateSuccessfulFound(globalState, policyOutput)
+		UpdateFailedRequestsThreshold(globalState, policyOutput)
+		UpdateFailedRequestsAccess(globalState, policyOutput)
+		//UpdateRouteListAndFlush(globalState, policyOutput, curTimeStep)
+
+		newState := State{
+			Graph:                   globalState.Graph,
+			Originators:             globalState.Originators,
+			NodesId:                 globalState.NodesId,
+			RouteLists:              globalState.RouteLists,
+			PendingMap:              globalState.PendingMap,
+			RerouteMap:              globalState.RerouteMap,
+			CacheStruct:             globalState.CacheStruct,
+			OriginatorIndex:         globalState.OriginatorIndex,
+			SuccessfulFound:         globalState.SuccessfulFound,
+			FailedRequestsThreshold: globalState.FailedRequestsThreshold,
+			FailedRequestsAccess:    globalState.FailedRequestsAccess,
+			TimeStep:                globalState.TimeStep,
+		}
+
+		stateArray[curTimeStep] = newState
+
+		//newStateChan <- true
 	}
 
 }

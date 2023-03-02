@@ -39,21 +39,21 @@ func main() {
 	stateArray[0] = globalState
 
 	wg := &sync.WaitGroup{}
-	policyChan := make(chan Policy, numGoroutines)
+	//policyChan := make(chan Policy, numGoroutines)
 	newStateChan := make(chan bool, numGoroutines)
 	requestChan := make(chan Request, iterations+1)
 
 	go RequestWorker(newStateChan, requestChan, &globalState, iterations)
+	//newStateChan <- true
 
 	for i := 0; i < numGoroutines; i++ {
 		wg.Add(1)
-		go RoutingWorker(requestChan, policyChan, &globalState, wg, numLoops)
+		go RoutingWorker(requestChan, newStateChan, &globalState, stateArray, wg, numLoops)
 	}
-
-	for j := 0; j < numGoroutines/4; j++ {
-		//wg.Add(1)
-		go UpdateWorker(newStateChan, policyChan, &globalState, stateArray, wg, iterations)
-	}
+	//for j := 0; j < numGoroutines/4; j++ {
+	//	//wg.Add(1)
+	//	go UpdateWorker(newStateChan, policyChan, &globalState, stateArray, wg, iterations)
+	//}
 	//newStateChan <- true
 	wg.Wait()
 

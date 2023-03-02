@@ -60,11 +60,10 @@ func convertAndDumpToFile(routes []Route, currTimestep int) error {
 	return nil
 }
 
-func UpdateRouteListAndFlush(prevState *State, policyInput Policy) {
+func UpdateRouteListAndFlush(prevState *State, policyInput Policy, curTimeStep int) {
 	prevState.RouteLists = append(prevState.RouteLists, policyInput.Route)
-	currTimestep := int(atomic.LoadInt32(&prevState.TimeStep) + 1)
-	if currTimestep%6250 == 0 {
-		go convertAndDumpToFile(prevState.RouteLists, currTimestep)
+	if curTimeStep%6250 == 0 {
+		go convertAndDumpToFile(prevState.RouteLists, curTimeStep)
 		prevState.RouteLists = []Route{}
 	}
 }
@@ -180,10 +179,13 @@ func UpdatePendingMap(prevState *State, policyInput Policy) {
 	prevState.PendingMap = pendingMap
 }
 
-func UpdateNetwork(prevState *State, policyInput Policy) {
+func UpdateTimestep(prevState *State) int {
+	curTimeStep := int(atomic.AddInt32(&prevState.TimeStep, 1))
+	return curTimeStep
+}
+
+func UpdateNetwork(prevState *State, policyInput Policy, curTimeStep int) {
 	network := prevState.Graph
-	//atomic.AddInt32(&prevState.TimeStep, 1)
-	currTimeStep := int(atomic.AddInt32(&prevState.TimeStep, 1))
 	route := policyInput.Route
 	paymentsList := policyInput.PaymentList
 
@@ -299,24 +301,19 @@ func UpdateNetwork(prevState *State, policyInput Policy) {
 						requesterNode := couple[0]
 						providerNode := couple[1]
 						edgeData := network.GetEdgeData(requesterNode, providerNode)
-						passedTime := (currTimeStep - edgeData.Last) / Constants.GetRequestsPerSecond()
+						passedTime := (curTimeStep - edgeData.Last) / Constants.GetRequestsPerSecond()
 						if passedTime > 0 {
 							refreshRate := Constants.GetRefreshRate()
 							if Constants.IsAdjustableThreshold() {
 								refreshRate = int(math.Ceil(float64(edgeData.Threshold / 2)))
 							}
 							removedDeptAmount := passedTime * refreshRate
-							//edgeData.A2B -= removedDeptAmount
-							//if edgeData.A2B < 0 {
-							//	edgeData.A2B = 0
-							//}
-							//edgeData.Last = currTimeStep
 							newEdgeData := edgeData
 							newEdgeData.A2B -= removedDeptAmount
 							if newEdgeData.A2B < 0 {
 								newEdgeData.A2B = 0
 							}
-							newEdgeData.Last = currTimeStep
+							newEdgeData.Last = curTimeStep
 							network.SetEdgeData(requesterNode, providerNode, newEdgeData)
 						}
 					}
@@ -325,7 +322,6 @@ func UpdateNetwork(prevState *State, policyInput Policy) {
 		}
 	}
 	// Unlocks all the edges between the nodes in the route
-	//networkMutex.Lock()
 	if Constants.GetEdgeLock() {
 		if !Contains(route, -1) && !Contains(route, -2) {
 			if Contains(route, -3) {
@@ -343,7 +339,6 @@ func UpdateNetwork(prevState *State, policyInput Policy) {
 			}
 		}
 	}
-	//networkMutex.Unlock()
 
 	prevState.Graph = network
 }

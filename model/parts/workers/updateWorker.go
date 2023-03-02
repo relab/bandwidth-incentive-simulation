@@ -20,7 +20,7 @@ func UpdateWorker(newStateChan chan bool, policyChan chan Policy, globalState *S
 		UpdateFailedRequestsThreshold(globalState, policyOutput)
 		UpdateFailedRequestsAccess(globalState, policyOutput)
 		//UpdateRouteListAndFlush(globalState, policyOutput)
-		UpdateNetwork(globalState, policyOutput)
+		//UpdateNetwork(globalState, policyOutput, )
 
 		newState := State{
 			Graph:                   globalState.Graph,
