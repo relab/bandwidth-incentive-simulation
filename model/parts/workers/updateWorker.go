@@ -3,9 +3,11 @@ package workers
 import (
 	. "go-incentive-simulation/model/parts/types"
 	. "go-incentive-simulation/model/parts/update"
+	"sync"
+	"sync/atomic"
 )
 
-func UpdateWorker(newStateChan chan bool, policyChan chan Policy, globalState *State, stateArray []State, iterations int) {
+func UpdateWorker(newStateChan chan bool, policyChan chan Policy, globalState *State, stateArray []State, wg *sync.WaitGroup, iterations int) {
 
 	for {
 		policyOutput := <-policyChan
@@ -17,7 +19,7 @@ func UpdateWorker(newStateChan chan bool, policyChan chan Policy, globalState *S
 		UpdateSuccessfulFound(globalState, policyOutput)
 		UpdateFailedRequestsThreshold(globalState, policyOutput)
 		UpdateFailedRequestsAccess(globalState, policyOutput)
-		UpdateRouteListAndFlush(globalState, policyOutput)
+		//UpdateRouteListAndFlush(globalState, policyOutput)
 		UpdateNetwork(globalState, policyOutput)
 
 		newState := State{
@@ -35,7 +37,7 @@ func UpdateWorker(newStateChan chan bool, policyChan chan Policy, globalState *S
 			TimeStep:                globalState.TimeStep,
 		}
 
-		stateArray[newState.TimeStep] = newState
+		stateArray[atomic.LoadInt32(&globalState.TimeStep)] = newState
 		//fmt.Println(newState.TimeStep)
 
 		//newStateChan <- true

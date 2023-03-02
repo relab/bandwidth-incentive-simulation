@@ -13,6 +13,7 @@ func RequestWorker(newStateChan chan bool, requestChan chan Request, globalState
 	counter := 0
 	for counter < iterations {
 		if len(requestChan) < Constants.GetNumGoroutines() {
+
 			UpdateOriginatorIndex(globalState)
 
 			//curState = <-stateChan
@@ -45,12 +46,12 @@ func RequestWorker(newStateChan chan bool, requestChan chan Request, globalState
 				responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 			}
 
-			request := Request{
+			requestChan <- Request{
 				OriginatorId: originatorId,
 				ChunkId:      chunkId,
 				RespNodes:    responsibleNodes,
 			}
-			requestChan <- request
+
 			counter++
 		}
 	}

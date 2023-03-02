@@ -22,8 +22,6 @@ type CacheStruct struct {
 	CacheMutex *sync.Mutex
 }
 
-// TODO: cache is now slower on than off because of the concurrency
-
 func (c *CacheStruct) Contains(nodeId int, chunkId int) bool {
 	c.CacheMutex.Lock()
 	defer c.CacheMutex.Unlock()
@@ -69,11 +67,11 @@ type State struct {
 	PendingMap              PendingMap
 	RerouteMap              RerouteMap
 	CacheStruct             CacheStruct
-	OriginatorIndex         int
-	SuccessfulFound         int
-	FailedRequestsThreshold int
-	FailedRequestsAccess    int
-	TimeStep                int
+	OriginatorIndex         int32
+	SuccessfulFound         int32
+	FailedRequestsThreshold int32
+	FailedRequestsAccess    int32
+	TimeStep                int32
 }
 
 type Policy struct {

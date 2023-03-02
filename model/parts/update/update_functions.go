@@ -8,11 +8,12 @@ import (
 	. "go-incentive-simulation/model/parts/utils"
 	"io/ioutil"
 	"math"
+	"sync/atomic"
 )
 
 func UpdateSuccessfulFound(prevState *State, policyInput Policy) {
 	if policyInput.Found {
-		prevState.SuccessfulFound++
+		atomic.AddInt32(&prevState.SuccessfulFound, 1)
 	}
 }
 
@@ -21,23 +22,25 @@ func UpdateFailedRequestsThreshold(prevState *State, policyInput Policy) {
 	// thresholdFailedList := policyInput.thresholdFailedList
 	accessFailed := policyInput.AccessFailed
 	if !found && !accessFailed {
-		prevState.FailedRequestsThreshold++
+		atomic.AddInt32(&prevState.FailedRequestsThreshold, 1)
+
 	}
 }
 
 func UpdateFailedRequestsAccess(prevState *State, policyInput Policy) {
 	accessFailed := policyInput.AccessFailed
 	if accessFailed {
-		prevState.FailedRequestsAccess++
+		atomic.AddInt32(&prevState.FailedRequestsAccess, 1)
 	}
 }
 
 func UpdateOriginatorIndex(prevState *State) {
 
 	//if prevState.TimeStep%100 == 0 {
-	prevState.OriginatorIndex += 1
-	if prevState.OriginatorIndex >= Constants.GetOriginators() {
-		prevState.OriginatorIndex = 0
+	if int(atomic.LoadInt32(&prevState.OriginatorIndex)+1) >= Constants.GetOriginators() {
+		atomic.StoreInt32(&prevState.OriginatorIndex, 0)
+	} else {
+		atomic.AddInt32(&prevState.OriginatorIndex, 1)
 	}
 	//}
 	//prevState.OriginatorIndex = rand.Intn(Constants.GetOriginators() - 1)
@@ -59,9 +62,9 @@ func convertAndDumpToFile(routes []Route, currTimestep int) error {
 
 func UpdateRouteListAndFlush(prevState *State, policyInput Policy) {
 	prevState.RouteLists = append(prevState.RouteLists, policyInput.Route)
-	currTimestep := prevState.TimeStep + 1
+	currTimestep := int(atomic.LoadInt32(&prevState.TimeStep) + 1)
 	if currTimestep%6250 == 0 {
-		convertAndDumpToFile(prevState.RouteLists, currTimestep)
+		go convertAndDumpToFile(prevState.RouteLists, currTimestep)
 		prevState.RouteLists = []Route{}
 	}
 }
@@ -179,11 +182,13 @@ func UpdatePendingMap(prevState *State, policyInput Policy) {
 
 func UpdateNetwork(prevState *State, policyInput Policy) {
 	network := prevState.Graph
-	prevState.TimeStep++
-	currTimeStep := prevState.TimeStep
+	//atomic.AddInt32(&prevState.TimeStep, 1)
+	currTimeStep := int(atomic.AddInt32(&prevState.TimeStep, 1))
 	route := policyInput.Route
 	paymentsList := policyInput.PaymentList
 
+	//networkMutex.Lock()
+	//defer networkMutex.Unlock()
 	if Constants.GetPaymentEnabled() {
 		for _, payment := range paymentsList {
 			if payment != (Payment{}) {
@@ -320,6 +325,7 @@ func UpdateNetwork(prevState *State, policyInput Policy) {
 		}
 	}
 	// Unlocks all the edges between the nodes in the route
+	//networkMutex.Lock()
 	if Constants.GetEdgeLock() {
 		if !Contains(route, -1) && !Contains(route, -2) {
 			if Contains(route, -3) {
@@ -337,7 +343,7 @@ func UpdateNetwork(prevState *State, policyInput Policy) {
 			}
 		}
 	}
+	//networkMutex.Unlock()
 
-	prevState.TimeStep = currTimeStep
 	prevState.Graph = network
 }

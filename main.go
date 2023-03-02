@@ -44,11 +44,15 @@ func main() {
 	requestChan := make(chan Request, iterations+1)
 
 	go RequestWorker(newStateChan, requestChan, &globalState, iterations)
-	go UpdateWorker(newStateChan, policyChan, &globalState, stateArray, iterations)
 
 	for i := 0; i < numGoroutines; i++ {
 		wg.Add(1)
 		go RoutingWorker(requestChan, policyChan, &globalState, wg, numLoops)
+	}
+
+	for j := 0; j < numGoroutines/4; j++ {
+		//wg.Add(1)
+		go UpdateWorker(newStateChan, policyChan, &globalState, stateArray, wg, iterations)
 	}
 	//newStateChan <- true
 	wg.Wait()

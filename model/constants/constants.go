@@ -56,7 +56,7 @@ var Constants = constant{
 	forwarderPayForceOriginatorToPay: false,
 	retryWithAnotherPeer:             false,
 	cacheIsEnabled:                   false,
-	preferredChunks:                  false,
+	preferredChunks:                  false, // Fits well with cache
 	adjustableThreshold:              false,
 	edgeLock:                         true,
 	numGoroutines:                    20,
