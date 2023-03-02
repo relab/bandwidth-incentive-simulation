@@ -57,31 +57,11 @@ func convertAndDumpToFile(routes []Route, currTimestep int) error {
 	return nil
 }
 
-func convertAndDumpToFileStateArray(stateArray []StateSubset, currTimestep int) error {
+func convertAndDumpToFileStateArray(stateArray []State, currTimestep int) error {
 	type StateData struct {
 		Timestep int           `json:"timestep"`
 		States   []StateSubset `json:"states"`
 	}
-	data := StateData{currTimestep, stateArray}
-	file, _ := json.MarshalIndent(data, "", "  ")
-	err := os.WriteFile("states.json", file, 0644)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func UpdateRouteListAndFlush(prevState *State, policyInput Policy) {
-	prevState.RouteLists = append(prevState.RouteLists, policyInput.Route)
-	currTimestep := prevState.TimeStep + 1
-	if currTimestep%6250 == 0 {
-		convertAndDumpToFile(prevState.RouteLists, currTimestep)
-		prevState.RouteLists = []Route{}
-	}
-}
-
-func UpdateStateArrayAndFlush(stateArray []State, prevState *State, policyInput Policy) []State {
-	currTimeStep := prevState.TimeStep + 1
 	subList := make([]StateSubset, len(stateArray))
 	for i, state := range stateArray {
 		subList[i] = StateSubset{
@@ -94,8 +74,41 @@ func UpdateStateArrayAndFlush(stateArray []State, prevState *State, policyInput 
 			TimeStep:                state.TimeStep,
 		}
 	}
-	if currTimeStep%500 == 0 {
-		convertAndDumpToFileStateArray(subList, currTimeStep)
+	data := StateData{currTimestep, subList}
+	file, _ := json.MarshalIndent(data, "", "  ")
+	err := os.WriteFile("states.json", file, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateRouteListAndFlush(prevState *State, policyInput Policy) {
+	prevState.RouteLists = append(prevState.RouteLists, policyInput.Route)
+	currTimestep := prevState.TimeStep + 1
+	if currTimestep%6250 == 0 {
+		go convertAndDumpToFile(prevState.RouteLists, currTimestep)
+		prevState.RouteLists = []Route{}
+	}
+}
+
+func UpdateStateArrayAndFlush(stateArray []State, prevState *State, policyInput Policy) []State {
+	currTimeStep := prevState.TimeStep + 1
+	//subList := make([]StateSubset, len(stateArray))
+	//for i, state := range stateArray {
+	//	subList[i] = StateSubset{
+	//		OriginatorIndex:         state.OriginatorIndex,
+	//		PendingMap:              state.PendingMap,
+	//		RerouteMap:              state.RerouteMap,
+	//		SuccessfulFound:         state.SuccessfulFound,
+	//		FailedRequestsThreshold: state.FailedRequestsThreshold,
+	//		FailedRequestsAccess:    state.FailedRequestsAccess,
+	//		TimeStep:                state.TimeStep,
+	//	}
+	//}
+	stateArray = append(stateArray, *prevState)
+	if currTimeStep%1000 == 0 {
+		go convertAndDumpToFileStateArray(stateArray, currTimeStep)
 		stateArray = []State{}
 	}
 	return stateArray
