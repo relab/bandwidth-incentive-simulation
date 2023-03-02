@@ -28,6 +28,7 @@ type constant struct {
 	preferredChunks                  bool
 	adjustableThreshold              bool
 	edgeLock                         bool
+	precomputeRespNodes              bool
 	numGoroutines                    int
 }
 
@@ -59,6 +60,7 @@ var Constants = constant{
 	preferredChunks:                  false, // Fits well with cache
 	adjustableThreshold:              false,
 	edgeLock:                         true,
+	precomputeRespNodes:              true,
 	numGoroutines:                    25, // 25 seems to currently be the sweet spot
 }
 
@@ -176,6 +178,10 @@ func (c *constant) GetPrice() int {
 
 func (c *constant) GetEdgeLock() bool {
 	return c.edgeLock
+}
+
+func (c *constant) IsPrecomputeRespNodes() bool {
+	return c.precomputeRespNodes
 }
 
 func (c *constant) GetNumGoroutines() int {

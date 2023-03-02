@@ -34,13 +34,14 @@ func UpdateFailedRequestsAccess(prevState *State, policyInput Policy) {
 	}
 }
 
-func UpdateOriginatorIndex(prevState *State) {
+func UpdateOriginatorIndex(prevState *State) int32 {
 
 	//if prevState.TimeStep%100 == 0 {
 	if int(atomic.LoadInt32(&prevState.OriginatorIndex)+1) >= Constants.GetOriginators() {
 		atomic.StoreInt32(&prevState.OriginatorIndex, 0)
+		return 0
 	} else {
-		atomic.AddInt32(&prevState.OriginatorIndex, 1)
+		return atomic.AddInt32(&prevState.OriginatorIndex, 1)
 	}
 	//}
 	//prevState.OriginatorIndex = rand.Intn(Constants.GetOriginators() - 1)

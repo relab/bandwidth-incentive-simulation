@@ -7,28 +7,29 @@ import (
 	"sort"
 )
 
-//func PrecomputeClosestNodes(nodesId []int) [][4]int {
-//	numPossibleChunks := Constants.GetRangeAddress()
-//	result := make([][4]int, numPossibleChunks)
-//	numNodesSearch := Constants.GetBits()
-//
-//	for chunkId := 0; chunkId < numPossibleChunks; chunkId++ {
-//
-//		closestNodes := BinarySearchClosest(nodesId, chunkId, numNodesSearch)
-//		distances := make([]int, len(closestNodes))
-//
-//		for i, nodeId := range closestNodes {
-//			distances[i] = nodeId ^ chunkId
-//		}
-//
-//		sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
-//
-//		for i := 0; i < 4; i++ {
-//			result[chunkId][i] = distances[i] ^ chunkId // this results in the nodeId again
-//		}
-//	}
-//	return result
-//}
+func PrecomputeRespNodes(nodesId []int) [][4]int {
+	numPossibleChunks := Constants.GetRangeAddress()
+	result := make([][4]int, numPossibleChunks)
+	numNodesSearch := Constants.GetBits()
+
+	for chunkId := 0; chunkId < numPossibleChunks; chunkId++ {
+
+		closestNodes := BinarySearchClosest(nodesId, chunkId, numNodesSearch)
+		distances := make([]int, len(closestNodes))
+
+		for j, nodeId := range closestNodes {
+			distances[j] = nodeId ^ chunkId
+		}
+
+		sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
+
+		for k := 0; k < 4; k++ {
+			result[chunkId][k] = distances[k] ^ chunkId // this results in the nodeId again
+		}
+	}
+
+	return result
+}
 
 func SortedKeys(m map[int]*Node) []int {
 	keys := make([]int, len(m))
@@ -46,13 +47,17 @@ func CreateGraphNetwork(net *Network) (*Graph, error) {
 	sortedNodeIds := SortedKeys(net.NodesMap)
 	numNodes := len(net.NodesMap)
 	Edges := make(map[int]map[int]*Edge)
-	//respNodes := PrecomputeClosestNodes(sortedNodeIds)
+	respNodes := make([][4]int, Constants.GetRangeAddress())
+	if Constants.IsPrecomputeRespNodes() {
+		respNodes = PrecomputeRespNodes(sortedNodeIds)
+	}
+
 	graph := &Graph{
 		Network:   net,
 		Nodes:     make([]*Node, 0, numNodes),
 		Edges:     Edges,
 		NodeIds:   sortedNodeIds,
-		RespNodes: make([][4]int, Constants.GetRangeAddress()),
+		RespNodes: respNodes,
 	}
 
 	for _, nodeId := range sortedNodeIds {

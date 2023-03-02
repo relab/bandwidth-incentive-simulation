@@ -11,14 +11,15 @@ func RequestWorker(newStateChan chan bool, requestChan chan Request, globalState
 
 	//curState := globalState
 	counter := 0
+	var originatorIndex int32
 	for counter < iterations {
 		//if len(requestChan) < Constants.GetNumGoroutines() {
-		if len(requestChan) < 10 {
+		if len(requestChan) <= 1 {
 
 			//curState = <-stateChan
 			//<-newStateChan
 
-			UpdateOriginatorIndex(globalState)
+			originatorIndex = UpdateOriginatorIndex(globalState)
 
 			chunkId := rand.Intn(Constants.GetRangeAddress() - 1)
 
@@ -34,7 +35,7 @@ func RequestWorker(newStateChan chan bool, requestChan chan Request, globalState
 			}
 
 			responsibleNodes := globalState.Graph.FindResponsibleNodes(chunkId)
-			originatorId := globalState.Originators[globalState.OriginatorIndex]
+			originatorId := globalState.Originators[originatorIndex]
 			//originatorId := prevState.Originators[rand.Intn(Constants.GetOriginators())]
 
 			if _, ok := globalState.PendingMap[originatorId]; ok {

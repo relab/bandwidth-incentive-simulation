@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"fmt"
 	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/parts/types"
 	"testing"
+	"time"
 
 	"gotest.tools/assert"
 )
@@ -50,4 +52,16 @@ func TestIsThresholdFailed(t *testing.T) {
 
 func TestGetNext(t *testing.T) {
 
+}
+
+func TestPrecomputeRespNodes(t *testing.T) {
+	network := &Network{}
+	network.Load(path)
+	sortedNodeIds := SortedKeys(network.NodesMap)
+	loops := 10
+	start := time.Now()
+	for i := 0; i < loops; i++ {
+		_ = PrecomputeRespNodes(sortedNodeIds)
+	}
+	fmt.Println(time.Since(start).Seconds())
 }
