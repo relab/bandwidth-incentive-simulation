@@ -127,7 +127,6 @@ func UpdateCacheMap(prevState *State, policyInput Policy) {
 }
 
 func UpdateRerouteMap(prevState *State, policyInput Policy) {
-
 	rerouteStruct := prevState.RerouteStruct
 	if Constants.IsRetryWithAnotherPeer() {
 		route := policyInput.Route
@@ -150,16 +149,17 @@ func UpdateRerouteMap(prevState *State, policyInput Policy) {
 		} else {
 			if len(route) > 3 {
 				reroute := rerouteStruct.GetRerouteMap(originator)
+				rerouteStruct.RerouteMutex.Lock()
 				if reroute != nil {
-					rerouteStruct.RerouteMutex.Lock()
 					if !Contains(reroute, route[1]) {
 						reroute = append([]int{route[1]}, reroute...)
 						rerouteStruct.RerouteMap[originator] = reroute
-					} else {
-						rerouteStruct.RerouteMap[originator] = []int{route[1], route[len(route)-1]}
 					}
-					rerouteStruct.RerouteMutex.Unlock()
+				} else {
+					rerouteStruct.RerouteMap[originator] = []int{route[1], route[len(route)-1]}
 				}
+				rerouteStruct.RerouteMutex.Unlock()
+
 				//if _, ok := rerouteMap[originator]; ok {
 				//	val := rerouteMap[originator]
 				//	if !Contains(val, route[1]) {
