@@ -7,14 +7,13 @@ import (
 	"math/rand"
 )
 
-func RequestWorker(newStateChan chan bool, requestChan chan Request, globalState *State, iterations int) {
+func RequestWorker(newStateChan chan bool, requestChan chan Request, globalState *State, iterations int32) {
 
 	//curState := globalState
-	counter := 0
 	requestQueueSize := 1
 	var originatorIndex int32
-	var timeStep int32
-	for counter < iterations {
+	var timeStep int32 = 0
+	for timeStep < iterations {
 		//if len(requestChan) < Constants.GetNumGoroutines() {
 		if len(requestChan) <= requestQueueSize {
 
@@ -58,7 +57,6 @@ func RequestWorker(newStateChan chan bool, requestChan chan Request, globalState
 				RespNodes:    responsibleNodes,
 			}
 
-			counter++
 		}
 	}
 }

@@ -5,6 +5,7 @@ import (
 	. "go-incentive-simulation/model/parts/update"
 	. "go-incentive-simulation/model/parts/utils"
 	"sync"
+	"sync/atomic"
 )
 
 func RoutingWorker(requestChan chan Request, newStateChan chan bool, globalState *State, stateArray []State, wg *sync.WaitGroup, numLoops int) {
@@ -26,8 +27,8 @@ func RoutingWorker(requestChan chan Request, newStateChan chan bool, globalState
 
 		//policyChan <- policy
 
-		curTimeStep := UpdateTimestep(globalState)
-		//curTimeStep := atomic.LoadInt32(&globalState.TimeStep)
+		//curTimeStep := UpdateTimestep(globalState)
+		curTimeStep := atomic.LoadInt32(&globalState.TimeStep)
 		//fmt.Println(curTimeStep)
 		//fmt.Println(" ")
 		UpdateNetwork(globalState, policyOutput, int(curTimeStep))
