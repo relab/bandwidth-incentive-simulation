@@ -38,10 +38,15 @@ func RequestWorker(newStateChan chan bool, requestChan chan Request, globalState
 			originatorId := globalState.Originators[originatorIndex]
 			//originatorId := prevState.Originators[rand.Intn(Constants.GetOriginators())]
 
-			if _, ok := globalState.PendingMap[originatorId]; ok {
-				chunkId = globalState.PendingMap[originatorId]
+			pendingNodeId := globalState.PendingStruct.GetPendingMap(originatorId)
+			if pendingNodeId != -1 {
+				chunkId = globalState.PendingStruct.GetPendingMap(originatorId)
 				responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 			}
+			//if _, ok := globalState.PendingMap[originatorId]; ok {
+			//	chunkId = globalState.PendingMap[originatorId]
+			//	responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+			//}
 
 			reroute := globalState.RerouteStruct.GetRerouteMap(originatorId)
 			if reroute != nil {

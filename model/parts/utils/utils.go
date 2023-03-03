@@ -107,7 +107,7 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, g *Graph)
 	return false
 }
 
-func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, prevNodePaid bool, rerouteMap RerouteMap) (int, []Threshold, bool, bool, Payment, bool) {
+func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, prevNodePaid bool, rerouteStruct RerouteStruct) (int, []Threshold, bool, bool, Payment, bool) {
 	var nextNodeId int
 	var payNextId int
 	var thresholdList []Threshold
@@ -141,10 +141,16 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			// Could probably clean this one up, but keeping it close to original for now
 			if dist < currDist {
 				if Constants.IsRetryWithAnotherPeer() {
-					_, ok := rerouteMap[mainOriginatorId]
-					if ok {
-						allExceptLast := len(rerouteMap[mainOriginatorId])
-						if Contains(rerouteMap[mainOriginatorId][:allExceptLast], nodeId) {
+					//_, ok := rerouteMap[mainOriginatorId]
+					//if ok {
+					//	allExceptLast := len(rerouteMap[mainOriginatorId])
+					//	if Contains(rerouteMap[mainOriginatorId][:allExceptLast], nodeId) {
+					//		continue
+
+					reroute := rerouteStruct.GetRerouteMap(mainOriginatorId)
+					if reroute != nil {
+						allExceptLast := len(reroute)
+						if Contains(reroute[:allExceptLast], nodeId) {
 							continue
 						} else {
 							currDist = dist
@@ -278,7 +284,7 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 }
 
 // ConsumeTask cacheDict is map of nodes containing an array of maps with key as a chunkAddr and a popularity counter
-func ConsumeTask(request *Request, graph *Graph, rerouteMap RerouteMap, cacheStruct CacheStruct) (bool, Route, [][]Threshold, bool, []Payment) {
+func ConsumeTask(request *Request, graph *Graph, rerouteStruct RerouteStruct, cacheStruct CacheStruct) (bool, Route, [][]Threshold, bool, []Payment) {
 	var thresholdFailedList [][]Threshold
 	var paymentList []Payment
 	originatorId := request.OriginatorId
@@ -310,7 +316,7 @@ func ConsumeTask(request *Request, graph *Graph, rerouteMap RerouteMap, cacheStr
 			//fmt.Printf("\n orig: %d, chunk_id: %d", mainOriginatorId, chunkId)
 			//nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originatorId, chunkId, graph, mainOriginatorId, prevNodePaid, rerouteMap)
 
-			nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originatorId, chunkId, graph, mainOriginatorId, prevNodePaid, rerouteMap)
+			nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originatorId, chunkId, graph, mainOriginatorId, prevNodePaid, rerouteStruct)
 
 			//if nextNodeId == -2 {
 			//	// Access Failed

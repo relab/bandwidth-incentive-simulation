@@ -188,22 +188,33 @@ func UpdateRerouteMap(prevState *State, policyInput Policy) {
 }
 
 func UpdatePendingMap(prevState *State, policyInput Policy) {
-	pendingMap := prevState.PendingMap
+	pendingStruct := prevState.PendingStruct
 	if Constants.IsWaitingEnabled() {
 		route := policyInput.Route
 		originator := route[0]
 		if !Contains(route, -1) && !Contains(route, -2) {
-			if _, ok := pendingMap[originator]; ok {
-				if pendingMap[originator] == route[len(route)-1] {
-					delete(pendingMap, originator)
+			pendingNodeId := pendingStruct.GetPendingMap(originator)
+			if pendingNodeId != -1 {
+				if pendingNodeId == route[len(route)-1] {
+					pendingStruct.DeletePending(originator)
 				}
 			}
-
+			//if _, ok := pendingMap[originator]; ok {
+			//	if pendingMap[originator] == route[len(route)-1] {
+			//		delete(pendingMap, originator)
+			//	}
+			//}
 		} else {
-			pendingMap[originator] = route[len(route)-1]
+			pendingStruct.PendingMutex.Lock()
+			pendingStruct.PendingMap[originator] = route[len(route)-1]
+			pendingStruct.PendingMutex.Unlock()
 		}
+		//} else {
+		//	pendingMap[originator] = route[len(route)-1]
+		//}
 	}
-	prevState.PendingMap = pendingMap
+	prevState.PendingStruct = pendingStruct
+	//prevState.PendingMap = pendingMap
 }
 
 func UpdateTimestep(prevState *State) int {

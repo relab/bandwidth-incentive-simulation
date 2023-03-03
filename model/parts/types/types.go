@@ -12,6 +12,27 @@ type Request struct {
 
 type PendingMap map[int]int
 
+type PendingStruct struct {
+	PendingMap   PendingMap
+	PendingMutex *sync.Mutex
+}
+
+func (p *PendingStruct) GetPendingMap(originator int) int {
+	p.PendingMutex.Lock()
+	defer p.PendingMutex.Unlock()
+	pendingNodeId, ok := p.PendingMap[originator]
+	if ok {
+		return pendingNodeId
+	}
+	return -1
+}
+
+func (p *PendingStruct) DeletePending(originator int) {
+	p.PendingMutex.Lock()
+	defer p.PendingMutex.Unlock()
+	delete(p.PendingMap, originator)
+}
+
 type RerouteMap map[int][]int
 
 type RerouteStruct struct {

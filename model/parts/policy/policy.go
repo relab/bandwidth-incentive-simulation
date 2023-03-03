@@ -53,18 +53,28 @@ func SendRequest(prevState *State, index int) (bool, Route, [][]Threshold, bool,
 	originatorId := prevState.Originators[prevState.OriginatorIndex]
 	//originatorId := prevState.Originators[rand.Intn(Constants.GetOriginators())]
 
-	if _, ok := prevState.PendingMap[originatorId]; ok {
-		chunkId = prevState.PendingMap[originatorId]
+	pendingNodeId := prevState.PendingStruct.GetPendingMap(originatorId)
+	if pendingNodeId != -1 {
+		chunkId = prevState.PendingStruct.GetPendingMap(originatorId)
 		responsibleNodes = prevState.Graph.FindResponsibleNodes(chunkId)
 	}
-	if _, ok := prevState.RerouteMap[originatorId]; ok {
-		chunkId = prevState.RerouteMap[originatorId][len(prevState.RerouteMap[originatorId])-1]
+	//if _, ok := prevState.PendingMap[originatorId]; ok {
+	//	chunkId = prevState.PendingMap[originatorId]
+	//	responsibleNodes = prevState.Graph.FindResponsibleNodes(chunkId)
+	//}
+	reroute := prevState.RerouteStruct.GetRerouteMap(originatorId)
+	if reroute != nil {
+		chunkId = reroute[len(reroute)-1]
 		responsibleNodes = prevState.Graph.FindResponsibleNodes(chunkId)
 	}
+	//if _, ok := prevState.RerouteMap[originatorId]; ok {
+	//	chunkId = prevState.RerouteMap[originatorId][len(prevState.RerouteMap[originatorId])-1]
+	//	responsibleNodes = prevState.Graph.FindResponsibleNodes(chunkId)
+	//}
 
 	request := Request{OriginatorId: originatorId, ChunkId: chunkId, RespNodes: responsibleNodes}
 
-	found, route, thresholdFailed, accessFailed, paymentsList := ConsumeTask(&request, prevState.Graph, prevState.RerouteMap, prevState.CacheStruct)
+	found, route, thresholdFailed, accessFailed, paymentsList := ConsumeTask(&request, prevState.Graph, prevState.RerouteStruct, prevState.CacheStruct)
 
 	return found, route, thresholdFailed, accessFailed, paymentsList
 }
