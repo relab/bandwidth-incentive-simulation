@@ -11,15 +11,19 @@ func RequestWorker(newStateChan chan bool, requestChan chan Request, globalState
 
 	//curState := globalState
 	counter := 0
+	requestQueueSize := 1
 	var originatorIndex int32
+	var timeStep int32
 	for counter < iterations {
 		//if len(requestChan) < Constants.GetNumGoroutines() {
-		if len(requestChan) <= 1 {
+		if len(requestChan) <= requestQueueSize {
 
 			//curState = <-stateChan
 			//<-newStateChan
+			timeStep = UpdateTimestep(globalState)
+			//timeStep = atomic.LoadInt32(&globalState.TimeStep)
 
-			originatorIndex = UpdateOriginatorIndex(globalState)
+			originatorIndex = UpdateOriginatorIndex(globalState, timeStep)
 
 			chunkId := rand.Intn(Constants.GetRangeAddress() - 1)
 

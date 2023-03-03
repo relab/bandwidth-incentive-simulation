@@ -27,7 +27,10 @@ func RoutingWorker(requestChan chan Request, newStateChan chan bool, globalState
 		//policyChan <- policy
 
 		curTimeStep := UpdateTimestep(globalState)
-		UpdateNetwork(globalState, policyOutput, curTimeStep)
+		//curTimeStep := atomic.LoadInt32(&globalState.TimeStep)
+		//fmt.Println(curTimeStep)
+		//fmt.Println(" ")
+		UpdateNetwork(globalState, policyOutput, int(curTimeStep))
 		UpdatePendingMap(globalState, policyOutput)
 		UpdateRerouteMap(globalState, policyOutput)
 		UpdateCacheMap(globalState, policyOutput)

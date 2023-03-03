@@ -34,16 +34,34 @@ func UpdateFailedRequestsAccess(prevState *State, policyInput Policy) {
 	}
 }
 
-func UpdateOriginatorIndex(prevState *State) int32 {
+// UpdateOriginatorIndex Used by the requestWorker
+func UpdateOriginatorIndex(prevState *State, timeStep int32) int32 {
 
-	//if prevState.TimeStep%100 == 0 {
-	if int(atomic.LoadInt32(&prevState.OriginatorIndex)+1) >= Constants.GetOriginators() {
-		atomic.StoreInt32(&prevState.OriginatorIndex, 0)
-		return 0
+	curOriginatorIndex := atomic.LoadInt32(&prevState.OriginatorIndex)
+	if Constants.GetSameOriginator() {
+		if (timeStep)%100 == 0 {
+			if int(curOriginatorIndex+1) >= Constants.GetOriginators() {
+				atomic.StoreInt32(&prevState.OriginatorIndex, 0)
+				return 0
+			} else {
+				return atomic.AddInt32(&prevState.OriginatorIndex, 1)
+			}
+		}
 	} else {
-		return atomic.AddInt32(&prevState.OriginatorIndex, 1)
+		if int(curOriginatorIndex+1) >= Constants.GetOriginators() {
+			atomic.StoreInt32(&prevState.OriginatorIndex, 0)
+			return 0
+		} else {
+			if Constants.GetSameOriginator() {
+				if atomic.LoadInt32(&prevState.TimeStep)%100 == 0 {
+					return atomic.AddInt32(&prevState.OriginatorIndex, 1)
+				}
+			} else {
+				return atomic.AddInt32(&prevState.OriginatorIndex, 1)
+			}
+		}
 	}
-	//}
+	return curOriginatorIndex
 	//prevState.OriginatorIndex = rand.Intn(Constants.GetOriginators() - 1)
 }
 
@@ -180,8 +198,8 @@ func UpdatePendingMap(prevState *State, policyInput Policy) {
 	prevState.PendingMap = pendingMap
 }
 
-func UpdateTimestep(prevState *State) int {
-	curTimeStep := int(atomic.AddInt32(&prevState.TimeStep, 1))
+func UpdateTimestep(prevState *State) int32 {
+	curTimeStep := atomic.AddInt32(&prevState.TimeStep, 1)
 	return curTimeStep
 }
 

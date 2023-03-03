@@ -28,6 +28,7 @@ type constant struct {
 	preferredChunks                  bool
 	adjustableThreshold              bool
 	edgeLock                         bool
+	sameOriginator                   bool
 	precomputeRespNodes              bool
 	numGoroutines                    int
 }
@@ -60,6 +61,7 @@ var Constants = constant{
 	preferredChunks:                  false, // Fits well with cache
 	adjustableThreshold:              false,
 	edgeLock:                         true,
+	sameOriginator:                   false, // For testing the usefulness of locking the edges
 	precomputeRespNodes:              true,
 	numGoroutines:                    25, // 25 seems to currently be the sweet spot
 }
@@ -174,6 +176,10 @@ func (c *constant) GetMaxProximityOrder() int {
 
 func (c *constant) GetPrice() int {
 	return c.price
+}
+
+func (c *constant) GetSameOriginator() bool {
+	return c.sameOriginator
 }
 
 func (c *constant) GetEdgeLock() bool {
