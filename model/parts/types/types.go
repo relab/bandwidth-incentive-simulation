@@ -14,6 +14,27 @@ type PendingMap map[int]int
 
 type RerouteMap map[int][]int
 
+type RerouteStruct struct {
+	RerouteMap   RerouteMap
+	RerouteMutex *sync.Mutex
+}
+
+func (r *RerouteStruct) GetRerouteMap(originator int) []int {
+	r.RerouteMutex.Lock()
+	defer r.RerouteMutex.Unlock()
+	reroute, ok := r.RerouteMap[originator]
+	if ok {
+		return reroute
+	}
+	return nil
+}
+
+func (r *RerouteStruct) DeleteReroute(originator int) {
+	r.RerouteMutex.Lock()
+	defer r.RerouteMutex.Unlock()
+	delete(r.RerouteMap, originator)
+}
+
 type CacheMap map[int]map[int]int
 
 type CacheStruct struct {
@@ -48,6 +69,10 @@ func (c *CacheStruct) AddToCache(nodeId int, chunkId int) {
 	return
 }
 
+func (r *RerouteMap) GetRerouteMap(originator int) {
+
+}
+
 type Route []int
 
 type Payment struct {
@@ -64,8 +89,8 @@ type State struct {
 	Originators             []int
 	NodesId                 []int
 	RouteLists              []Route
-	PendingMap              PendingMap
-	RerouteMap              RerouteMap
+	PendingStruct           PendingStruct
+	RerouteStruct           RerouteStruct
 	CacheStruct             CacheStruct
 	OriginatorIndex         int32
 	SuccessfulFound         int32

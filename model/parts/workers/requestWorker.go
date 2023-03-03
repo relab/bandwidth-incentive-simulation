@@ -43,10 +43,16 @@ func RequestWorker(newStateChan chan bool, requestChan chan Request, globalState
 				responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 			}
 
-			if _, ok := globalState.RerouteMap[originatorId]; ok {
-				chunkId = globalState.RerouteMap[originatorId][len(globalState.RerouteMap[originatorId])-1]
+			reroute := globalState.RerouteStruct.GetRerouteMap(originatorId)
+			if reroute != nil {
+				chunkId = reroute[len(reroute)-1]
 				responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 			}
+
+			//if _, ok := globalState.RerouteMap[originatorId]; ok {
+			//	chunkId = globalState.RerouteMap[originatorId][len(globalState.RerouteMap[originatorId])-1]
+			//	responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+			//}
 
 			requestChan <- Request{
 				OriginatorId: originatorId,
