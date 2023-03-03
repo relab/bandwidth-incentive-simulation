@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/json"
-	"fmt"
 	. "go-incentive-simulation/model/general"
 	"io/ioutil"
 	"math/rand"
@@ -101,7 +100,6 @@ func (network *Network) Generate(count int) []*Node {
 		node := network.node(nodeId)
 		nodes = append(nodes, node)
 	}
-	fmt.Println("NodesMap:", nodes)
 	pairs := make([][2]*Node, 0)
 	for i, node1 := range nodes {
 		for j := i + 1; j < len(nodes); j++ {
