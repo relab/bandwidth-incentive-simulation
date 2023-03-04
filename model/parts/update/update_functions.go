@@ -205,9 +205,10 @@ func UpdatePendingMap(prevState *State, policyInput Policy) {
 			//	}
 			//}
 		} else {
-			pendingStruct.PendingMutex.Lock()
-			pendingStruct.PendingMap[originator] = route[len(route)-1]
-			pendingStruct.PendingMutex.Unlock()
+			//pendingStruct.PendingMutex.Lock()
+			//pendingStruct.PendingMap[originator] = route[len(route)-1]
+			//pendingStruct.PendingMutex.Unlock()
+			pendingStruct.AddPending(originator, route[len(route)-1])
 		}
 		//} else {
 		//	pendingMap[originator] = route[len(route)-1]
