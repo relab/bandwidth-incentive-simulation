@@ -33,5 +33,4 @@ func (c *CacheStruct) AddToCache(nodeId int, chunkId int) {
 	} else {
 		c.CacheMap[nodeId] = map[int]int{chunkId: 1}
 	}
-	return
 }
