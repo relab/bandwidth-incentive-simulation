@@ -63,7 +63,7 @@ var Constants = constant{
 	edgeLock:                         true,
 	sameOriginator:                   false, // For testing the usefulness of locking the edges
 	precomputeRespNodes:              true,
-	numGoroutines:                    25, // 25 seems to currently be the sweet spot
+	numGoroutines:                    20, // 25 seems to currently be the sweet spot
 }
 
 // func CreateRangeAddress(c *constant){

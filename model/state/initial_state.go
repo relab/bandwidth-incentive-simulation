@@ -27,7 +27,7 @@ func MakeInitialState(path string) State {
 		Graph:                   graph,
 		Originators:             CreateDownloadersList(graph),
 		NodesId:                 CreateNodesList(graph),
-		RouteLists:              []Route{},
+		RouteLists:              make([]Route, 10000),
 		PendingStruct:           pendingStruct,
 		RerouteStruct:           rerouteStruct,
 		CacheStruct:             cacheStruct,

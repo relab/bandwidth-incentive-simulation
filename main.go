@@ -2,60 +2,77 @@ package main
 
 import (
 	"fmt"
-	. "go-incentive-simulation/model/constants"
-	. "go-incentive-simulation/model/parts/policy"
-	. "go-incentive-simulation/model/parts/types"
-	. "go-incentive-simulation/model/parts/workers"
-	. "go-incentive-simulation/model/state"
+	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/model/parts/policy"
+	"go-incentive-simulation/model/parts/types"
+	"go-incentive-simulation/model/parts/workers"
+	"go-incentive-simulation/model/state"
 	"sync"
 	"time"
 )
 
-func MakePolicyOutput(state *State, index int) Policy {
+func MakePolicyOutput(state *types.State, index int) types.Policy {
 	//fmt.Println("start of make initial policy")
 
 	//found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state)
-	found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(state, index)
+	found, route, thresholdFailed, accessFailed, paymentsList := policy.SendRequest(state, index)
 
-	policy := Policy{
+	p := types.Policy{
 		Found:                found,
 		Route:                route,
 		ThresholdFailedLists: thresholdFailed,
 		AccessFailed:         accessFailed,
 		PaymentList:          paymentsList,
 	}
-	return policy
+	return p
 }
 
 func main() {
 	start := time.Now()
-	globalState := MakeInitialState("./data/nodes_data_16_10000.txt")
+	globalState := state.MakeInitialState("./data/nodes_data_16_10000.txt")
 
 	const iterations = 10000000
-	numGoroutines := Constants.GetNumGoroutines()
+	numGoroutines := constants.Constants.GetNumGoroutines()
 	numLoops := iterations / numGoroutines
 
-	stateArray := make([]State, 0)
-	stateArray = append(stateArray, globalState)
+	stateList := make([]types.StateSubset, 10000)
+	stateList[0] = types.StateSubset{
+		OriginatorIndex:         globalState.OriginatorIndex,
+		PendingMap:              globalState.PendingStruct.PendingMap,
+		RerouteMap:              globalState.RerouteStruct.RerouteMap,
+		CacheStruct:             globalState.CacheStruct,
+		SuccessfulFound:         globalState.SuccessfulFound,
+		FailedRequestsThreshold: globalState.FailedRequestsThreshold,
+		FailedRequestsAccess:    globalState.FailedRequestsAccess,
+		TimeStep:                globalState.TimeStep,
+	}
 
 	wg := &sync.WaitGroup{}
 	//policyChan := make(chan Policy, numGoroutines)
 	newStateChan := make(chan bool, numGoroutines)
-	requestChan := make(chan Request, iterations+1)
+	requestChan := make(chan types.Request, numGoroutines)
+	routeChan := make(chan types.Route, numGoroutines)
+	stateChan := make(chan types.StateSubset, iterations)
 
-	go RequestWorker(newStateChan, requestChan, &globalState, iterations)
+	go workers.RouteFlushWorker(routeChan, &globalState, wg, iterations)
+	go workers.StateFlushWorker(stateChan, &globalState, stateList, wg, iterations)
+	wg.Add(2)
+
+	go workers.RequestWorker(newStateChan, requestChan, &globalState, iterations)
 	//newStateChan <- true
 
 	for i := 0; i < numGoroutines; i++ {
 		wg.Add(1)
-		go RoutingWorker(requestChan, newStateChan, &globalState, stateArray, wg, numLoops)
+		go workers.RoutingWorker(requestChan, routeChan, stateChan, newStateChan, &globalState, stateList, wg, numLoops)
 	}
+	wg.Wait()
+
 	//for j := 0; j < numGoroutines/4; j++ {
 	//	//wg.Add(1)
-	//	go UpdateWorker(newStateChan, policyChan, &globalState, stateArray, wg, iterations)
+	//	go UpdateWorker(newStateChan, policyChan, &globalState, stateList, wg, iterations)
 	//}
 	//newStateChan <- true
-	wg.Wait()
+	//wg.Wait()
 
 	//for j := 0; j < numGoroutines; j++ {
 	//	wg.Add(1)
@@ -84,7 +101,7 @@ func main() {
 	PrintState(globalState)
 }
 
-func PrintState(state State) {
+func PrintState(state types.State) {
 	fmt.Println("SuccessfulFound: ", state.SuccessfulFound)
 	fmt.Println("FailedRequestsThreshold: ", state.FailedRequestsThreshold)
 	fmt.Println("FailedRequestsAccess: ", state.FailedRequestsAccess)

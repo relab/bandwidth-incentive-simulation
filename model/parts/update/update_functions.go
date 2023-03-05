@@ -1,13 +1,11 @@
 package update
 
 import (
-	"encoding/json"
 	"go-incentive-simulation/model/constants"
 	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/utils"
 	"math"
-	"os"
 	"sync/atomic"
 )
 
@@ -67,63 +65,49 @@ func OriginatorIndex(state *types.State, timeStep int32) int32 {
 	//state.OriginatorIndex = rand.Intn(Constants.GetOriginators() - 1)
 }
 
-func convertAndDumpToFile(routes []types.Route, curTimeStep int) error {
-	type RouteData struct {
-		TimeStep int           `json:"timestep"`
-		Routes   []types.Route `json:"routes"`
-	}
-	data := RouteData{curTimeStep, routes}
-	file, _ := json.Marshal(data)
-	err := os.WriteFile("routes.json", file, 0644)
-	if err != nil {
-		return err
-	}
-	return nil
-}
+//func convertAndDumpToFileStateList(stateList []types.State, curTimeStep int) error {
+//	type StateData struct {
+//		TimeStep int                 `json:"timestep"`
+//		States   []types.StateSubset `json:"states"`
+//	}
+//	subList := make([]types.StateSubset, len(stateList))
+//	for i, state := range stateList {
+//		subList[i] = types.StateSubset{
+//			OriginatorIndex:         state.OriginatorIndex,
+//			PendingMap:              state.PendingStruct.PendingMap,
+//			RerouteMap:              state.RerouteStruct.RerouteMap,
+//			SuccessfulFound:         state.SuccessfulFound,
+//			FailedRequestsThreshold: state.FailedRequestsThreshold,
+//			FailedRequestsAccess:    state.FailedRequestsAccess,
+//			TimeStep:                state.TimeStep,
+//		}
+//	}
+//	data := StateData{curTimeStep, subList}
+//	file, _ := json.MarshalIndent(data, "", "  ")
+//	err := os.WriteFile("states.json", file, 0644)
+//	if err != nil {
+//		return err
+//	}
+//	return nil
+//}
 
-func convertAndDumpToFileStateList(stateList []types.State, curTimeStep int) error {
-	type StateData struct {
-		TimeStep int                 `json:"timestep"`
-		States   []types.StateSubset `json:"states"`
-	}
-	subList := make([]types.StateSubset, len(stateList))
-	for i, state := range stateList {
-		subList[i] = types.StateSubset{
-			OriginatorIndex:         state.OriginatorIndex,
-			PendingMap:              state.PendingStruct.PendingMap,
-			RerouteMap:              state.RerouteStruct.RerouteMap,
-			SuccessfulFound:         state.SuccessfulFound,
-			FailedRequestsThreshold: state.FailedRequestsThreshold,
-			FailedRequestsAccess:    state.FailedRequestsAccess,
-			TimeStep:                state.TimeStep,
-		}
-	}
-	data := StateData{curTimeStep, subList}
-	file, _ := json.MarshalIndent(data, "", "  ")
-	err := os.WriteFile("states.json", file, 0644)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func RouteListAndFlush(state *types.State, policyInput types.Policy, curTimeStep int) []types.Route {
-	state.RouteLists = append(state.RouteLists, policyInput.Route)
-	if curTimeStep%6250 == 0 {
-		convertAndDumpToFile(state.RouteLists, curTimeStep)
-		state.RouteLists = []types.Route{}
-	}
-	return state.RouteLists
-}
-
-func StateListAndFlush(state *types.State, stateList []types.State, curTimeStep int) []types.State {
-	stateList = append(stateList, *state)
-	if curTimeStep%1000 == 0 {
-		convertAndDumpToFileStateList(stateList, curTimeStep)
-		stateList = []types.State{}
-	}
-	return stateList
-}
+//func RouteListAndFlush(state *types.State, policyInput types.Policy, curTimeStep int) []types.Route {
+//	state.RouteLists = append(state.RouteLists, policyInput.Route)
+//	if curTimeStep%6250 == 0 {
+//		convertAndDumpToFile(state.RouteLists, curTimeStep)
+//		state.RouteLists = []types.Route{}
+//	}
+//	return state.RouteLists
+//}
+//
+//func StateListAndFlush(state types.State, stateList []types.State, curTimeStep int) []types.State {
+//	stateList = append(stateList, state)
+//	if curTimeStep%1000 == 0 {
+//		convertAndDumpToFileStateList(stateList, curTimeStep)
+//		stateList = []types.State{}
+//	}
+//	return stateList
+//}
 
 func CacheMap(state *types.State, policyInput types.Policy) types.CacheStruct {
 	chunkId := 0
