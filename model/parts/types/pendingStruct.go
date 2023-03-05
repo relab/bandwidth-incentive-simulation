@@ -9,7 +9,7 @@ type PendingStruct struct {
 	PendingMutex *sync.Mutex
 }
 
-func (p *PendingStruct) GetPendingMap(originator int) int {
+func (p *PendingStruct) GetPending(originator int) int {
 	p.PendingMutex.Lock()
 	defer p.PendingMutex.Unlock()
 	pendingNodeId, ok := p.PendingMap[originator]
