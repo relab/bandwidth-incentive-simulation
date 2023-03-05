@@ -33,10 +33,10 @@ func main() {
 
 	const iterations = 10000000
 	numGoroutines := Constants.GetNumGoroutines()
-
 	numLoops := iterations / numGoroutines
-	stateArray := make([]State, iterations+1)
-	stateArray[0] = globalState
+
+	stateArray := make([]State, 0)
+	stateArray = append(stateArray, globalState)
 
 	wg := &sync.WaitGroup{}
 	//policyChan := make(chan Policy, numGoroutines)
@@ -91,8 +91,7 @@ func PrintState(state State) {
 	fmt.Println("CacheHits:", state.CacheStruct.CacheHits)
 	fmt.Println("TimeStep: ", state.TimeStep)
 	fmt.Println("OriginatorIndex: ", state.OriginatorIndex)
-	//fmt.Println("PendingMap: ", state.PendingMap)
-	//fmt.Println("RerouteMap: ", state.RerouteMap)
+	fmt.Println("PendingMap: ", state.PendingStruct.PendingMap)
+	fmt.Println("RerouteMap: ", state.RerouteStruct.RerouteMap)
 	//fmt.Println("RouteLists: ", state.RouteLists)
-	//fmt.Println("CacheMapArray: ", state.CacheStruct.CacheMapArray)
 }

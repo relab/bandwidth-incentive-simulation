@@ -6,12 +6,12 @@ type RerouteMap map[int][]int
 
 type RerouteStruct struct {
 	RerouteMap   RerouteMap
-	RerouteMutex *sync.RWMutex
+	RerouteMutex *sync.Mutex
 }
 
 func (r *RerouteStruct) GetRerouteMap(originator int) []int {
-	r.RerouteMutex.RLock()
-	defer r.RerouteMutex.RUnlock()
+	r.RerouteMutex.Lock()
+	defer r.RerouteMutex.Unlock()
 	reroute, ok := r.RerouteMap[originator]
 	if ok {
 		return reroute
