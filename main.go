@@ -5,7 +5,7 @@ import (
 	. "go-incentive-simulation/model/constants"
 	. "go-incentive-simulation/model/parts/policy"
 	. "go-incentive-simulation/model/parts/types"
-	. "go-incentive-simulation/model/parts/update"
+	. "go-incentive-simulation/model/parts/workers"
 	. "go-incentive-simulation/model/state"
 	"sync"
 	"time"
@@ -27,71 +27,49 @@ func MakePolicyOutput(state *State, index int) Policy {
 	return policy
 }
 
-func UpdateWorker(stateChan chan *State, policyChan chan Policy, globalState *State, stateArray []State, iterations int) {
-
-	for {
-		policyOutput := <-policyChan
-
-		UpdatePendingMap(globalState, policyOutput)
-		UpdateRerouteMap(globalState, policyOutput)
-		UpdateCacheMap(globalState, policyOutput)
-		UpdateOriginatorIndex(globalState, policyOutput)
-		UpdateSuccessfulFound(globalState, policyOutput)
-		UpdateFailedRequestsThreshold(globalState, policyOutput)
-		UpdateFailedRequestsAccess(globalState, policyOutput)
-		UpdateRouteListAndFlush(globalState, policyOutput)
-		UpdateNetwork(globalState, policyOutput)
-
-		newState := State{
-			Graph:                   globalState.Graph,
-			Originators:             globalState.Originators,
-			NodesId:                 globalState.NodesId,
-			RouteLists:              globalState.RouteLists,
-			PendingMap:              globalState.PendingMap,
-			RerouteMap:              globalState.RerouteMap,
-			CacheStruct:             globalState.CacheStruct,
-			OriginatorIndex:         globalState.OriginatorIndex,
-			SuccessfulFound:         globalState.SuccessfulFound,
-			FailedRequestsThreshold: globalState.FailedRequestsThreshold,
-			FailedRequestsAccess:    globalState.FailedRequestsAccess,
-			TimeStep:                globalState.TimeStep,
-		}
-
-		stateArray = UpdateStateArrayAndFlush(stateArray, &newState, policyOutput)
-
-		stateChan <- &newState
-	}
-}
-
 func main() {
 	start := time.Now()
 	globalState := MakeInitialState("./data/nodes_data_16_10000.txt")
 
 	const iterations = 10000000
 	numGoroutines := Constants.GetNumGoroutines()
-
 	numLoops := iterations / numGoroutines
+
 	stateArray := make([]State, 0)
 	stateArray = append(stateArray, globalState)
-	var wg sync.WaitGroup
-	policyChan := make(chan Policy, numGoroutines)
-	stateChan := make(chan *State, numGoroutines)
 
-	go UpdateWorker(stateChan, policyChan, &globalState, stateArray, iterations)
+	wg := &sync.WaitGroup{}
+	//policyChan := make(chan Policy, numGoroutines)
+	newStateChan := make(chan bool, numGoroutines)
+	requestChan := make(chan Request, iterations+1)
 
-	for j := 0; j < numGoroutines; j++ {
+	go RequestWorker(newStateChan, requestChan, &globalState, iterations)
+	//newStateChan <- true
+
+	for i := 0; i < numGoroutines; i++ {
 		wg.Add(1)
-		go func(index int) {
-			curState := &globalState
-			for i := 0; i < numLoops; i++ {
-				policyChan <- MakePolicyOutput(curState, index)
-				// waiting for new state from UpdateWorker
-				curState = <-stateChan
-			}
-			wg.Done()
-		}(j)
+		go RoutingWorker(requestChan, newStateChan, &globalState, stateArray, wg, numLoops)
 	}
+	//for j := 0; j < numGoroutines/4; j++ {
+	//	//wg.Add(1)
+	//	go UpdateWorker(newStateChan, policyChan, &globalState, stateArray, wg, iterations)
+	//}
+	//newStateChan <- true
 	wg.Wait()
+
+	//for j := 0; j < numGoroutines; j++ {
+	//	wg.Add(1)
+	//	go func(index int) {
+	//		curState := &globalState
+	//		for i := 0; i < numLoops; i++ {
+	//			policyChan <- MakePolicyOutput(curState, index)
+	//			// waiting for new state from UpdateWorker
+	//			curState = <-stateChan
+	//		}
+	//		wg.Done()
+	//	}(j)
+	//}
+	//wg.Wait()
 	fmt.Println("end of main: ")
 	elapsed := time.Since(start)
 	fmt.Println("Time taken:", elapsed)
@@ -113,7 +91,7 @@ func PrintState(state State) {
 	fmt.Println("CacheHits:", state.CacheStruct.CacheHits)
 	fmt.Println("TimeStep: ", state.TimeStep)
 	fmt.Println("OriginatorIndex: ", state.OriginatorIndex)
-	fmt.Println("PendingMap: ", state.PendingMap)
-	fmt.Println("RerouteMap: ", state.RerouteMap)
+	fmt.Println("PendingMap: ", state.PendingStruct.PendingMap)
+	fmt.Println("RerouteMap: ", state.RerouteStruct.RerouteMap)
 	//fmt.Println("RouteLists: ", state.RouteLists)
 }

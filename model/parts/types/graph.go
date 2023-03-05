@@ -42,27 +42,32 @@ type EdgeAttrs struct {
 //}
 
 func (g *Graph) FindResponsibleNodes(chunkId int) [4]int {
-	if g.RespNodes[chunkId][0] != 0 {
+	if Constants.IsPrecomputeRespNodes() {
 		return g.RespNodes[chunkId]
 
 	} else {
-		numNodesSearch := Constants.GetBits()
-		closestNodes := BinarySearchClosest(g.NodeIds, chunkId, numNodesSearch)
-		distances := make([]int, len(closestNodes))
-		result := [4]int{}
+		if g.RespNodes[chunkId][0] != 0 {
+			return g.RespNodes[chunkId]
 
-		for i, nodeId := range closestNodes {
-			distances[i] = nodeId ^ chunkId
+		} else {
+			numNodesSearch := Constants.GetBits()
+			closestNodes := BinarySearchClosest(g.NodeIds, chunkId, numNodesSearch)
+			distances := make([]int, len(closestNodes))
+			result := [4]int{}
+
+			for i, nodeId := range closestNodes {
+				distances[i] = nodeId ^ chunkId
+			}
+
+			sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
+
+			for i := 0; i < 4; i++ {
+				result[i] = distances[i] ^ chunkId // this results in the nodeId again
+			}
+			g.RespNodes[chunkId] = result
+
+			return result
 		}
-
-		sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
-
-		for i := 0; i < 4; i++ {
-			result[i] = distances[i] ^ chunkId // this results in the nodeId again
-		}
-		g.RespNodes[chunkId] = result
-
-		return result
 	}
 }
 

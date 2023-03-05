@@ -28,6 +28,8 @@ type constant struct {
 	preferredChunks                  bool
 	adjustableThreshold              bool
 	edgeLock                         bool
+	sameOriginator                   bool
+	precomputeRespNodes              bool
 	numGoroutines                    int
 }
 
@@ -56,10 +58,12 @@ var Constants = constant{
 	forwarderPayForceOriginatorToPay: false,
 	retryWithAnotherPeer:             false,
 	cacheIsEnabled:                   false,
-	preferredChunks:                  false,
+	preferredChunks:                  false, // Fits well with cache
 	adjustableThreshold:              false,
 	edgeLock:                         true,
-	numGoroutines:                    20,
+	sameOriginator:                   false, // For testing the usefulness of locking the edges
+	precomputeRespNodes:              true,
+	numGoroutines:                    25, // 25 seems to currently be the sweet spot
 }
 
 // func CreateRangeAddress(c *constant){
@@ -174,8 +178,16 @@ func (c *constant) GetPrice() int {
 	return c.price
 }
 
+func (c *constant) GetSameOriginator() bool {
+	return c.sameOriginator
+}
+
 func (c *constant) GetEdgeLock() bool {
 	return c.edgeLock
+}
+
+func (c *constant) IsPrecomputeRespNodes() bool {
+	return c.precomputeRespNodes
 }
 
 func (c *constant) GetNumGoroutines() int {
