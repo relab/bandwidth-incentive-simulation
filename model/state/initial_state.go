@@ -19,14 +19,17 @@ func MakeInitialState(path string) State {
 	if err != nil {
 		fmt.Println("create graph network returned an error: ", err)
 	}
+	pendingStruct := PendingStruct{PendingMap: make(PendingMap, 0), PendingMutex: &sync.Mutex{}}
+	rerouteStruct := RerouteStruct{RerouteMap: make(RerouteMap, 0), RerouteMutex: &sync.RWMutex{}}
 	cacheStruct := CacheStruct{CacheHits: 0, CacheMap: make(CacheMap), CacheMutex: &sync.Mutex{}}
+
 	initialState := State{
 		Graph:                   graph,
 		Originators:             CreateDownloadersList(graph),
 		NodesId:                 CreateNodesList(graph),
 		RouteLists:              []Route{},
-		PendingMap:              make(PendingMap, 0),
-		RerouteMap:              make(RerouteMap, 0),
+		PendingStruct:           pendingStruct,
+		RerouteStruct:           rerouteStruct,
 		CacheStruct:             cacheStruct,
 		OriginatorIndex:         0,
 		SuccessfulFound:         0,

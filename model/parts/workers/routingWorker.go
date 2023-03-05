@@ -15,7 +15,7 @@ func RoutingWorker(requestChan chan Request, newStateChan chan bool, globalState
 	for i := 0; i < numLoops; i++ {
 		request = <-requestChan
 
-		found, route, thresholdFailed, accessFailed, paymentsList := ConsumeTask(&request, globalState.Graph, globalState.RerouteMap, globalState.CacheStruct)
+		found, route, thresholdFailed, accessFailed, paymentsList := ConsumeTask(&request, globalState.Graph, globalState.RerouteStruct, globalState.CacheStruct)
 
 		policyOutput := Policy{
 			Found:                found,
@@ -46,8 +46,8 @@ func RoutingWorker(requestChan chan Request, newStateChan chan bool, globalState
 			Originators:             globalState.Originators,
 			NodesId:                 globalState.NodesId,
 			RouteLists:              globalState.RouteLists,
-			PendingMap:              globalState.PendingMap,
-			RerouteMap:              globalState.RerouteMap,
+			PendingStruct:           globalState.PendingStruct,
+			RerouteStruct:           globalState.RerouteStruct,
 			CacheStruct:             globalState.CacheStruct,
 			OriginatorIndex:         globalState.OriginatorIndex,
 			SuccessfulFound:         globalState.SuccessfulFound,

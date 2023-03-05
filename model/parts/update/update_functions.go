@@ -145,57 +145,95 @@ func UpdateCacheMap(prevState *State, policyInput Policy) {
 }
 
 func UpdateRerouteMap(prevState *State, policyInput Policy) {
-	rerouteMap := prevState.RerouteMap
+	rerouteStruct := prevState.RerouteStruct
 	if Constants.IsRetryWithAnotherPeer() {
 		route := policyInput.Route
 		originator := route[0]
 		if !Contains(route, -1) && !Contains(route, -2) {
-			if _, ok := rerouteMap[originator]; ok {
-				val := rerouteMap[originator]
-				if val[len(val)-1] == route[len(route)-1] {
+			reroute := rerouteStruct.GetRerouteMap(originator)
+			if reroute != nil {
+				if reroute[len(reroute)-1] == route[len(route)-1] {
 					//remove rerouteMap[originator]
-					delete(rerouteMap, originator)
+					rerouteStruct.DeleteReroute(originator)
 				}
 			}
+			//if _, ok := rerouteMap[originator]; ok {
+			//	val := rerouteMap[originator]
+			//	if val[len(val)-1] == route[len(route)-1] {
+			//		//remove rerouteMap[originator]
+			//		delete(rerouteMap, originator)
+			//	}
+			//}
 		} else {
 			if len(route) > 3 {
-				if _, ok := rerouteMap[originator]; ok {
-					val := rerouteMap[originator]
-					if !Contains(val, route[1]) {
-						val = append([]int{route[1]}, val...)
-						rerouteMap[originator] = val
+				reroute := rerouteStruct.GetRerouteMap(originator)
+				rerouteStruct.RerouteMutex.Lock()
+				if reroute != nil {
+					if !Contains(reroute, route[1]) {
+						reroute = append([]int{route[1]}, reroute...)
+						rerouteStruct.RerouteMap[originator] = reroute
 					}
 				} else {
-					rerouteMap[originator] = []int{route[1], route[len(route)-1]}
+					rerouteStruct.RerouteMap[originator] = []int{route[1], route[len(route)-1]}
 				}
+				rerouteStruct.RerouteMutex.Unlock()
+
+				//if _, ok := rerouteMap[originator]; ok {
+				//	val := rerouteMap[originator]
+				//	if !Contains(val, route[1]) {
+				//		val = append([]int{route[1]}, val...)
+				//		rerouteMap[originator] = val
+				//	}
+				//} else {
+				//	rerouteMap[originator] = []int{route[1], route[len(route)-1]}
+				//}
 			}
 		}
-		if _, ok := rerouteMap[originator]; ok {
-			if len(rerouteMap[originator]) > Constants.GetBinSize() {
-				delete(rerouteMap, originator)
+		reroute := rerouteStruct.GetRerouteMap(originator)
+		if reroute != nil {
+			if len(reroute) > Constants.GetBinSize() {
+				rerouteStruct.DeleteReroute(originator)
 			}
 		}
+		//if _, ok := rerouteMap[originator]; ok {
+		//	if len(rerouteMap[originator]) > Constants.GetBinSize() {
+		//		delete(rerouteMap, originator)
+		//	}
+		//}
 	}
-	prevState.RerouteMap = rerouteMap
+	prevState.RerouteStruct = rerouteStruct
+	//prevState.RerouteMap = rerouteMap
 }
 
 func UpdatePendingMap(prevState *State, policyInput Policy) {
-	pendingMap := prevState.PendingMap
+	pendingStruct := prevState.PendingStruct
 	if Constants.IsWaitingEnabled() {
 		route := policyInput.Route
 		originator := route[0]
 		if !Contains(route, -1) && !Contains(route, -2) {
-			if _, ok := pendingMap[originator]; ok {
-				if pendingMap[originator] == route[len(route)-1] {
-					delete(pendingMap, originator)
+			pendingNodeId := pendingStruct.GetPending(originator)
+			if pendingNodeId != -1 {
+				if pendingNodeId == route[len(route)-1] {
+					pendingStruct.DeletePending(originator)
 				}
 			}
-
+			//if _, ok := pendingMap[originator]; ok {
+			//	if pendingMap[originator] == route[len(route)-1] {
+			//		delete(pendingMap, originator)
+			//	}
+			//}
 		} else {
-			pendingMap[originator] = route[len(route)-1]
+			//pendingStruct.PendingMutex.Lock()
+			//pendingStruct.PendingMap[originator] = route[len(route)-1]
+			//pendingStruct.PendingMutex.Unlock()
+			pendingStruct.AddPending(originator, route[len(route)-1])
 		}
+		//} else {
+		//	pendingMap[originator] = route[len(route)-1]
+		//}
 	}
-	prevState.PendingMap = pendingMap
+	prevState.PendingStruct = pendingStruct
+	//prevState.PendingMap = pendingMap
 }
 
 func UpdateTimestep(prevState *State) int32 {
