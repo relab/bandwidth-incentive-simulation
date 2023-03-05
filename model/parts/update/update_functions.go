@@ -193,7 +193,7 @@ func UpdatePendingMap(prevState *State, policyInput Policy) {
 		route := policyInput.Route
 		originator := route[0]
 		if !Contains(route, -1) && !Contains(route, -2) {
-			pendingNodeId := pendingStruct.GetPendingMap(originator)
+			pendingNodeId := pendingStruct.GetPending(originator)
 			if pendingNodeId != -1 {
 				if pendingNodeId == route[len(route)-1] {
 					pendingStruct.DeletePending(originator)

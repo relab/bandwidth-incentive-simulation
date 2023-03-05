@@ -53,9 +53,9 @@ func SendRequest(prevState *State, index int) (bool, Route, [][]Threshold, bool,
 	originatorId := prevState.Originators[prevState.OriginatorIndex]
 	//originatorId := prevState.Originators[rand.Intn(Constants.GetOriginators())]
 
-	pendingNodeId := prevState.PendingStruct.GetPendingMap(originatorId)
+	pendingNodeId := prevState.PendingStruct.GetPending(originatorId)
 	if pendingNodeId != -1 {
-		chunkId = prevState.PendingStruct.GetPendingMap(originatorId)
+		chunkId = prevState.PendingStruct.GetPending(originatorId)
 		responsibleNodes = prevState.Graph.FindResponsibleNodes(chunkId)
 	}
 	//if _, ok := prevState.PendingMap[originatorId]; ok {

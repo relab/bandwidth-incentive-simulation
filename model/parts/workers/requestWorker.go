@@ -38,9 +38,9 @@ func RequestWorker(newStateChan chan bool, requestChan chan Request, globalState
 			originatorId := globalState.Originators[originatorIndex]
 			//originatorId := prevState.Originators[rand.Intn(Constants.GetOriginators())]
 
-			pendingNodeId := globalState.PendingStruct.GetPendingMap(originatorId)
+			pendingNodeId := globalState.PendingStruct.GetPending(originatorId)
 			if pendingNodeId != -1 {
-				chunkId = globalState.PendingStruct.GetPendingMap(originatorId)
+				chunkId = globalState.PendingStruct.GetPending(originatorId)
 				responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 			}
 			//if _, ok := globalState.PendingMap[originatorId]; ok {
