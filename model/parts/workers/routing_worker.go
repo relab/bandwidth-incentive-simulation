@@ -1,13 +1,16 @@
 package workers
 
 import (
+	"encoding/json"
+	"fmt"
+	"go-incentive-simulation/model/constants"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/update"
 	"go-incentive-simulation/model/parts/utils"
 	"sync"
 )
 
-func RoutingWorker(requestChan chan types.Request, routeChan chan types.Route, stateChan chan types.StateSubset, newStateChan chan bool, globalState *types.State, stateList []types.StateSubset, wg *sync.WaitGroup, numLoops int) {
+func RoutingWorker(requestChan chan types.Request, routeChan chan types.Route, stateChan chan []byte, newStateChan chan bool, globalState *types.State, stateList []types.StateSubset, wg *sync.WaitGroup, numLoops int) {
 	defer wg.Done()
 	var request types.Request
 	for i := 0; i < numLoops; i++ {
@@ -38,7 +41,12 @@ func RoutingWorker(requestChan chan types.Request, routeChan chan types.Route, s
 		failedRequestAccess := update.FailedRequestsAccess(globalState, policyOutput)
 
 		//routeLists := update.RouteListAndFlush(globalState, policyOutput, curTimeStep)
-		routeChan <- policyOutput.Route
+		if constants.Constants.IsWriteRoutesToFile() {
+			if curTimeStep%1000000 == 0 {
+				fmt.Println("routeChan: ", len(routeChan))
+			}
+			routeChan <- policyOutput.Route
+		}
 
 		//newState := types.State{
 		//	Graph:       graph,
@@ -55,22 +63,26 @@ func RoutingWorker(requestChan chan types.Request, routeChan chan types.Route, s
 		//	TimeStep:                int32(curTimeStep),
 		//}
 
-		newState := types.StateSubset{
-			OriginatorIndex:         request.OriginatorIndex,
-			PendingMap:              pendingStruct.PendingMap,
-			RerouteMap:              rerouteStruct.RerouteMap,
-			CacheStruct:             cacheStruct,
-			SuccessfulFound:         successfulFound,
-			FailedRequestsThreshold: failedRequestThreshold,
-			FailedRequestsAccess:    failedRequestAccess,
-			TimeStep:                int32(curTimeStep),
+		if constants.Constants.IsWriteStatesToFile() {
+			newState := types.StateSubset{
+				OriginatorIndex:         request.OriginatorIndex,
+				PendingMap:              pendingStruct.PendingMap,
+				RerouteMap:              rerouteStruct.RerouteMap,
+				CacheStruct:             cacheStruct,
+				SuccessfulFound:         successfulFound,
+				FailedRequestsThreshold: failedRequestThreshold,
+				FailedRequestsAccess:    failedRequestAccess,
+				TimeStep:                int32(curTimeStep),
+			}
+			if curTimeStep%1000000 == 0 {
+				fmt.Println("stateChan: ", len(stateChan))
+			}
+			encodedData, _ := json.Marshal(types.StateData{TimeStep: int(newState.TimeStep), State: newState})
+			stateChan <- encodedData
 		}
-
-		stateChan <- newState
 
 		//update.StateListAndFlush(newState, stateList, curTimeStep)
 		//stateList = append(stateList, newState)
 		//newStateChan <- true
 	}
-
 }

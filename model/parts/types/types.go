@@ -30,6 +30,11 @@ type StateSubset struct {
 	TimeStep                int32
 }
 
+type StateData struct {
+	TimeStep int         `json:"index"`
+	State    StateSubset `json:"state"`
+}
+
 type State struct {
 	Graph                   *Graph
 	Originators             []int

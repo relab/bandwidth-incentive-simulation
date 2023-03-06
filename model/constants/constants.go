@@ -30,6 +30,8 @@ type constant struct {
 	edgeLock                         bool
 	sameOriginator                   bool
 	precomputeRespNodes              bool
+	writeRoutesToFile                bool
+	writeStatesToFile                bool
 	numGoroutines                    int
 }
 
@@ -63,6 +65,8 @@ var Constants = constant{
 	edgeLock:                         true,
 	sameOriginator:                   false, // For testing the usefulness of locking the edges
 	precomputeRespNodes:              true,
+	writeRoutesToFile:                true,
+	writeStatesToFile:                true,
 	numGoroutines:                    20, // 25 seems to currently be the sweet spot
 }
 
@@ -188,6 +192,14 @@ func (c *constant) GetEdgeLock() bool {
 
 func (c *constant) IsPrecomputeRespNodes() bool {
 	return c.precomputeRespNodes
+}
+
+func (c *constant) IsWriteRoutesToFile() bool {
+	return c.writeRoutesToFile
+}
+
+func (c *constant) IsWriteStatesToFile() bool {
+	return c.writeStatesToFile
 }
 
 func (c *constant) GetNumGoroutines() int {

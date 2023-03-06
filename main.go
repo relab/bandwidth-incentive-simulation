@@ -31,11 +31,11 @@ func main() {
 	start := time.Now()
 	globalState := state.MakeInitialState("./data/nodes_data_16_10000.txt")
 
-	const iterations = 10000000
+	const iterations = 1000000000
 	numGoroutines := constants.Constants.GetNumGoroutines()
 	numLoops := iterations / numGoroutines
 
-	stateList := make([]types.StateSubset, 10000)
+	stateList := make([]types.StateSubset, 1)
 	stateList[0] = types.StateSubset{
 		OriginatorIndex:         globalState.OriginatorIndex,
 		PendingMap:              globalState.PendingStruct.PendingMap,
@@ -52,11 +52,16 @@ func main() {
 	newStateChan := make(chan bool, numGoroutines)
 	requestChan := make(chan types.Request, numGoroutines)
 	routeChan := make(chan types.Route, numGoroutines)
-	stateChan := make(chan types.StateSubset, iterations)
+	stateChan := make(chan []byte, 100000)
 
-	go workers.RouteFlushWorker(routeChan, &globalState, wg, iterations)
-	go workers.StateFlushWorker(stateChan, &globalState, stateList, wg, iterations)
-	wg.Add(2)
+	if constants.Constants.IsWriteRoutesToFile() {
+		wg.Add(1)
+		go workers.RouteFlushWorker(routeChan, &globalState, wg, iterations)
+	}
+	if constants.Constants.IsWriteStatesToFile() {
+		wg.Add(1)
+		go workers.StateFlushWorker(stateChan, &globalState, stateList, wg, iterations)
+	}
 
 	go workers.RequestWorker(newStateChan, requestChan, &globalState, iterations)
 	//newStateChan <- true
@@ -66,7 +71,8 @@ func main() {
 		go workers.RoutingWorker(requestChan, routeChan, stateChan, newStateChan, &globalState, stateList, wg, numLoops)
 	}
 	wg.Wait()
-
+	close(routeChan)
+	close(stateChan)
 	//for j := 0; j < numGoroutines/4; j++ {
 	//	//wg.Add(1)
 	//	go UpdateWorker(newStateChan, policyChan, &globalState, stateList, wg, iterations)
