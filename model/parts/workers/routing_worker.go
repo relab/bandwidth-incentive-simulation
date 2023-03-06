@@ -1,7 +1,6 @@
 package workers
 
 import (
-	"encoding/json"
 	"fmt"
 	"go-incentive-simulation/model/constants"
 	"go-incentive-simulation/model/parts/types"
@@ -10,7 +9,7 @@ import (
 	"sync"
 )
 
-func RoutingWorker(requestChan chan types.Request, routeChan chan types.Route, stateChan chan []byte, newStateChan chan bool, globalState *types.State, stateList []types.StateSubset, wg *sync.WaitGroup, numLoops int) {
+func RoutingWorker(requestChan chan types.Request, routeChan chan types.Route, stateChan chan types.StateSubset, newStateChan chan bool, globalState *types.State, stateList []types.StateSubset, wg *sync.WaitGroup, numLoops int) {
 	defer wg.Done()
 	var request types.Request
 	for i := 0; i < numLoops; i++ {
@@ -66,9 +65,9 @@ func RoutingWorker(requestChan chan types.Request, routeChan chan types.Route, s
 		if constants.Constants.IsWriteStatesToFile() {
 			newState := types.StateSubset{
 				OriginatorIndex:         request.OriginatorIndex,
-				PendingMap:              pendingStruct.PendingMap,
-				RerouteMap:              rerouteStruct.RerouteMap,
-				CacheStruct:             cacheStruct,
+				PendingMap:              int32(len(pendingStruct.PendingMap)),
+				RerouteMap:              int32(len(rerouteStruct.RerouteMap)),
+				CacheStruct:             int32(len(cacheStruct.CacheMap)),
 				SuccessfulFound:         successfulFound,
 				FailedRequestsThreshold: failedRequestThreshold,
 				FailedRequestsAccess:    failedRequestAccess,
@@ -77,8 +76,9 @@ func RoutingWorker(requestChan chan types.Request, routeChan chan types.Route, s
 			if curTimeStep%1000000 == 0 {
 				fmt.Println("stateChan: ", len(stateChan))
 			}
-			encodedData, _ := json.Marshal(types.StateData{TimeStep: int(newState.TimeStep), State: newState})
-			stateChan <- encodedData
+			//encodedData, _ := json.Marshal(types.StateData{TimeStep: int(newState.TimeStep), State: newState})
+			//stateChan <- encodedData
+			stateChan <- newState
 		}
 
 		//update.StateListAndFlush(newState, stateList, curTimeStep)

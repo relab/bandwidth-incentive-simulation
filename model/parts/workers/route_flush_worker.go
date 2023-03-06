@@ -31,6 +31,20 @@ func routeListConvertAndDumpToFile(routes []types.Route, curTimeStep int, actual
 		TimeStep int           `json:"timestep"`
 		Routes   []types.Route `json:"routes"`
 	}
+	// message := &protoGenerated.RouteData{
+	// 	TimeStep: int32(curTimeStep),
+	// 	Routes:   make([]*protoGenerated.Route, len(routes)),
+	// }
+	// for i, route := range routes {
+	// 	var routeList []int32
+	// 	for _, node := range route {
+	// 		routeList = append(routeList, int32(node))
+	// 	}
+	// 	message.Routes[i] = &protoGenerated.Route{
+	// 		Waypoints: routeList,
+	// 	}
+	// }
+	// data1, err := proto.Marshal(message)
 	data := RouteData{curTimeStep, routes}
 	file, _ := json.Marshal(data)
 	actualFile, err := os.OpenFile("routes.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)

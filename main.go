@@ -31,16 +31,16 @@ func main() {
 	start := time.Now()
 	globalState := state.MakeInitialState("./data/nodes_data_16_10000.txt")
 
-	const iterations = 1000000000
+	const iterations = 1000000
 	numGoroutines := constants.Constants.GetNumGoroutines()
 	numLoops := iterations / numGoroutines
 
 	stateList := make([]types.StateSubset, 1)
 	stateList[0] = types.StateSubset{
 		OriginatorIndex:         globalState.OriginatorIndex,
-		PendingMap:              globalState.PendingStruct.PendingMap,
-		RerouteMap:              globalState.RerouteStruct.RerouteMap,
-		CacheStruct:             globalState.CacheStruct,
+		PendingMap:              int32(len(globalState.PendingStruct.PendingMap)),
+		RerouteMap:              int32(len(globalState.RerouteStruct.RerouteMap)),
+		CacheStruct:             int32(globalState.CacheStruct.LenMap()),
 		SuccessfulFound:         globalState.SuccessfulFound,
 		FailedRequestsThreshold: globalState.FailedRequestsThreshold,
 		FailedRequestsAccess:    globalState.FailedRequestsAccess,
@@ -52,7 +52,7 @@ func main() {
 	newStateChan := make(chan bool, numGoroutines)
 	requestChan := make(chan types.Request, numGoroutines)
 	routeChan := make(chan types.Route, numGoroutines)
-	stateChan := make(chan []byte, 100000)
+	stateChan := make(chan types.StateSubset, 100000)
 
 	if constants.Constants.IsWriteRoutesToFile() {
 		wg.Add(1)
@@ -105,6 +105,58 @@ func main() {
 	// fmt.Println("rejectedBucketZero: ", rejectedBucketZero)
 	// fmt.Println("rejectedFirstHop: ", rejectedFirstHop)
 	PrintState(globalState)
+	// buf, err := ioutil.ReadFile("states.bin")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// stateSubsets := &protoGenerated.StateSubsets{}
+	// err = proto.Unmarshal(buf, stateSubsets)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// // Access the subset field
+	// count := 0
+	// for _, subset := range stateSubsets.Subset {
+	// 	count++
+	// 	if count > 10 {
+	// 		break
+	// 	}
+	// 	fmt.Printf("OriginatorIndex: %d\n", subset.OriginatorIndex)
+	// 	fmt.Printf("PendingMap: %d\n", subset.PendingMap)
+	// 	fmt.Printf("RerouteMap: %d\n", subset.RerouteMap)
+	// 	fmt.Printf("CacheStruct: %d\n", subset.CacheStruct)
+	// 	fmt.Printf("SuccessfulFound: %d\n", subset.SuccessfulFound)
+	// 	fmt.Printf("FailedRequestsThreshold: %d\n", subset.FailedRequestsThreshold)
+	// 	fmt.Printf("FailedRequestsAccess: %d\n", subset.FailedRequestsAccess)
+	// 	fmt.Printf("TimeStep: %d\n", subset.TimeStep)
+	// }
+	// // read the binary protobuf message from the file
+	// buf, err := ioutil.ReadFile("routes.bin")
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// // unmarshal the binary protobuf message into a RouteData struct
+	// routeData := &protoGenerated.RouteData{}
+	// err = proto.Unmarshal(buf, routeData)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// // print the RouteData struct
+	// fmt.Printf("TimeStep: %d\n", routeData.GetTimeStep())
+	// count := 0
+	// routedata := routeData.GetRoutes()
+	// fmt.Println("length", len(routedata))
+	// for _, route := range routeData.GetRoutes() {
+	// 	if count == 10 {
+	// 		break
+	// 	}
+	// 	fmt.Printf("Route: %v\n", route.GetWaypoints())
+	// 	fmt.Printf("Length: %d\n", route.GetLength())
+	// 	count++
+	// }
+
 }
 
 func PrintState(state types.State) {

@@ -21,9 +21,9 @@ type Threshold [2]int
 
 type StateSubset struct {
 	OriginatorIndex         int32
-	PendingMap              PendingMap
-	RerouteMap              RerouteMap
-	CacheStruct             CacheStruct
+	PendingMap              int32
+	RerouteMap              int32
+	CacheStruct             int32
 	SuccessfulFound         int32
 	FailedRequestsThreshold int32
 	FailedRequestsAccess    int32

@@ -3,17 +3,20 @@ package workers
 import (
 	"bufio"
 	"go-incentive-simulation/model/parts/types"
+	"go-incentive-simulation/protoGenerated"
 	"os"
 	"sync"
+
+	"google.golang.org/protobuf/proto"
 )
 
-func StateFlushWorker(stateChan chan []byte, globalState *types.State, stateList []types.StateSubset, wg *sync.WaitGroup, iterations int) {
+func StateFlushWorker(stateChan chan types.StateSubset, globalState *types.State, stateList []types.StateSubset, wg *sync.WaitGroup, iterations int) {
 	defer wg.Done()
 	counter := 1
 	//var stateData types.StateData
-	var encodedData []byte
-	os.Remove("states.json")
-	actualFile, err := os.OpenFile("states.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	var encodedData types.StateSubset
+	os.Remove("states.bin")
+	actualFile, err := os.OpenFile("states.bin", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
@@ -25,12 +28,29 @@ func StateFlushWorker(stateChan chan []byte, globalState *types.State, stateList
 	for counter < iterations {
 		encodedData = <-stateChan
 
+		message := &protoGenerated.StateSubsets{
+			Subset: make([]*protoGenerated.StateSubset, 0),
+		}
+
+		message.Subset = append(message.Subset, &protoGenerated.StateSubset{
+			OriginatorIndex:         int32(encodedData.OriginatorIndex),
+			PendingMap:              encodedData.PendingMap,
+			RerouteMap:              encodedData.RerouteMap,
+			SuccessfulFound:         encodedData.SuccessfulFound,
+			FailedRequestsThreshold: encodedData.FailedRequestsThreshold,
+			FailedRequestsAccess:    encodedData.FailedRequestsAccess,
+			TimeStep:                int32(encodedData.TimeStep),
+		})
+		data, err := proto.Marshal(message)
+		if err != nil {
+			panic(err)
+		}
 		//fmt.Println(len(stateChan))
 		//stateListAndFlush(state, stateList, actualFile)
 		//stateListAndFlush(state, counter, writer)
 		//encodedData, _ := json.Marshal(stateData)
 		//fmt.Println("2: ", time.Since(start))
-		writer.Write(encodedData)
+		writer.Write(data)
 		//fmt.Println("3: ", time.Since(start))
 
 		if counter%10000 == 0 {
