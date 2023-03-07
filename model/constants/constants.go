@@ -65,8 +65,8 @@ var Constants = constant{
 	edgeLock:                         true,
 	sameOriginator:                   false, // For testing the usefulness of locking the edges
 	precomputeRespNodes:              true,
-	writeRoutesToFile:                false,
-	writeStatesToFile:                false,
+	writeRoutesToFile:                true,
+	writeStatesToFile:                true,
 	numGoroutines:                    20, // 25 seems to currently be the sweet spot
 }
 

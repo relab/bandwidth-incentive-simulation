@@ -2,65 +2,71 @@ package workers
 
 import (
 	"bufio"
+	"fmt"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/protoGenerated"
+	"google.golang.org/protobuf/proto"
 	"os"
 	"sync"
-
-	"google.golang.org/protobuf/proto"
 )
 
-func StateFlushWorker(stateChan chan types.StateSubset, globalState *types.State, stateList []types.StateSubset, wg *sync.WaitGroup, iterations int) {
+func StateFlushWorker(stateChan chan types.StateSubset, wg *sync.WaitGroup, iterations int) {
 	defer wg.Done()
-	counter := 1
-	//var stateData types.StateData
-	var encodedData types.StateSubset
-	os.Remove("states.bin")
-	actualFile, err := os.OpenFile("states.bin", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	var message *protoGenerated.StateSubsets
+	var stateSubset types.StateSubset
+	filePath := "./results/states.bin"
+
+	err := os.Remove(filePath)
+	if err != nil {
+		fmt.Println("No need to remove file with path: ", filePath)
+	}
+
+	actualFile, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
+	defer func(actualFile *os.File) {
+		err1 := actualFile.Close()
+		if err1 != nil {
+			fmt.Println("Couldn't close the file with filepath: ", filePath)
+		}
+	}(actualFile)
 
 	writer := bufio.NewWriter(actualFile)
-	writer = bufio.NewWriterSize(writer, 1000000000)
-	//start := time.Now()
-	defer actualFile.Close()
-	for counter < iterations {
-		encodedData = <-stateChan
+	defer func(writer *bufio.Writer) {
+		err1 := writer.Flush()
+		if err1 != nil {
+			fmt.Println("Couldn't flush the remaining buffer in the writer for states")
+		}
+	}(writer)
 
-		message := &protoGenerated.StateSubsets{
+	for counter := 1; counter < iterations; counter++ {
+		stateSubset = <-stateChan
+
+		message = &protoGenerated.StateSubsets{
 			Subset: make([]*protoGenerated.StateSubset, 0),
 		}
 
 		message.Subset = append(message.Subset, &protoGenerated.StateSubset{
-			OriginatorIndex:         int32(encodedData.OriginatorIndex),
-			PendingMap:              encodedData.PendingMap,
-			RerouteMap:              encodedData.RerouteMap,
-			SuccessfulFound:         encodedData.SuccessfulFound,
-			FailedRequestsThreshold: encodedData.FailedRequestsThreshold,
-			FailedRequestsAccess:    encodedData.FailedRequestsAccess,
-			TimeStep:                int32(encodedData.TimeStep),
+			OriginatorIndex:         stateSubset.OriginatorIndex,
+			PendingMap:              stateSubset.PendingMap,
+			RerouteMap:              stateSubset.RerouteMap,
+			SuccessfulFound:         stateSubset.SuccessfulFound,
+			FailedRequestsThreshold: stateSubset.FailedRequestsThreshold,
+			FailedRequestsAccess:    stateSubset.FailedRequestsAccess,
+			TimeStep:                stateSubset.TimeStep,
 		})
-		data, err := proto.Marshal(message)
-		if err != nil {
-			panic(err)
-		}
-		//fmt.Println(len(stateChan))
-		//stateListAndFlush(state, stateList, actualFile)
-		//stateListAndFlush(state, counter, writer)
-		//encodedData, _ := json.Marshal(stateData)
-		//fmt.Println("2: ", time.Since(start))
-		writer.Write(data)
-		//fmt.Println("3: ", time.Since(start))
 
-		if counter%10000 == 0 {
-			writer.Flush()
+		data, err1 := proto.Marshal(message)
+		if err1 != nil {
+			panic(err1)
 		}
-		counter++
-		//fmt.Println(counter)
 
+		_, err2 := writer.Write(data)
+		if err2 != nil {
+			panic(err2)
+		}
 	}
-	writer.Flush()
 }
 
 //func stateListConvertAndDumpToFile(state types.StateSubset, curTimeStep int, writer *bufio.Writer) error {

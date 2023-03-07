@@ -9,15 +9,17 @@ import (
 	"sync"
 )
 
-func RoutingWorker(requestChan chan types.Request, routeChan chan types.Route, stateChan chan types.StateSubset, newStateChan chan bool, globalState *types.State, stateList []types.StateSubset, wg *sync.WaitGroup, numLoops int) {
+func RoutingWorker(requestChan chan types.Request, routeChan chan types.RouteData, stateChan chan types.StateSubset, globalState *types.State, wg *sync.WaitGroup, numLoops int) {
 	defer wg.Done()
 	var request types.Request
+	var stateSubset types.StateSubset
+	var requestResult types.RequestResult
 	for i := 0; i < numLoops; i++ {
 		request = <-requestChan
 
 		found, route, thresholdFailed, accessFailed, paymentsList := utils.ConsumeTask(&request, globalState.Graph, globalState.RerouteStruct, globalState.CacheStruct)
 
-		policyOutput := types.Policy{
+		requestResult = types.RequestResult{
 			Found:                found,
 			Route:                route,
 			ThresholdFailedLists: thresholdFailed,
@@ -25,45 +27,30 @@ func RoutingWorker(requestChan chan types.Request, routeChan chan types.Route, s
 			PaymentList:          paymentsList,
 		}
 
-		//policyChan <- policy
-
+		// TODO: decide on where we should update the timestep. At request creation or request fulfillment
 		//curTimeStep := update.Timestep(globalState)
 		curTimeStep := int(request.TimeStep)
-		update.Graph(globalState, policyOutput, curTimeStep)
-
-		pendingStruct := update.PendingMap(globalState, policyOutput)
-		rerouteStruct := update.RerouteMap(globalState, policyOutput)
-		cacheStruct := update.CacheMap(globalState, policyOutput)
+		update.Graph(globalState, requestResult, curTimeStep)
+		pendingStruct := update.PendingMap(globalState, requestResult)
+		rerouteStruct := update.RerouteMap(globalState, requestResult)
+		cacheStruct := update.CacheMap(globalState, requestResult)
+		// TODO: originatorIndex is now updated by the requestWorker
 		//originatorIndex := UpdateOriginatorIndex(globalState)
-		successfulFound := update.SuccessfulFound(globalState, policyOutput)
-		failedRequestThreshold := update.FailedRequestsThreshold(globalState, policyOutput)
-		failedRequestAccess := update.FailedRequestsAccess(globalState, policyOutput)
+		successfulFound := update.SuccessfulFound(globalState, requestResult)
+		failedRequestThreshold := update.FailedRequestsThreshold(globalState, requestResult)
+		failedRequestAccess := update.FailedRequestsAccess(globalState, requestResult)
+		//routeLists := update.RouteListAndFlush(globalState, requestResult, curTimeStep)
 
-		//routeLists := update.RouteListAndFlush(globalState, policyOutput, curTimeStep)
 		if constants.Constants.IsWriteRoutesToFile() {
 			if curTimeStep%1000000 == 0 {
 				fmt.Println("routeChan: ", len(routeChan))
 			}
-			routeChan <- policyOutput.Route
+			routeChan <- types.RouteData{TimeStep: curTimeStep, Route: route}
 		}
 
-		//newState := types.State{
-		//	Graph:       graph,
-		//	Originators: globalState.Originators,
-		//	NodesId:     globalState.NodesId,
-		//	//RouteLists:              routeLists,
-		//	PendingStruct:           pendingStruct,
-		//	RerouteStruct:           rerouteStruct,
-		//	CacheStruct:             cacheStruct,
-		//	OriginatorIndex:         request.OriginatorIndex,
-		//	SuccessfulFound:         successfulFound,
-		//	FailedRequestsThreshold: failedRequestThreshold,
-		//	FailedRequestsAccess:    failedRequestAccess,
-		//	TimeStep:                int32(curTimeStep),
-		//}
-
 		if constants.Constants.IsWriteStatesToFile() {
-			newState := types.StateSubset{
+			// TODO: Decide on what subset of values we actually would like to store
+			stateSubset = types.StateSubset{
 				OriginatorIndex:         request.OriginatorIndex,
 				PendingMap:              int32(len(pendingStruct.PendingMap)),
 				RerouteMap:              int32(len(rerouteStruct.RerouteMap)),
@@ -76,13 +63,9 @@ func RoutingWorker(requestChan chan types.Request, routeChan chan types.Route, s
 			if curTimeStep%1000000 == 0 {
 				fmt.Println("stateChan: ", len(stateChan))
 			}
-			//encodedData, _ := json.Marshal(types.StateData{TimeStep: int(newState.TimeStep), State: newState})
-			//stateChan <- encodedData
-			stateChan <- newState
+
+			stateChan <- stateSubset
 		}
 
-		//update.StateListAndFlush(newState, stateList, curTimeStep)
-		//stateList = append(stateList, newState)
-		//newStateChan <- true
 	}
 }

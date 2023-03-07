@@ -30,10 +30,15 @@ type StateSubset struct {
 	TimeStep                int32
 }
 
-type StateData struct {
-	TimeStep int         `json:"index"`
-	State    StateSubset `json:"state"`
+type RouteData struct {
+	TimeStep int   `json:"timestep"`
+	Route    Route `json:"route"`
 }
+
+//type StateData struct {
+//	TimeStep int         `json:"index"`
+//	State    StateSubset `json:"state"`
+//}
 
 type State struct {
 	Graph                   *Graph
@@ -50,7 +55,7 @@ type State struct {
 	TimeStep                int32
 }
 
-type Policy struct {
+type RequestResult struct {
 	Found                bool
 	Route                Route
 	ThresholdFailedLists [][]Threshold

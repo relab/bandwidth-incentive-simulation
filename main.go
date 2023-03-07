@@ -11,13 +11,13 @@ import (
 	"time"
 )
 
-func MakePolicyOutput(state *types.State, index int) types.Policy {
+func MakePolicyOutput(state *types.State, index int) types.RequestResult {
 	//fmt.Println("start of make initial policy")
 
 	//found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state)
 	found, route, thresholdFailed, accessFailed, paymentsList := policy.SendRequest(state, index)
 
-	p := types.Policy{
+	p := types.RequestResult{
 		Found:                found,
 		Route:                route,
 		ThresholdFailedLists: thresholdFailed,
@@ -31,27 +31,13 @@ func main() {
 	start := time.Now()
 	globalState := state.MakeInitialState("./data/nodes_data_16_10000.txt")
 
-	const iterations = 1000000
+	const iterations = 1000000000
 	numGoroutines := constants.Constants.GetNumGoroutines()
 	numLoops := iterations / numGoroutines
 
-	stateList := make([]types.StateSubset, 1)
-	stateList[0] = types.StateSubset{
-		OriginatorIndex:         globalState.OriginatorIndex,
-		PendingMap:              int32(len(globalState.PendingStruct.PendingMap)),
-		RerouteMap:              int32(len(globalState.RerouteStruct.RerouteMap)),
-		CacheStruct:             int32(globalState.CacheStruct.LenMap()),
-		SuccessfulFound:         globalState.SuccessfulFound,
-		FailedRequestsThreshold: globalState.FailedRequestsThreshold,
-		FailedRequestsAccess:    globalState.FailedRequestsAccess,
-		TimeStep:                globalState.TimeStep,
-	}
-
 	wg := &sync.WaitGroup{}
-	//policyChan := make(chan Policy, numGoroutines)
-	newStateChan := make(chan bool, numGoroutines)
 	requestChan := make(chan types.Request, numGoroutines)
-	routeChan := make(chan types.Route, numGoroutines)
+	routeChan := make(chan types.RouteData, numGoroutines)
 	stateChan := make(chan types.StateSubset, 100000)
 
 	if constants.Constants.IsWriteRoutesToFile() {
@@ -60,39 +46,19 @@ func main() {
 	}
 	if constants.Constants.IsWriteStatesToFile() {
 		wg.Add(1)
-		go workers.StateFlushWorker(stateChan, &globalState, stateList, wg, iterations)
+		go workers.StateFlushWorker(stateChan, wg, iterations)
 	}
 
-	go workers.RequestWorker(newStateChan, requestChan, &globalState, iterations)
+	go workers.RequestWorker(requestChan, &globalState, wg, iterations)
+	wg.Add(1)
 	//newStateChan <- true
 
 	for i := 0; i < numGoroutines; i++ {
 		wg.Add(1)
-		go workers.RoutingWorker(requestChan, routeChan, stateChan, newStateChan, &globalState, stateList, wg, numLoops)
+		go workers.RoutingWorker(requestChan, routeChan, stateChan, &globalState, wg, numLoops)
 	}
 	wg.Wait()
-	close(routeChan)
-	close(stateChan)
-	//for j := 0; j < numGoroutines/4; j++ {
-	//	//wg.Add(1)
-	//	go UpdateWorker(newStateChan, policyChan, &globalState, stateList, wg, iterations)
-	//}
-	//newStateChan <- true
-	//wg.Wait()
 
-	//for j := 0; j < numGoroutines; j++ {
-	//	wg.Add(1)
-	//	go func(index int) {
-	//		curState := &globalState
-	//		for i := 0; i < numLoops; i++ {
-	//			policyChan <- MakePolicyOutput(curState, index)
-	//			// waiting for new state from UpdateWorker
-	//			curState = <-stateChan
-	//		}
-	//		wg.Done()
-	//	}(j)
-	//}
-	//wg.Wait()
 	fmt.Println("end of main: ")
 	elapsed := time.Since(start)
 	fmt.Println("Time taken:", elapsed)
@@ -105,6 +71,8 @@ func main() {
 	// fmt.Println("rejectedBucketZero: ", rejectedBucketZero)
 	// fmt.Println("rejectedFirstHop: ", rejectedFirstHop)
 	PrintState(globalState)
+
+	// TODO: Add this to another function in another file?
 	// buf, err := ioutil.ReadFile("states.bin")
 	// if err != nil {
 	// 	panic(err)
