@@ -7,28 +7,29 @@ import (
 	"sort"
 )
 
-//func PrecomputeClosestNodes(nodesId []int) [][4]int {
-//	numPossibleChunks := Constants.GetRangeAddress()
-//	result := make([][4]int, numPossibleChunks)
-//	numNodesSearch := Constants.GetBits()
-//
-//	for chunkId := 0; chunkId < numPossibleChunks; chunkId++ {
-//
-//		closestNodes := BinarySearchClosest(nodesId, chunkId, numNodesSearch)
-//		distances := make([]int, len(closestNodes))
-//
-//		for i, nodeId := range closestNodes {
-//			distances[i] = nodeId ^ chunkId
-//		}
-//
-//		sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
-//
-//		for i := 0; i < 4; i++ {
-//			result[chunkId][i] = distances[i] ^ chunkId // this results in the nodeId again
-//		}
-//	}
-//	return result
-//}
+func PrecomputeRespNodes(nodesId []int) [][4]int {
+	numPossibleChunks := Constants.GetRangeAddress()
+	result := make([][4]int, numPossibleChunks)
+	numNodesSearch := Constants.GetBits()
+
+	for chunkId := 0; chunkId < numPossibleChunks; chunkId++ {
+
+		closestNodes := BinarySearchClosest(nodesId, chunkId, numNodesSearch)
+		distances := make([]int, len(closestNodes))
+
+		for j, nodeId := range closestNodes {
+			distances[j] = nodeId ^ chunkId
+		}
+
+		sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
+
+		for k := 0; k < 4; k++ {
+			result[chunkId][k] = distances[k] ^ chunkId // this results in the nodeId again
+		}
+	}
+
+	return result
+}
 
 func SortedKeys(m map[int]*Node) []int {
 	keys := make([]int, len(m))
@@ -46,13 +47,17 @@ func CreateGraphNetwork(net *Network) (*Graph, error) {
 	sortedNodeIds := SortedKeys(net.NodesMap)
 	numNodes := len(net.NodesMap)
 	Edges := make(map[int]map[int]*Edge)
-	//respNodes := PrecomputeClosestNodes(sortedNodeIds)
+	respNodes := make([][4]int, Constants.GetRangeAddress())
+	if Constants.IsPrecomputeRespNodes() {
+		respNodes = PrecomputeRespNodes(sortedNodeIds)
+	}
+
 	graph := &Graph{
 		Network:   net,
 		Nodes:     make([]*Node, 0, numNodes),
 		Edges:     Edges,
 		NodeIds:   sortedNodeIds,
-		RespNodes: make([][4]int, Constants.GetRangeAddress()),
+		RespNodes: respNodes,
 	}
 
 	for _, nodeId := range sortedNodeIds {
@@ -102,7 +107,7 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, g *Graph)
 	return false
 }
 
-func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, prevNodePaid bool, rerouteMap RerouteMap) (int, []Threshold, bool, bool, Payment, bool) {
+func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, prevNodePaid bool, rerouteStruct RerouteStruct) (int, []Threshold, bool, bool, Payment, bool) {
 	var nextNodeId int
 	var payNextId int
 	var thresholdList []Threshold
@@ -136,10 +141,16 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			// Could probably clean this one up, but keeping it close to original for now
 			if dist < currDist {
 				if Constants.IsRetryWithAnotherPeer() {
-					_, ok := rerouteMap[mainOriginatorId]
-					if ok {
-						allExceptLast := len(rerouteMap[mainOriginatorId])
-						if Contains(rerouteMap[mainOriginatorId][:allExceptLast], nodeId) {
+					//_, ok := rerouteMap[mainOriginatorId]
+					//if ok {
+					//	allExceptLast := len(rerouteMap[mainOriginatorId])
+					//	if Contains(rerouteMap[mainOriginatorId][:allExceptLast], nodeId) {
+					//		continue
+
+					reroute := rerouteStruct.GetRerouteMap(mainOriginatorId)
+					if reroute != nil {
+						allExceptLast := len(reroute)
+						if Contains(reroute[:allExceptLast], nodeId) {
 							continue
 						} else {
 							currDist = dist
@@ -273,11 +284,12 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 }
 
 // ConsumeTask cacheDict is map of nodes containing an array of maps with key as a chunkAddr and a popularity counter
-func ConsumeTask(request *Request, graph *Graph, respNodes [4]int, rerouteMap RerouteMap, cacheStruct CacheStruct) (bool, Route, [][]Threshold, bool, []Payment) {
+func ConsumeTask(request *Request, graph *Graph, rerouteStruct RerouteStruct, cacheStruct CacheStruct) (bool, Route, [][]Threshold, bool, []Payment) {
 	var thresholdFailedList [][]Threshold
 	var paymentList []Payment
 	originatorId := request.OriginatorId
 	chunkId := request.ChunkId
+	respNodes := request.RespNodes
 	mainOriginatorId := originatorId
 	found := false
 	foundByCaching := false
@@ -304,7 +316,7 @@ func ConsumeTask(request *Request, graph *Graph, respNodes [4]int, rerouteMap Re
 			//fmt.Printf("\n orig: %d, chunk_id: %d", mainOriginatorId, chunkId)
 			//nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originatorId, chunkId, graph, mainOriginatorId, prevNodePaid, rerouteMap)
 
-			nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originatorId, chunkId, graph, mainOriginatorId, prevNodePaid, rerouteMap)
+			nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originatorId, chunkId, graph, mainOriginatorId, prevNodePaid, rerouteStruct)
 
 			//if nextNodeId == -2 {
 			//	// Access Failed

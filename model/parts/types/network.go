@@ -28,7 +28,7 @@ type Node struct {
 	canPay     bool
 }
 
-type Test struct {
+type jsonFormat struct {
 	Bits  int `json:"bits"`
 	Bin   int `json:"bin"`
 	Nodes []struct {
@@ -46,7 +46,7 @@ func (network *Network) Load(path string) (int, int, map[int]*Node) {
 	}(file)
 	decoder := json.NewDecoder(file)
 
-	var test Test
+	var test jsonFormat
 	err := decoder.Decode(&test)
 	if err != nil {
 		return 0, 0, nil
