@@ -231,10 +231,11 @@ func PendingMap(state *types.State, policyInput types.Policy) types.PendingStruc
 	if constants.Constants.IsWaitingEnabled() {
 		route := policyInput.Route
 		originator := route[0]
+		chunkId := route[len(route)-1]
 		if !general.Contains(route, -1) && !general.Contains(route, -2) {
-			pendingNodeId := state.PendingStruct.GetPending(originator)
+			pendingNodeId := state.PendingStruct.GetPending(originator).NodeId
 			if pendingNodeId != -1 {
-				if pendingNodeId == route[len(route)-1] {
+				if pendingNodeId == chunkId {
 					// remove the pending request
 					state.PendingStruct.DeletePending(originator)
 				}
@@ -245,7 +246,18 @@ func PendingMap(state *types.State, policyInput types.Policy) types.PendingStruc
 			//	}
 			//}
 		} else {
-			state.PendingStruct.AddPending(originator, route[len(route)-1])
+			pendingNode := state.PendingStruct.GetPending(originator)
+			if pendingNode.NodeId != -1 {
+				if pendingNode.PendingCounter < 100 {
+					state.PendingStruct.Increment(originator)
+				} else {
+					// remove the pending request
+					state.PendingStruct.DeletePending(originator)
+				}
+			} else {
+				// add the pending request
+				state.PendingStruct.AddPending(originator, chunkId)
+			}
 		}
 		//} else {
 		//	pendingMap[originator] = route[len(route)-1]

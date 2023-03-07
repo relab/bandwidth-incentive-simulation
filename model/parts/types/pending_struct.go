@@ -1,23 +1,29 @@
 package types
 
-import "sync"
+import (
+	"sync"
+)
 
-type PendingMap map[int]int
-
-type PendingStruct struct {
-	PendingMap     PendingMap
-	PendingCounter int
-	PendingMutex   *sync.Mutex
+type PendingNode struct {
+	NodeId         int
+	PendingCounter int32
 }
 
-func (p *PendingStruct) GetPending(originator int) int {
+type PendingMap map[int]PendingNode
+
+type PendingStruct struct {
+	PendingMap   PendingMap
+	PendingMutex *sync.Mutex
+}
+
+func (p *PendingStruct) GetPending(originator int) PendingNode {
 	p.PendingMutex.Lock()
 	defer p.PendingMutex.Unlock()
-	pendingNodeId, ok := p.PendingMap[originator]
+	pendingNode, ok := p.PendingMap[originator]
 	if ok {
-		return pendingNodeId
+		return pendingNode
 	}
-	return -1
+	return PendingNode{NodeId: -1}
 }
 
 func (p *PendingStruct) DeletePending(originator int) {
@@ -26,8 +32,19 @@ func (p *PendingStruct) DeletePending(originator int) {
 	p.PendingMutex.Unlock()
 }
 
-func (p *PendingStruct) AddPending(originator int, route int) {
+func (p *PendingStruct) AddPending(originator int, chunkId int) {
 	p.PendingMutex.Lock()
-	p.PendingMap[originator] = route
+	pendingNode := p.PendingMap[originator]
+	pendingNode.NodeId = chunkId
+	pendingNode.PendingCounter = 1
+	p.PendingMap[originator] = pendingNode
+	p.PendingMutex.Unlock()
+}
+
+func (p *PendingStruct) Increment(originator int) {
+	p.PendingMutex.Lock()
+	pendingNode := p.PendingMap[originator]
+	pendingNode.PendingCounter++
+	p.PendingMap[originator] = pendingNode
 	p.PendingMutex.Unlock()
 }

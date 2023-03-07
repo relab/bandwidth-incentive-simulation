@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"go-incentive-simulation/model/constants"
-	"go-incentive-simulation/model/parts/policy"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/workers"
 	"go-incentive-simulation/model/state"
@@ -11,27 +10,27 @@ import (
 	"time"
 )
 
-func MakePolicyOutput(state *types.State, index int) types.Policy {
-	//fmt.Println("start of make initial policy")
-
-	//found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state)
-	found, route, thresholdFailed, accessFailed, paymentsList := policy.SendRequest(state, index)
-
-	p := types.Policy{
-		Found:                found,
-		Route:                route,
-		ThresholdFailedLists: thresholdFailed,
-		AccessFailed:         accessFailed,
-		PaymentList:          paymentsList,
-	}
-	return p
-}
+//func MakePolicyOutput(state *types.State, index int) types.Policy {
+//	//fmt.Println("start of make initial policy")
+//
+//	//found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state)
+//	found, route, thresholdFailed, accessFailed, paymentsList := policy.SendRequest(state, index)
+//
+//	p := types.Policy{
+//		Found:                found,
+//		Route:                route,
+//		ThresholdFailedLists: thresholdFailed,
+//		AccessFailed:         accessFailed,
+//		PaymentList:          paymentsList,
+//	}
+//	return p
+//}
 
 func main() {
 	start := time.Now()
 	globalState := state.MakeInitialState("./data/nodes_data_16_10000.txt")
 
-	const iterations = 10000000
+	const iterations = 100000000
 	numGoroutines := constants.Constants.GetNumGoroutines()
 	numLoops := iterations / numGoroutines
 

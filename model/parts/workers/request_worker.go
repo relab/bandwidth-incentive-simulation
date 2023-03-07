@@ -1,6 +1,7 @@
 package workers
 
 import (
+	"fmt"
 	"go-incentive-simulation/model/constants"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/update"
@@ -37,11 +38,15 @@ func RequestWorker(newStateChan chan bool, requestChan chan types.Request, globa
 				}
 			}
 
+			if timeStep == 500000 {
+				fmt.Println(globalState.PendingStruct.PendingMap)
+			}
+
 			responsibleNodes := globalState.Graph.FindResponsibleNodes(chunkId)
 			originatorId := globalState.Originators[originatorIndex]
 			//originatorId := prevState.Originators[rand.Intn(Constants.GetOriginators())]
 
-			pendingNodeId := globalState.PendingStruct.GetPending(originatorId)
+			pendingNodeId := globalState.PendingStruct.GetPending(originatorId).NodeId
 			if pendingNodeId != -1 {
 				chunkId = pendingNodeId
 				responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
