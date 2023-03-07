@@ -41,7 +41,7 @@ func (p *PendingStruct) AddPending(originator int, chunkId int) {
 	p.PendingMutex.Unlock()
 }
 
-func (p *PendingStruct) Increment(originator int) {
+func (p *PendingStruct) IncrementPending(originator int) {
 	p.PendingMutex.Lock()
 	pendingNode := p.PendingMap[originator]
 	pendingNode.PendingCounter++

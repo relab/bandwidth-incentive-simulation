@@ -232,6 +232,7 @@ func PendingMap(state *types.State, policyInput types.Policy) types.PendingStruc
 		route := policyInput.Route
 		originator := route[0]
 		chunkId := route[len(route)-1]
+
 		if constants.Constants.IsRetryWithAnotherPeer() {
 			if !general.Contains(route, -1) && !general.Contains(route, -2) {
 				pendingNodeId := state.PendingStruct.GetPending(originator).NodeId
@@ -250,7 +251,7 @@ func PendingMap(state *types.State, policyInput types.Policy) types.PendingStruc
 				pendingNode := state.PendingStruct.GetPending(originator)
 				if pendingNode.NodeId != -1 {
 					if pendingNode.PendingCounter < 100 {
-						state.PendingStruct.Increment(originator)
+						state.PendingStruct.IncrementPending(originator)
 					} else {
 						// remove the pending request
 						state.PendingStruct.DeletePending(originator)
@@ -268,7 +269,6 @@ func PendingMap(state *types.State, policyInput types.Policy) types.PendingStruc
 			state.PendingStruct.AddPending(originator, chunkId)
 		}
 	}
-
 	//state.PendingStruct = pendingStruct
 	return state.PendingStruct
 }
