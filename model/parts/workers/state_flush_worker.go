@@ -33,7 +33,7 @@ func StateFlushWorker(stateChan chan types.StateSubset, wg *sync.WaitGroup, iter
 		}
 	}(actualFile)
 
-	writer := bufio.NewWriter(actualFile)
+	writer := bufio.NewWriter(actualFile) // default writer size is 4096 bytes
 	//writer = bufio.NewWriterSize(writer, 1048576) // 1MiB
 	defer func(writer *bufio.Writer) {
 		err1 := writer.Flush()

@@ -1,7 +1,6 @@
 package workers
 
 import (
-	"fmt"
 	"go-incentive-simulation/model/constants"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/update"
@@ -42,9 +41,9 @@ func RoutingWorker(requestChan chan types.Request, routeChan chan types.RouteDat
 		//routeLists := update.RouteListAndFlush(globalState, requestResult, curTimeStep)
 
 		if constants.Constants.IsWriteRoutesToFile() {
-			if curTimeStep%1000000 == 0 {
-				fmt.Println("routeChan: ", len(routeChan))
-			}
+			//if curTimeStep%1000000 == 0 {
+			//	fmt.Println("routeChan: ", len(routeChan))
+			//}
 			routeChan <- types.RouteData{TimeStep: int32(curTimeStep), Route: route}
 		}
 
@@ -60,9 +59,9 @@ func RoutingWorker(requestChan chan types.Request, routeChan chan types.RouteDat
 				FailedRequestsAccess:    failedRequestAccess,
 				TimeStep:                int32(curTimeStep),
 			}
-			if curTimeStep%1000000 == 0 {
-				fmt.Println("stateChan: ", len(stateChan))
-			}
+			//if curTimeStep%1000000 == 0 {
+			//	fmt.Println("stateChan: ", len(stateChan))
+			//}
 
 			stateChan <- stateSubset
 		}

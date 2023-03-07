@@ -14,7 +14,7 @@ func RouteFlushWorker(routeChan chan types.RouteData, globalState *types.State, 
 	//var message *protoGenerated.RouteData
 	var routeData types.RouteData
 	var bytes []byte
-	filePath := "./results/routes.mp"
+	filePath := "./results/routes.json"
 
 	err := os.Remove(filePath)
 	if err != nil {
@@ -33,7 +33,7 @@ func RouteFlushWorker(routeChan chan types.RouteData, globalState *types.State, 
 		}
 	}(actualFile)
 
-	writer := bufio.NewWriter(actualFile)
+	writer := bufio.NewWriter(actualFile) // default writer size is 4096 bytes
 	//writer = bufio.NewWriterSize(writer, 1048576) // 1MiB
 	defer func(writer *bufio.Writer) {
 		err1 := writer.Flush()
