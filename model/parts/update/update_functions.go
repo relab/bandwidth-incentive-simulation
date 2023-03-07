@@ -265,7 +265,7 @@ func PendingMap(state *types.State, policyInput types.Policy) types.PendingStruc
 			//}
 			//threshold failed
 		} else if general.Contains(route, -1) {
-			//	state.PendingStruct.AddPending(originator, chunkId)
+			state.PendingStruct.AddPending(originator, chunkId)
 		}
 	}
 
