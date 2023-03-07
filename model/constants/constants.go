@@ -53,7 +53,7 @@ var Constants = constant{
 	forgivenessEnabled:               true,
 	paymentEnabled:                   false,
 	maxPOCheckEnabled:                false,
-	waitingEnabled:                   false,
+	waitingEnabled:                   true,
 	onlyOriginatorPays:               false,
 	payOnlyForCurrentRequest:         false,
 	payIfOrigPays:                    false,
@@ -65,8 +65,8 @@ var Constants = constant{
 	edgeLock:                         true,
 	sameOriginator:                   false, // For testing the usefulness of locking the edges
 	precomputeRespNodes:              true,
-	writeRoutesToFile:                true,
-	writeStatesToFile:                true,
+	writeRoutesToFile:                false,
+	writeStatesToFile:                false,
 	numGoroutines:                    20, // 25 seems to currently be the sweet spot
 }
 

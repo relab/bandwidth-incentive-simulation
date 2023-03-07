@@ -235,6 +235,7 @@ func PendingMap(state *types.State, policyInput types.Policy) types.PendingStruc
 			pendingNodeId := state.PendingStruct.GetPending(originator)
 			if pendingNodeId != -1 {
 				if pendingNodeId == route[len(route)-1] {
+					// remove the pending request
 					state.PendingStruct.DeletePending(originator)
 				}
 			}

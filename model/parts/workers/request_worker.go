@@ -43,7 +43,7 @@ func RequestWorker(newStateChan chan bool, requestChan chan types.Request, globa
 
 			pendingNodeId := globalState.PendingStruct.GetPending(originatorId)
 			if pendingNodeId != -1 {
-				chunkId = globalState.PendingStruct.GetPending(originatorId)
+				chunkId = pendingNodeId
 				responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 			}
 			//if _, ok := globalState.PendingMap[originatorId]; ok {

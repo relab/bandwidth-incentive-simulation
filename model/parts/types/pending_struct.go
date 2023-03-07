@@ -5,8 +5,9 @@ import "sync"
 type PendingMap map[int]int
 
 type PendingStruct struct {
-	PendingMap   PendingMap
-	PendingMutex *sync.Mutex
+	PendingMap     PendingMap
+	PendingCounter int
+	PendingMutex   *sync.Mutex
 }
 
 func (p *PendingStruct) GetPending(originator int) int {
@@ -21,12 +22,12 @@ func (p *PendingStruct) GetPending(originator int) int {
 
 func (p *PendingStruct) DeletePending(originator int) {
 	p.PendingMutex.Lock()
-	defer p.PendingMutex.Unlock()
 	delete(p.PendingMap, originator)
+	p.PendingMutex.Unlock()
 }
 
 func (p *PendingStruct) AddPending(originator int, route int) {
 	p.PendingMutex.Lock()
-	defer p.PendingMutex.Unlock()
 	p.PendingMap[originator] = route
+	p.PendingMutex.Unlock()
 }
