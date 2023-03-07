@@ -232,37 +232,43 @@ func PendingMap(state *types.State, policyInput types.Policy) types.PendingStruc
 		route := policyInput.Route
 		originator := route[0]
 		chunkId := route[len(route)-1]
-		if !general.Contains(route, -1) && !general.Contains(route, -2) {
-			pendingNodeId := state.PendingStruct.GetPending(originator).NodeId
-			if pendingNodeId != -1 {
-				if pendingNodeId == chunkId {
-					// remove the pending request
-					state.PendingStruct.DeletePending(originator)
+		if constants.Constants.IsRetryWithAnotherPeer() {
+			if !general.Contains(route, -1) && !general.Contains(route, -2) {
+				pendingNodeId := state.PendingStruct.GetPending(originator).NodeId
+				if pendingNodeId != -1 {
+					if pendingNodeId == chunkId {
+						// remove the pending request
+						state.PendingStruct.DeletePending(originator)
+					}
 				}
-			}
-			//if _, ok := pendingMap[originator]; ok {
-			//	if pendingMap[originator] == route[len(route)-1] {
-			//		delete(pendingMap, originator)
-			//	}
-			//}
-		} else {
-			pendingNode := state.PendingStruct.GetPending(originator)
-			if pendingNode.NodeId != -1 {
-				if pendingNode.PendingCounter < 100 {
-					state.PendingStruct.Increment(originator)
-				} else {
-					// remove the pending request
-					state.PendingStruct.DeletePending(originator)
-				}
+				//if _, ok := pendingMap[originator]; ok {
+				//	if pendingMap[originator] == route[len(route)-1] {
+				//		delete(pendingMap, originator)
+				//	}
+				//}
 			} else {
-				// add the pending request
-				state.PendingStruct.AddPending(originator, chunkId)
+				pendingNode := state.PendingStruct.GetPending(originator)
+				if pendingNode.NodeId != -1 {
+					if pendingNode.PendingCounter < 100 {
+						state.PendingStruct.Increment(originator)
+					} else {
+						// remove the pending request
+						state.PendingStruct.DeletePending(originator)
+					}
+				} else {
+					// add the pending request
+					state.PendingStruct.AddPending(originator, chunkId)
+				}
 			}
+			//} else {
+			//	pendingMap[originator] = route[len(route)-1]
+			//}
+			//threshold failed
+		} else if general.Contains(route, -1) {
+			//	state.PendingStruct.AddPending(originator, chunkId)
 		}
-		//} else {
-		//	pendingMap[originator] = route[len(route)-1]
-		//}
 	}
+
 	//state.PendingStruct = pendingStruct
 	return state.PendingStruct
 }

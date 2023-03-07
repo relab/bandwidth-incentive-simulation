@@ -30,7 +30,7 @@ func main() {
 	start := time.Now()
 	globalState := state.MakeInitialState("./data/nodes_data_16_10000.txt")
 
-	const iterations = 100000000
+	const iterations = 10000000
 	numGoroutines := constants.Constants.GetNumGoroutines()
 	numLoops := iterations / numGoroutines
 

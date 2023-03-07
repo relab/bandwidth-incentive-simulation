@@ -1,7 +1,6 @@
 package workers
 
 import (
-	"fmt"
 	"go-incentive-simulation/model/constants"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/update"
@@ -36,10 +35,6 @@ func RequestWorker(newStateChan chan bool, requestChan chan types.Request, globa
 				} else {
 					chunkId = rand.Intn(constants.Constants.GetRangeAddress()-numPreferredChunks) + numPreferredChunks
 				}
-			}
-
-			if timeStep == 500000 {
-				fmt.Println(globalState.PendingStruct.PendingMap)
 			}
 
 			responsibleNodes := globalState.Graph.FindResponsibleNodes(chunkId)
