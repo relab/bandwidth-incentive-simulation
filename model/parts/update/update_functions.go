@@ -231,6 +231,7 @@ func PendingMap(state *types.State, policyInput types.RequestResult) types.Pendi
 	if constants.Constants.IsWaitingEnabled() {
 		route := policyInput.Route
 		originator := route[0]
+		// TODO: fix this to ignore the accessFails when reroute is disabled
 		if !general.Contains(route, -1) && !general.Contains(route, -2) {
 			pendingNodeId := state.PendingStruct.GetPending(originator)
 			if pendingNodeId != -1 {

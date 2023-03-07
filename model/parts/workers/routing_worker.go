@@ -45,7 +45,7 @@ func RoutingWorker(requestChan chan types.Request, routeChan chan types.RouteDat
 			if curTimeStep%1000000 == 0 {
 				fmt.Println("routeChan: ", len(routeChan))
 			}
-			routeChan <- types.RouteData{TimeStep: curTimeStep, Route: route}
+			routeChan <- types.RouteData{TimeStep: int32(curTimeStep), Route: route}
 		}
 
 		if constants.Constants.IsWriteStatesToFile() {

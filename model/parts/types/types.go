@@ -31,8 +31,8 @@ type StateSubset struct {
 }
 
 type RouteData struct {
-	TimeStep int   `json:"timestep"`
-	Route    Route `json:"route"`
+	TimeStep int32 `json:"t"`
+	Route    Route `json:"r"`
 }
 
 //type StateData struct {

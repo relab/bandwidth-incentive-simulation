@@ -10,5 +10,5 @@ message Route {
 
 message RouteData {
   int32 time_step = 1;
-  repeated Route routes = 2;
+  Route route = 2;
 }

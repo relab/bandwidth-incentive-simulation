@@ -11,9 +11,10 @@ import (
 
 func RouteFlushWorker(routeChan chan types.RouteData, globalState *types.State, wg *sync.WaitGroup, iterations int) {
 	defer wg.Done()
+	//var message *protoGenerated.RouteData
 	var routeData types.RouteData
 	var bytes []byte
-	filePath := "./results/routes.json"
+	filePath := "./results/routes.mp"
 
 	err := os.Remove(filePath)
 	if err != nil {
@@ -33,6 +34,7 @@ func RouteFlushWorker(routeChan chan types.RouteData, globalState *types.State, 
 	}(actualFile)
 
 	writer := bufio.NewWriter(actualFile)
+	//writer = bufio.NewWriterSize(writer, 1048576) // 1MiB
 	defer func(writer *bufio.Writer) {
 		err1 := writer.Flush()
 		if err1 != nil {
@@ -40,19 +42,37 @@ func RouteFlushWorker(routeChan chan types.RouteData, globalState *types.State, 
 		}
 	}(writer)
 
-	for counter := 1; counter < iterations; counter++ {
+	for counter := 0; counter < iterations; counter++ {
 		routeData = <-routeChan
 
 		bytes, err = json.Marshal(routeData)
+
+		// TODO: uncomment below to use messagePack
+		//bytes, err = msgpack.Marshal(routeData)
+		//if err != nil {
+		//	panic(err)
+		//}
+
+		// TODO: uncomment below to write to binary
+		//message = &protoGenerated.RouteData{
+		//	TimeStep: routeData.TimeStep,
+		//	Route:    &protoGenerated.Route{},
+		//}
+		//for _, nodeId := range routeData.Route {
+		//	message.Route.Waypoints = append(message.Route.Waypoints, int32(nodeId))
+		//}
+		//
+		//bytes, err = proto.Marshal(message)
+		//if err != nil {
+		//	panic(err)
+		//}
+
+		_, err = writer.Write(bytes)
 		if err != nil {
 			panic(err)
+
 		}
 
-		_, err1 := writer.Write(bytes)
-		if err1 != nil {
-			panic(err1)
-		}
-		
 	}
 }
 

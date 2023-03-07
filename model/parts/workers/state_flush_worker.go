@@ -14,6 +14,7 @@ func StateFlushWorker(stateChan chan types.StateSubset, wg *sync.WaitGroup, iter
 	defer wg.Done()
 	var message *protoGenerated.StateSubsets
 	var stateSubset types.StateSubset
+	var bytes []byte
 	filePath := "./results/states.bin"
 
 	err := os.Remove(filePath)
@@ -33,6 +34,7 @@ func StateFlushWorker(stateChan chan types.StateSubset, wg *sync.WaitGroup, iter
 	}(actualFile)
 
 	writer := bufio.NewWriter(actualFile)
+	//writer = bufio.NewWriterSize(writer, 1048576) // 1MiB
 	defer func(writer *bufio.Writer) {
 		err1 := writer.Flush()
 		if err1 != nil {
@@ -40,7 +42,7 @@ func StateFlushWorker(stateChan chan types.StateSubset, wg *sync.WaitGroup, iter
 		}
 	}(writer)
 
-	for counter := 1; counter < iterations; counter++ {
+	for counter := 0; counter < iterations; counter++ {
 		stateSubset = <-stateChan
 
 		message = &protoGenerated.StateSubsets{
@@ -57,14 +59,14 @@ func StateFlushWorker(stateChan chan types.StateSubset, wg *sync.WaitGroup, iter
 			TimeStep:                stateSubset.TimeStep,
 		})
 
-		data, err1 := proto.Marshal(message)
-		if err1 != nil {
-			panic(err1)
+		bytes, err = proto.Marshal(message)
+		if err != nil {
+			panic(err)
 		}
 
-		_, err2 := writer.Write(data)
-		if err2 != nil {
-			panic(err2)
+		_, err = writer.Write(bytes)
+		if err != nil {
+			panic(err)
 		}
 	}
 }
