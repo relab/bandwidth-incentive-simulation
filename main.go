@@ -50,7 +50,6 @@ func main() {
 
 	go workers.RequestWorker(requestChan, &globalState, wg, iterations)
 	wg.Add(1)
-	//newStateChan <- true
 
 	for i := 0; i < numGoroutines; i++ {
 		wg.Add(1)

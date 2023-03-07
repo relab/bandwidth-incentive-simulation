@@ -61,7 +61,7 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 			//	responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 			//}
 
-			if timeStep%(iterations/100) == 0 {
+			if timeStep%(iterations/10) == 0 {
 				fmt.Println("TimeStep is currently:", timeStep)
 			}
 
