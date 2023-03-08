@@ -12,7 +12,6 @@ func PendingMap(state *types.State, policyInput types.RequestResult) types.Pendi
 		route := policyInput.Route
 		originator := route[0]
 		chunkId := route[len(route)-1]
-
 		pendingNode := state.PendingStruct.GetPending(originator)
 
 		if !general.Contains(route, -1) && !general.Contains(route, -2) {
