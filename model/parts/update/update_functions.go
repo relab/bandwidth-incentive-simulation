@@ -1,5 +1,7 @@
 package update
 
+// TODO: keeping this here to compare with other implmentation later
+
 //func SuccessfulFound(state *types.State, policyInput types.RequestResult) int32 {
 //	if policyInput.Found {
 //		return atomic.AddInt32(&state.SuccessfulFound, 1)
