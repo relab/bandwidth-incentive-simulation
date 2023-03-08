@@ -45,6 +45,9 @@ func PendingMap(state *types.State, policyInput types.RequestResult) types.Pendi
 					// remove the pending request
 					state.PendingStruct.DeletePending(originator)
 				}
+			} else {
+				// add the pending request
+				state.PendingStruct.AddPending(originator, chunkId)
 			}
 		}
 	}
