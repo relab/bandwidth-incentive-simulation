@@ -231,7 +231,6 @@ func PendingMap(state *types.State, policyInput types.RequestResult) types.Pendi
 	if constants.Constants.IsWaitingEnabled() {
 		route := policyInput.Route
 		originator := route[0]
-<<<<<<< HEAD
 		chunkId := route[len(route)-1]
 
 		if constants.Constants.IsRetryWithAnotherPeer() {
@@ -260,14 +259,6 @@ func PendingMap(state *types.State, policyInput types.RequestResult) types.Pendi
 				} else {
 					// add the pending request
 					state.PendingStruct.AddPending(originator, chunkId)
-=======
-		// TODO: fix this to ignore the accessFails when reroute is disabled
-		if !general.Contains(route, -1) && !general.Contains(route, -2) {
-			pendingNodeId := state.PendingStruct.GetPending(originator)
-			if pendingNodeId != -1 {
-				if pendingNodeId == route[len(route)-1] {
-					state.PendingStruct.DeletePending(originator)
->>>>>>> main
 				}
 			}
 			//} else {

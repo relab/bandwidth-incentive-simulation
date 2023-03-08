@@ -10,21 +10,14 @@ import (
 	"time"
 )
 
-<<<<<<< HEAD
-//func MakePolicyOutput(state *types.State, index int) types.Policy {
-=======
 //func MakePolicyOutput(state *types.State, index int) types.RequestResult {
->>>>>>> main
 //	//fmt.Println("start of make initial policy")
 //
 //	//found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state)
 //	found, route, thresholdFailed, accessFailed, paymentsList := policy.SendRequest(state, index)
 //
-<<<<<<< HEAD
-//	p := types.Policy{
-=======
+
 //	p := types.RequestResult{
->>>>>>> main
 //		Found:                found,
 //		Route:                route,
 //		ThresholdFailedLists: thresholdFailed,
@@ -38,11 +31,8 @@ func main() {
 	start := time.Now()
 	globalState := state.MakeInitialState("./data/nodes_data_16_10000.txt")
 
-<<<<<<< HEAD
-	const iterations = 1000000
-=======
 	const iterations = 1_000_000_000
->>>>>>> main
+
 	numGoroutines := constants.Constants.GetNumGoroutines()
 	numLoops := iterations / numGoroutines
 
