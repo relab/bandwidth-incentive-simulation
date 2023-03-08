@@ -1,7 +1,6 @@
 package workers
 
 import (
-	"fmt"
 	"go-incentive-simulation/model/constants"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/update"
@@ -61,9 +60,9 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 			//	responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 			//}
 
-			if timeStep%(iterations/10) == 0 {
-				fmt.Println("TimeStep is currently:", timeStep)
-			}
+			//if timeStep%(iterations/10) == 0 {
+			//	fmt.Println("TimeStep is currently:", timeStep)
+			//}
 
 			requestChan <- types.Request{
 				OriginatorIndex: originatorIndex,
