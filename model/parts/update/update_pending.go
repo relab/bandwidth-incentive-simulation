@@ -23,18 +23,20 @@ func PendingMap(state *types.State, policyInput types.RequestResult) types.Pendi
 					state.PendingStruct.DeletePending(originator)
 				}
 			}
-		} else if constants.Constants.IsRetryWithAnotherPeer() && general.Contains(route, -1) && general.Contains(route, -2) {
-			pendingNodeId := pendingNode.NodeId
-			if pendingNodeId != -1 {
-				if pendingNode.PendingCounter < 10 {
-					state.PendingStruct.IncrementPending(originator)
+		} else if constants.Constants.IsRetryWithAnotherPeer() {
+			if general.Contains(route, -1) && general.Contains(route, -2) {
+				pendingNodeId := pendingNode.NodeId
+				if pendingNodeId != -1 {
+					if pendingNode.PendingCounter < 10 {
+						state.PendingStruct.IncrementPending(originator)
+					} else {
+						// remove the pending request
+						state.PendingStruct.DeletePending(originator)
+					}
 				} else {
-					// remove the pending request
-					state.PendingStruct.DeletePending(originator)
+					// add the pending request
+					state.PendingStruct.AddPending(originator, chunkId)
 				}
-			} else {
-				// add the pending request
-				state.PendingStruct.AddPending(originator, chunkId)
 			}
 		} else if general.Contains(route, -1) {
 			pendingNodeId := pendingNode.NodeId
