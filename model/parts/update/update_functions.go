@@ -106,6 +106,170 @@ package update
 //
 //}
 
+//func CacheMap(state *types.State, policyInput types.RequestResult) types.CacheStruct {
+//	chunkId := 0
+//
+//	if constants.Constants.IsCacheEnabled() {
+//		route := policyInput.Route
+//		if general.Contains(route, -3) {
+//			// -3 means found by caching
+//			state.CacheStruct.CacheHits++
+//			chunkId = route[len(route)-2]
+//		} else {
+//			chunkId = route[len(route)-1]
+//		}
+//		if !general.Contains(route, -1) && !general.Contains(route, -2) {
+//			if general.Contains(route, -3) {
+//				for i := 0; i < len(route)-3; i++ {
+//					nodeId := route[i]
+//					state.CacheStruct.AddToCache(nodeId, chunkId)
+//					node := state.Graph.GetNode(nodeId)
+//					node.Mutex.Lock()
+//					cacheMap := node.CacheMap
+//					if cacheMap != nil {
+//						if _, ok := cacheMap[chunkId]; ok {
+//							cacheMap[chunkId]++
+//						} else {
+//							cacheMap[chunkId] = 1
+//						}
+//					} else {
+//						node.CacheMap = map[int]int{node.Id: 1}
+//					}
+//					node.Mutex.Unlock()
+//				}
+//			} else {
+//				for i := 0; i < len(route)-2; i++ {
+//					nodeId := route[i]
+//					state.CacheStruct.AddToCache(nodeId, chunkId)
+//					node := state.Graph.GetNode(nodeId)
+//					node.Mutex.Lock()
+//					cacheMap := node.CacheMap
+//					if cacheMap != nil {
+//						if _, ok := cacheMap[chunkId]; ok {
+//							cacheMap[chunkId]++
+//						} else {
+//							cacheMap[chunkId] = 1
+//						}
+//					} else {
+//						node.CacheMap = map[int]int{node.Id: 1}
+//					}
+//					node.Mutex.Unlock()
+//				}
+//			}
+//		}
+//	}
+//	//state.CacheStruct = cacheStruct
+//	return state.CacheStruct
+//}
+//
+//func RerouteMap(state *types.State, policyInput types.RequestResult) types.RerouteStruct {
+//	//rerouteStruct := state.RerouteStruct
+//	if constants.Constants.IsRetryWithAnotherPeer() {
+//		route := policyInput.Route
+//		originator := route[0]
+//		if !general.Contains(route, -1) && !general.Contains(route, -2) {
+//			reroute := state.RerouteStruct.GetRerouteMap(originator)
+//			if reroute != nil {
+//				if reroute[len(reroute)-1] == route[len(route)-1] {
+//					//remove rerouteMap[originator]
+//					state.RerouteStruct.DeleteReroute(originator)
+//				}
+//			}
+//			//if _, ok := rerouteMap[originator]; ok {
+//			//	val := rerouteMap[originator]
+//			//	if val[len(val)-1] == route[len(route)-1] {
+//			//		//remove rerouteMap[originator]
+//			//		delete(rerouteMap, originator)
+//			//	}
+//			//}
+//		} else {
+//			if len(route) > 3 {
+//				reroute := state.RerouteStruct.GetRerouteMap(originator)
+//				state.RerouteStruct.RerouteMutex.Lock()
+//				if reroute != nil {
+//					if !general.Contains(reroute, route[1]) {
+//						reroute = append([]int{route[1]}, reroute...)
+//						state.RerouteStruct.RerouteMap[originator] = reroute
+//					}
+//				} else {
+//					state.RerouteStruct.RerouteMap[originator] = []int{route[1], route[len(route)-1]}
+//				}
+//				state.RerouteStruct.RerouteMutex.Unlock()
+//
+//				//if _, ok := rerouteMap[originator]; ok {
+//				//	val := rerouteMap[originator]
+//				//	if !Contains(val, route[1]) {
+//				//		val = append([]int{route[1]}, val...)
+//				//		rerouteMap[originator] = val
+//				//	}
+//				//} else {
+//				//	rerouteMap[originator] = []int{route[1], route[len(route)-1]}
+//				//}
+//			}
+//		}
+//		reroute := state.RerouteStruct.GetRerouteMap(originator)
+//		if reroute != nil {
+//			if len(reroute) > constants.Constants.GetBinSize() {
+//				state.RerouteStruct.DeleteReroute(originator)
+//			}
+//		}
+//		//if _, ok := rerouteMap[originator]; ok {
+//		//	if len(rerouteMap[originator]) > Constants.GetBinSize() {
+//		//		delete(rerouteMap, originator)
+//		//	}
+//		//}
+//	}
+//	//state.RerouteStruct = rerouteStruct
+//	return state.RerouteStruct
+//}
+//
+//func PendingMap(state *types.State, policyInput types.RequestResult) types.PendingStruct {
+//	//pendingStruct := state.PendingStruct
+//	if constants.Constants.IsWaitingEnabled() {
+//		route := policyInput.Route
+//		originator := route[0]
+//		chunkId := route[len(route)-1]
+//
+//		if constants.Constants.IsRetryWithAnotherPeer() {
+//			if !general.Contains(route, -1) && !general.Contains(route, -2) {
+//				pendingNodeId := state.PendingStruct.GetPending(originator).NodeId
+//				if pendingNodeId != -1 {
+//					if pendingNodeId == chunkId {
+//						// remove the pending request
+//						state.PendingStruct.DeletePending(originator)
+//					}
+//				}
+//				//if _, ok := pendingMap[originator]; ok {
+//				//	if pendingMap[originator] == route[len(route)-1] {
+//				//		delete(pendingMap, originator)
+//				//	}
+//				//}
+//			} else {
+//				pendingNode := state.PendingStruct.GetPending(originator)
+//				if pendingNode.NodeId != -1 {
+//					if pendingNode.PendingCounter < 100 {
+//						state.PendingStruct.IncrementPending(originator)
+//					} else {
+//						// remove the pending request
+//						state.PendingStruct.DeletePending(originator)
+//					}
+//				} else {
+//					// add the pending request
+//					state.PendingStruct.AddPending(originator, chunkId)
+//				}
+//			}
+//			//} else {
+//			//	pendingMap[originator] = route[len(route)-1]
+//			//}
+//			//threshold failed
+//		} else if general.Contains(route, -1) {
+//			state.PendingStruct.AddPending(originator, chunkId)
+//		}
+//	}
+//	//state.PendingStruct = pendingStruct
+//	return state.PendingStruct
+//}
+
 //func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int) *types.Graph {
 //	//network := state.Graph
 //	route := policyInput.Route
