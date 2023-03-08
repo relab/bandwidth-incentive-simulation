@@ -1,11 +1,12 @@
 package types
 
 import (
+	"go-incentive-simulation/model/general"
 	"sync"
 )
 
 type PendingNode struct {
-	NodeId         int
+	NodeIds        []int
 	PendingCounter int32
 }
 
@@ -23,7 +24,7 @@ func (p *PendingStruct) GetPending(originator int) PendingNode {
 	if ok {
 		return pendingNode
 	}
-	return PendingNode{NodeId: -1}
+	return PendingNode{NodeIds: []int{-1}}
 }
 
 func (p *PendingStruct) DeletePending(originator int) {
@@ -35,7 +36,16 @@ func (p *PendingStruct) DeletePending(originator int) {
 func (p *PendingStruct) AddPending(originator int, chunkId int) {
 	p.PendingMutex.Lock()
 	pendingNode := p.PendingMap[originator]
-	pendingNode.NodeId = chunkId
+	pendingNode.NodeIds = append(pendingNode.NodeIds, chunkId)
+	pendingNode.PendingCounter++
+	p.PendingMap[originator] = pendingNode
+	p.PendingMutex.Unlock()
+}
+
+func (p *PendingStruct) AddP(originator int, chunkId int) {
+	p.PendingMutex.Lock()
+	pendingNode := p.PendingMap[originator]
+	pendingNode.NodeIds = append(pendingNode.NodeIds, chunkId)
 	pendingNode.PendingCounter = 1
 	p.PendingMap[originator] = pendingNode
 	p.PendingMutex.Unlock()
@@ -46,5 +56,27 @@ func (p *PendingStruct) IncrementPending(originator int) {
 	pendingNode := p.PendingMap[originator]
 	pendingNode.PendingCounter++
 	p.PendingMap[originator] = pendingNode
+	p.PendingMutex.Unlock()
+}
+
+func (p *PendingStruct) CheckPending(originator int, chunkId int) int {
+	p.PendingMutex.Lock()
+	defer p.PendingMutex.Unlock()
+	pendingNodes := p.PendingMap[originator].NodeIds
+	if general.Contains(pendingNodes, chunkId) {
+		for i, v := range pendingNodes {
+			if v == chunkId {
+				return i
+			}
+		}
+	}
+	return -1
+}
+
+func (p *PendingStruct) DeletePendingNodeId(originator int, pendingNodeIdIndex int) {
+	p.PendingMutex.Lock()
+	pendingNodeIds := p.PendingMap[originator]
+	pendingNodeIds.NodeIds = append(pendingNodeIds.NodeIds[:pendingNodeIdIndex], pendingNodeIds.NodeIds[pendingNodeIdIndex+1:]...)
+	p.PendingMap[originator] = pendingNodeIds
 	p.PendingMutex.Unlock()
 }
