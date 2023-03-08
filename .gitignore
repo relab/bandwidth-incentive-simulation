@@ -17,5 +17,7 @@
 .idea/**
 
 **/states.json
+**/performance*
+**/**.bin
 **/routes.json
 **/types/nodes_data*

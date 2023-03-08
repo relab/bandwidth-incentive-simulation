@@ -1,24 +1,24 @@
 package workers
 
 import (
+	"fmt"
 	"go-incentive-simulation/model/constants"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/update"
 	"math/rand"
+	"sync"
 )
 
-func RequestWorker(newStateChan chan bool, requestChan chan types.Request, globalState *types.State, iterations int32) {
+func RequestWorker(requestChan chan types.Request, globalState *types.State, wg *sync.WaitGroup, iterations int32) {
 
-	//curState := globalState
+	defer wg.Done()
 	requestQueueSize := 10
 	var originatorIndex int32
 	var timeStep int32 = 0
 	for timeStep < iterations {
-		//if len(requestChan) < Constants.GetNumGoroutines() {
 		if len(requestChan) <= requestQueueSize {
 
-			//curState = <-stateChan
-			//<-newStateChan
+			// TODO: decide on where we should update the timestep. At request creation or request fulfillment
 			timeStep = int32(update.Timestep(globalState))
 			//timeStep = atomic.LoadInt32(&globalState.TimeStep)
 
@@ -56,11 +56,14 @@ func RequestWorker(newStateChan chan bool, requestChan chan types.Request, globa
 				chunkId = reroute[len(reroute)-1]
 				responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 			}
-
 			//if _, ok := globalState.RerouteMap[originatorId]; ok {
 			//	chunkId = globalState.RerouteMap[originatorId][len(globalState.RerouteMap[originatorId])-1]
 			//	responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 			//}
+
+			if timeStep%(iterations/10) == 0 {
+				fmt.Println("TimeStep is currently:", timeStep)
+			}
 
 			requestChan <- types.Request{
 				OriginatorIndex: originatorIndex,

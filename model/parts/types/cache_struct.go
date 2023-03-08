@@ -10,6 +10,12 @@ type CacheStruct struct {
 	CacheMutex *sync.Mutex
 }
 
+func (c *CacheStruct) LenMap() int {
+	c.CacheMutex.Lock()
+	defer c.CacheMutex.Unlock()
+	return len(c.CacheMap)
+}
+
 func (c *CacheStruct) Contains(nodeId int, chunkId int) bool {
 	c.CacheMutex.Lock()
 	defer c.CacheMutex.Unlock()

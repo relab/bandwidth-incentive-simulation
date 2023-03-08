@@ -10,13 +10,21 @@ import (
 	"time"
 )
 
+<<<<<<< HEAD
 //func MakePolicyOutput(state *types.State, index int) types.Policy {
+=======
+//func MakePolicyOutput(state *types.State, index int) types.RequestResult {
+>>>>>>> main
 //	//fmt.Println("start of make initial policy")
 //
 //	//found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state)
 //	found, route, thresholdFailed, accessFailed, paymentsList := policy.SendRequest(state, index)
 //
+<<<<<<< HEAD
 //	p := types.Policy{
+=======
+//	p := types.RequestResult{
+>>>>>>> main
 //		Found:                found,
 //		Route:                route,
 //		ThresholdFailedLists: thresholdFailed,
@@ -30,28 +38,18 @@ func main() {
 	start := time.Now()
 	globalState := state.MakeInitialState("./data/nodes_data_16_10000.txt")
 
+<<<<<<< HEAD
 	const iterations = 1000000
+=======
+	const iterations = 1_000_000_000
+>>>>>>> main
 	numGoroutines := constants.Constants.GetNumGoroutines()
 	numLoops := iterations / numGoroutines
 
-	stateList := make([]types.StateSubset, 1)
-	stateList[0] = types.StateSubset{
-		OriginatorIndex:         globalState.OriginatorIndex,
-		PendingMap:              globalState.PendingStruct.PendingMap,
-		RerouteMap:              globalState.RerouteStruct.RerouteMap,
-		CacheStruct:             globalState.CacheStruct,
-		SuccessfulFound:         globalState.SuccessfulFound,
-		FailedRequestsThreshold: globalState.FailedRequestsThreshold,
-		FailedRequestsAccess:    globalState.FailedRequestsAccess,
-		TimeStep:                globalState.TimeStep,
-	}
-
 	wg := &sync.WaitGroup{}
-	//policyChan := make(chan Policy, numGoroutines)
-	newStateChan := make(chan bool, numGoroutines)
 	requestChan := make(chan types.Request, numGoroutines)
-	routeChan := make(chan types.Route, numGoroutines)
-	stateChan := make(chan []byte, 100000)
+	routeChan := make(chan types.RouteData, numGoroutines)
+	stateChan := make(chan types.StateSubset, 100000)
 
 	if constants.Constants.IsWriteRoutesToFile() {
 		wg.Add(1)
@@ -59,39 +57,18 @@ func main() {
 	}
 	if constants.Constants.IsWriteStatesToFile() {
 		wg.Add(1)
-		go workers.StateFlushWorker(stateChan, &globalState, stateList, wg, iterations)
+		go workers.StateFlushWorker(stateChan, wg, iterations)
 	}
 
-	go workers.RequestWorker(newStateChan, requestChan, &globalState, iterations)
-	//newStateChan <- true
+	go workers.RequestWorker(requestChan, &globalState, wg, iterations)
+	wg.Add(1)
 
 	for i := 0; i < numGoroutines; i++ {
 		wg.Add(1)
-		go workers.RoutingWorker(requestChan, routeChan, stateChan, newStateChan, &globalState, stateList, wg, numLoops)
+		go workers.RoutingWorker(requestChan, routeChan, stateChan, &globalState, wg, numLoops)
 	}
 	wg.Wait()
-	close(routeChan)
-	close(stateChan)
-	//for j := 0; j < numGoroutines/4; j++ {
-	//	//wg.Add(1)
-	//	go UpdateWorker(newStateChan, policyChan, &globalState, stateList, wg, iterations)
-	//}
-	//newStateChan <- true
-	//wg.Wait()
 
-	//for j := 0; j < numGoroutines; j++ {
-	//	wg.Add(1)
-	//	go func(index int) {
-	//		curState := &globalState
-	//		for i := 0; i < numLoops; i++ {
-	//			policyChan <- MakePolicyOutput(curState, index)
-	//			// waiting for new state from UpdateWorker
-	//			curState = <-stateChan
-	//		}
-	//		wg.Done()
-	//	}(j)
-	//}
-	//wg.Wait()
 	fmt.Println("end of main: ")
 	elapsed := time.Since(start)
 	fmt.Println("Time taken:", elapsed)
@@ -104,6 +81,60 @@ func main() {
 	// fmt.Println("rejectedBucketZero: ", rejectedBucketZero)
 	// fmt.Println("rejectedFirstHop: ", rejectedFirstHop)
 	PrintState(globalState)
+
+	// TODO: Add this to another function in another file?
+	// buf, err := ioutil.ReadFile("states.bin")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// stateSubsets := &protoGenerated.StateSubsets{}
+	// err = proto.Unmarshal(buf, stateSubsets)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// // Access the subset field
+	// count := 0
+	// for _, subset := range stateSubsets.Subset {
+	// 	count++
+	// 	if count > 10 {
+	// 		break
+	// 	}
+	// 	fmt.Printf("OriginatorIndex: %d\n", subset.OriginatorIndex)
+	// 	fmt.Printf("PendingMap: %d\n", subset.PendingMap)
+	// 	fmt.Printf("RerouteMap: %d\n", subset.RerouteMap)
+	// 	fmt.Printf("CacheStruct: %d\n", subset.CacheStruct)
+	// 	fmt.Printf("SuccessfulFound: %d\n", subset.SuccessfulFound)
+	// 	fmt.Printf("FailedRequestsThreshold: %d\n", subset.FailedRequestsThreshold)
+	// 	fmt.Printf("FailedRequestsAccess: %d\n", subset.FailedRequestsAccess)
+	// 	fmt.Printf("TimeStep: %d\n", subset.TimeStep)
+	// }
+	// // read the binary protobuf message from the file
+	// buf, err := ioutil.ReadFile("routes.bin")
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// // unmarshal the binary protobuf message into a RouteData struct
+	// routeData := &protoGenerated.RouteData{}
+	// err = proto.Unmarshal(buf, routeData)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// // print the RouteData struct
+	// fmt.Printf("TimeStep: %d\n", routeData.GetTimeStep())
+	// count := 0
+	// routedata := routeData.GetRoutes()
+	// fmt.Println("length", len(routedata))
+	// for _, route := range routeData.GetRoutes() {
+	// 	if count == 10 {
+	// 		break
+	// 	}
+	// 	fmt.Printf("Route: %v\n", route.GetWaypoints())
+	// 	fmt.Printf("Length: %d\n", route.GetLength())
+	// 	count++
+	// }
+
 }
 
 func PrintState(state types.State) {

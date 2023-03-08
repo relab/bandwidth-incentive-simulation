@@ -9,14 +9,14 @@ import (
 	"sync/atomic"
 )
 
-func SuccessfulFound(state *types.State, policyInput types.Policy) int32 {
+func SuccessfulFound(state *types.State, policyInput types.RequestResult) int32 {
 	if policyInput.Found {
 		return atomic.AddInt32(&state.SuccessfulFound, 1)
 	}
 	return atomic.LoadInt32(&state.SuccessfulFound)
 }
 
-func FailedRequestsThreshold(state *types.State, policyInput types.Policy) int32 {
+func FailedRequestsThreshold(state *types.State, policyInput types.RequestResult) int32 {
 	found := policyInput.Found
 	// thresholdFailedList := policyInput.thresholdFailedList
 	accessFailed := policyInput.AccessFailed
@@ -26,7 +26,7 @@ func FailedRequestsThreshold(state *types.State, policyInput types.Policy) int32
 	return atomic.LoadInt32(&state.FailedRequestsThreshold)
 }
 
-func FailedRequestsAccess(state *types.State, policyInput types.Policy) int32 {
+func FailedRequestsAccess(state *types.State, policyInput types.RequestResult) int32 {
 	accessFailed := policyInput.AccessFailed
 	if accessFailed {
 		return atomic.AddInt32(&state.FailedRequestsAccess, 1)
@@ -91,7 +91,7 @@ func OriginatorIndex(state *types.State, timeStep int32) int32 {
 //	return nil
 //}
 
-//func RouteListAndFlush(state *types.State, policyInput types.Policy, curTimeStep int) []types.Route {
+//func RouteListAndFlush(state *types.State, policyInput types.RequestResult, curTimeStep int) []types.Route {
 //	state.RouteLists = append(state.RouteLists, policyInput.Route)
 //	if curTimeStep%6250 == 0 {
 //		convertAndDumpToFile(state.RouteLists, curTimeStep)
@@ -109,7 +109,7 @@ func OriginatorIndex(state *types.State, timeStep int32) int32 {
 //	return stateList
 //}
 
-func CacheMap(state *types.State, policyInput types.Policy) types.CacheStruct {
+func CacheMap(state *types.State, policyInput types.RequestResult) types.CacheStruct {
 	chunkId := 0
 
 	if constants.Constants.IsCacheEnabled() {
@@ -165,7 +165,7 @@ func CacheMap(state *types.State, policyInput types.Policy) types.CacheStruct {
 	return state.CacheStruct
 }
 
-func RerouteMap(state *types.State, policyInput types.Policy) types.RerouteStruct {
+func RerouteMap(state *types.State, policyInput types.RequestResult) types.RerouteStruct {
 	//rerouteStruct := state.RerouteStruct
 	if constants.Constants.IsRetryWithAnotherPeer() {
 		route := policyInput.Route
@@ -226,11 +226,12 @@ func RerouteMap(state *types.State, policyInput types.Policy) types.RerouteStruc
 	return state.RerouteStruct
 }
 
-func PendingMap(state *types.State, policyInput types.Policy) types.PendingStruct {
+func PendingMap(state *types.State, policyInput types.RequestResult) types.PendingStruct {
 	//pendingStruct := state.PendingStruct
 	if constants.Constants.IsWaitingEnabled() {
 		route := policyInput.Route
 		originator := route[0]
+<<<<<<< HEAD
 		chunkId := route[len(route)-1]
 
 		if constants.Constants.IsRetryWithAnotherPeer() {
@@ -259,6 +260,14 @@ func PendingMap(state *types.State, policyInput types.Policy) types.PendingStruc
 				} else {
 					// add the pending request
 					state.PendingStruct.AddPending(originator, chunkId)
+=======
+		// TODO: fix this to ignore the accessFails when reroute is disabled
+		if !general.Contains(route, -1) && !general.Contains(route, -2) {
+			pendingNodeId := state.PendingStruct.GetPending(originator)
+			if pendingNodeId != -1 {
+				if pendingNodeId == route[len(route)-1] {
+					state.PendingStruct.DeletePending(originator)
+>>>>>>> main
 				}
 			}
 			//} else {
@@ -278,7 +287,7 @@ func Timestep(prevState *types.State) int {
 	return curTimeStep
 }
 
-func Graph(state *types.State, policyInput types.Policy, curTimeStep int) *types.Graph {
+func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int) *types.Graph {
 	//network := state.Graph
 	route := policyInput.Route
 	paymentsList := policyInput.PaymentList

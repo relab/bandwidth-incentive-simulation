@@ -21,19 +21,24 @@ type Threshold [2]int
 
 type StateSubset struct {
 	OriginatorIndex         int32
-	PendingMap              PendingMap
-	RerouteMap              RerouteMap
-	CacheStruct             CacheStruct
+	PendingMap              int32
+	RerouteMap              int32
+	CacheStruct             int32
 	SuccessfulFound         int32
 	FailedRequestsThreshold int32
 	FailedRequestsAccess    int32
 	TimeStep                int32
 }
 
-type StateData struct {
-	TimeStep int         `json:"index"`
-	State    StateSubset `json:"state"`
+type RouteData struct {
+	TimeStep int32 `json:"t"`
+	Route    Route `json:"r"`
 }
+
+//type StateData struct {
+//	TimeStep int         `json:"t"`
+//	State    StateSubset `json:"s"`
+//}
 
 type State struct {
 	Graph                   *Graph
@@ -50,7 +55,7 @@ type State struct {
 	TimeStep                int32
 }
 
-type Policy struct {
+type RequestResult struct {
 	Found                bool
 	Route                Route
 	ThresholdFailedLists [][]Threshold

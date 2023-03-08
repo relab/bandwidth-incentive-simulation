@@ -1,10 +1,19 @@
-package data
+package main
 
-// bin_size := ct.get_bin_size()
-// bits = ct.get_bits()
-// network_size = ct.get_network_size()
-// random.seed(ct.get_random_seed())
-// network = network.Network(bits, bin_size)
-// nodes = network.generate(network_size)
-// filepath = f"nodes_data_{bin_size}_{network_size}.txt"
-// network.dump(filepath)
+import (
+	"fmt"
+	. "go-incentive-simulation/model/constants"
+	. "go-incentive-simulation/model/parts/types"
+	"math/rand"
+)
+
+func main() {
+	binSize := Constants.GetBinSize()
+	bits := Constants.GetBits()
+	networkSize := Constants.GetNetworkSize()
+	rand.Seed(Constants.GetRandomSeed())
+	network := Network{Bits: bits, Bin: binSize}
+	network.Generate(networkSize)
+	filename := fmt.Sprintf("nodes_data_%d_%d.txt", binSize, networkSize)
+	network.Dump(filename)
+}

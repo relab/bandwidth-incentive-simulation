@@ -2,45 +2,73 @@ package workers
 
 import (
 	"bufio"
+	"fmt"
 	"go-incentive-simulation/model/parts/types"
+	"go-incentive-simulation/protoGenerated"
+	"google.golang.org/protobuf/proto"
 	"os"
 	"sync"
 )
 
-func StateFlushWorker(stateChan chan []byte, globalState *types.State, stateList []types.StateSubset, wg *sync.WaitGroup, iterations int) {
+func StateFlushWorker(stateChan chan types.StateSubset, wg *sync.WaitGroup, iterations int) {
 	defer wg.Done()
-	counter := 1
-	//var stateData types.StateData
-	var encodedData []byte
-	os.Remove("states.json")
-	actualFile, err := os.OpenFile("states.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	var message *protoGenerated.StateSubsets
+	var stateSubset types.StateSubset
+	var bytes []byte
+	filePath := "./results/states.bin"
+
+	err := os.Remove(filePath)
+	if err != nil {
+		fmt.Println("No need to remove file with path: ", filePath)
+	}
+
+	actualFile, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
-
-	writer := bufio.NewWriter(actualFile)
-	writer = bufio.NewWriterSize(writer, 1000000000)
-	//start := time.Now()
-	defer actualFile.Close()
-	for counter < iterations {
-		encodedData = <-stateChan
-
-		//fmt.Println(len(stateChan))
-		//stateListAndFlush(state, stateList, actualFile)
-		//stateListAndFlush(state, counter, writer)
-		//encodedData, _ := json.Marshal(stateData)
-		//fmt.Println("2: ", time.Since(start))
-		writer.Write(encodedData)
-		//fmt.Println("3: ", time.Since(start))
-
-		if counter%10000 == 0 {
-			writer.Flush()
+	defer func(actualFile *os.File) {
+		err1 := actualFile.Close()
+		if err1 != nil {
+			fmt.Println("Couldn't close the file with filepath: ", filePath)
 		}
-		counter++
-		//fmt.Println(counter)
+	}(actualFile)
 
+	writer := bufio.NewWriter(actualFile) // default writer size is 4096 bytes
+	//writer = bufio.NewWriterSize(writer, 1048576) // 1MiB
+	defer func(writer *bufio.Writer) {
+		err1 := writer.Flush()
+		if err1 != nil {
+			fmt.Println("Couldn't flush the remaining buffer in the writer for states")
+		}
+	}(writer)
+
+	for counter := 0; counter < iterations; counter++ {
+		stateSubset = <-stateChan
+
+		message = &protoGenerated.StateSubsets{
+			Subset: make([]*protoGenerated.StateSubset, 0),
+		}
+
+		message.Subset = append(message.Subset, &protoGenerated.StateSubset{
+			OriginatorIndex:         stateSubset.OriginatorIndex,
+			PendingMap:              stateSubset.PendingMap,
+			RerouteMap:              stateSubset.RerouteMap,
+			SuccessfulFound:         stateSubset.SuccessfulFound,
+			FailedRequestsThreshold: stateSubset.FailedRequestsThreshold,
+			FailedRequestsAccess:    stateSubset.FailedRequestsAccess,
+			TimeStep:                stateSubset.TimeStep,
+		})
+
+		bytes, err = proto.Marshal(message)
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = writer.Write(bytes)
+		if err != nil {
+			panic(err)
+		}
 	}
-	writer.Flush()
 }
 
 //func stateListConvertAndDumpToFile(state types.StateSubset, curTimeStep int, writer *bufio.Writer) error {
