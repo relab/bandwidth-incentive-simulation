@@ -1,11 +1,13 @@
 package workers
 
 import (
+	"fmt"
 	"go-incentive-simulation/model/constants"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/update"
 	"math/rand"
 	"sync"
+	"sync/atomic"
 )
 
 func RequestWorker(requestChan chan types.Request, globalState *types.State, wg *sync.WaitGroup, iterations int32) {
@@ -21,10 +23,10 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 			timeStep = int32(update.Timestep(globalState))
 			//timeStep = atomic.LoadInt32(&globalState.TimeStep)
 
-			//if timeStep == 5000000 {
-			//	fmt.Println("PendingMap is currently:", globalState.PendingStruct.PendingMap)
-			//	fmt.Println("RerouteMap is currently:", globalState.RerouteStruct.RerouteMap)
-			//}
+			if timeStep%(iterations/2) == 0 {
+				fmt.Println("PendingMap is currently:", globalState.PendingStruct.PendingMap)
+				fmt.Println("RerouteMap is currently:", globalState.RerouteStruct.RerouteMap)
+			}
 
 			originatorIndex = update.OriginatorIndex(globalState, timeStep)
 
@@ -46,28 +48,38 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 			originatorId := globalState.Originators[originatorIndex]
 			//originatorId := prevState.Originators[rand.Intn(Constants.GetOriginators())]
 			//
-			var epoke int32 = 50_000
-			if timeStep%epoke == 0 {
+			if constants.Constants.IsWaitingEnabled() {
+				pendingNode := globalState.PendingStruct.GetPending(originatorId)
 
-				pendingNodeId := globalState.PendingStruct.GetPending(originatorId).NodeIds
-				if len(pendingNodeId) > 0 {
-					if pendingNodeId[0] != -1 {
-						chunkId = pendingNodeId[0]
-						responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+				var epoke int32 = 50_000
+				if (timeStep-originatorIndex)%epoke == 0 {
+					if len(pendingNode.NodeIds) > 0 {
+						pendingNode.EpokeDecrement = int32(len(pendingNode.NodeIds))
+						atomic.AddInt32(&globalState.PendingStruct.Counter, int32(len(pendingNode.NodeIds)))
 					}
 				}
-				//if _, ok := globalState.PendingMap[originatorId]; ok {
-				//	chunkId = globalState.PendingMap[originatorId]
-				//	responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
-				//}
 
-				reroute := globalState.RerouteStruct.GetRerouteMap(originatorId)
-				if reroute != nil {
-					chunkId = reroute[len(reroute)-1]
-					responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+				if pendingNode.EpokeDecrement > 0 {
+					pendingNodeIds := pendingNode.NodeIds
+					if !globalState.PendingStruct.IsEmpty(originatorId) {
+						chunkId = pendingNodeIds[pendingNode.EpokeDecrement-1]
+						responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+						pendingNode.EpokeDecrement--
+					}
 				}
-
 			}
+
+			//if _, ok := globalState.PendingMap[originatorId]; ok {
+			//	chunkId = globalState.PendingMap[originatorId]
+			//	responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+			//}
+
+			reroute := globalState.RerouteStruct.GetRerouteMap(originatorId)
+			if reroute != nil {
+				chunkId = reroute[len(reroute)-1]
+				responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+			}
+
 			//if _, ok := globalState.RerouteMap[originatorId]; ok {
 			//	chunkId = globalState.RerouteMap[originatorId][len(globalState.RerouteMap[originatorId])-1]
 			//	responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)

@@ -1,13 +1,13 @@
 package types
 
 import (
-	"go-incentive-simulation/model/general"
 	"sync"
 )
 
 type PendingNode struct {
 	NodeIds        []int
 	PendingCounter int32
+	EpokeDecrement int32
 }
 
 type PendingMap map[int]PendingNode
@@ -15,6 +15,15 @@ type PendingMap map[int]PendingNode
 type PendingStruct struct {
 	PendingMap   PendingMap
 	PendingMutex *sync.Mutex
+	Counter      int32
+}
+
+func (p *PendingStruct) IsEmpty(originator int) bool {
+	pending := p.GetPending(originator)
+	if len(pending.NodeIds) > 0 {
+		return false
+	}
+	return true
 }
 
 func (p *PendingStruct) GetPending(originator int) PendingNode {
@@ -24,7 +33,15 @@ func (p *PendingStruct) GetPending(originator int) PendingNode {
 	if ok {
 		return pendingNode
 	}
-	return PendingNode{NodeIds: []int{-1}, PendingCounter: 0}
+	return PendingNode{NodeIds: make([]int, 0, 10000), PendingCounter: 0}
+}
+
+func (p *PendingStruct) IncrementPending(originator int) {
+	p.PendingMutex.Lock()
+	pendingNode := p.PendingMap[originator]
+	pendingNode.PendingCounter++
+	p.PendingMap[originator] = pendingNode
+	p.PendingMutex.Unlock()
 }
 
 func (p *PendingStruct) AddPending(originator int, chunkId int) {
@@ -36,13 +53,7 @@ func (p *PendingStruct) AddPending(originator int, chunkId int) {
 	p.PendingMutex.Unlock()
 }
 
-func (p *PendingStruct) DeletePending(originator int) {
-	p.PendingMutex.Lock()
-	delete(p.PendingMap, originator)
-	p.PendingMutex.Unlock()
-}
-
-func (p *PendingStruct) AddP(originator int, chunkId int) {
+func (p *PendingStruct) AddToPendingQueue(originator int, chunkId int) {
 	p.PendingMutex.Lock()
 	pendingNode := p.PendingMap[originator]
 	pendingNode.NodeIds = append(pendingNode.NodeIds, chunkId)
@@ -51,32 +62,27 @@ func (p *PendingStruct) AddP(originator int, chunkId int) {
 	p.PendingMutex.Unlock()
 }
 
-func (p *PendingStruct) IncrementPending(originator int) {
+func (p *PendingStruct) DeletePendingNodeId(originator int, pendingNodeIdIndex int) {
 	p.PendingMutex.Lock()
 	pendingNode := p.PendingMap[originator]
-	pendingNode.PendingCounter++
+	pendingNode.NodeIds = append(pendingNode.NodeIds[:pendingNodeIdIndex])
 	p.PendingMap[originator] = pendingNode
 	p.PendingMutex.Unlock()
 }
+func (p *PendingStruct) DeletePending(originator int) {
+	p.PendingMutex.Lock()
+	delete(p.PendingMap, originator)
+	p.PendingMutex.Unlock()
+}
 
-func (p *PendingStruct) CheckPending(originator int, chunkId int) int {
+func (p *PendingStruct) GetPendingIndex(originator int, chunkId int) int {
 	p.PendingMutex.Lock()
 	defer p.PendingMutex.Unlock()
 	pendingNodes := p.PendingMap[originator].NodeIds
-	if general.Contains(pendingNodes, chunkId) {
-		for i, v := range pendingNodes {
-			if v == chunkId {
-				return i
-			}
+	for i, v := range pendingNodes {
+		if v == chunkId {
+			return i
 		}
 	}
 	return -1
-}
-
-func (p *PendingStruct) DeletePendingNodeId(originator int, pendingNodeIdIndex int) {
-	p.PendingMutex.Lock()
-	pendingNodeIds := p.PendingMap[originator]
-	pendingNodeIds.NodeIds = append(pendingNodeIds.NodeIds[:pendingNodeIdIndex], pendingNodeIds.NodeIds[pendingNodeIdIndex+1:]...)
-	p.PendingMap[originator] = pendingNodeIds
-	p.PendingMutex.Unlock()
 }
