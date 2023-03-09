@@ -46,28 +46,28 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 			originatorId := globalState.Originators[originatorIndex]
 			//originatorId := prevState.Originators[rand.Intn(Constants.GetOriginators())]
 			//
-			//var epoke int32 = 50_000
-			//if timeStep%epoke == 0 {
+			var epoke int32 = 50_000
+			if timeStep%epoke == 0 {
 
-			pendingNodeId := globalState.PendingStruct.GetPending(originatorId).NodeIds
-			if len(pendingNodeId) > 0 {
-				if pendingNodeId[0] != -1 {
-					chunkId = pendingNodeId[0]
+				pendingNodeId := globalState.PendingStruct.GetPending(originatorId).NodeIds
+				if len(pendingNodeId) > 0 {
+					if pendingNodeId[0] != -1 {
+						chunkId = pendingNodeId[0]
+						responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+					}
+				}
+				//if _, ok := globalState.PendingMap[originatorId]; ok {
+				//	chunkId = globalState.PendingMap[originatorId]
+				//	responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+				//}
+
+				reroute := globalState.RerouteStruct.GetRerouteMap(originatorId)
+				if reroute != nil {
+					chunkId = reroute[len(reroute)-1]
 					responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 				}
-			}
-			//if _, ok := globalState.PendingMap[originatorId]; ok {
-			//	chunkId = globalState.PendingMap[originatorId]
-			//	responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
-			//}
 
-			reroute := globalState.RerouteStruct.GetRerouteMap(originatorId)
-			if reroute != nil {
-				chunkId = reroute[len(reroute)-1]
-				responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 			}
-
-			//}
 			//if _, ok := globalState.RerouteMap[originatorId]; ok {
 			//	chunkId = globalState.RerouteMap[originatorId][len(globalState.RerouteMap[originatorId])-1]
 			//	responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
