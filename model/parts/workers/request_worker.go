@@ -1,7 +1,6 @@
 package workers
 
 import (
-	"fmt"
 	"go-incentive-simulation/model/constants"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/update"
@@ -23,10 +22,10 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 			timeStep = int32(update.Timestep(globalState))
 			//timeStep = atomic.LoadInt32(&globalState.TimeStep)
 
-			if timeStep%(iterations/2) == 0 {
-				fmt.Println("PendingMap is currently:", globalState.PendingStruct.PendingMap)
-				fmt.Println("RerouteMap is currently:", globalState.RerouteStruct.RerouteMap)
-			}
+			//if timeStep%(iterations/2) == 0 {
+			//	fmt.Println("PendingMap is currently:", globalState.PendingStruct.PendingMap)
+			//	fmt.Println("RerouteMap is currently:", globalState.RerouteStruct.RerouteMap)
+			//}
 
 			originatorIndex = update.OriginatorIndex(globalState, timeStep)
 

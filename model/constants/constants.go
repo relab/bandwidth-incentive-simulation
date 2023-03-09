@@ -63,13 +63,13 @@ var Constants = constant{
 	cacheIsEnabled:                   false,
 	preferredChunks:                  false, // Fits well with cache
 	adjustableThreshold:              false,
-	edgeLock:                         true,  // Should always be true when using concurrency
-	sameOriginator:                   false, // For testing the usefulness of locking the edges
-	precomputeRespNodes:              true,  // Precompute the responsible nodes for every possible chunkId
-	writeRoutesToFile:                false, // Write the routes to file during run
-	writeStatesToFile:                false, // Write a subset of the states to file during the run
-	numGoroutines:                    25,    // 25 seems to currently be the sweet spot
-	epoke:                            50000, //
+	edgeLock:                         true,   // Should always be true when using concurrency
+	sameOriginator:                   false,  // For testing the usefulness of locking the edges
+	precomputeRespNodes:              true,   // Precompute the responsible nodes for every possible chunkId
+	writeRoutesToFile:                false,  // Write the routes to file during run
+	writeStatesToFile:                false,  // Write a subset of the states to file during the run
+	numGoroutines:                    25,     // 25 seems to currently be the sweet spot
+	epoke:                            500000, //
 }
 
 // func CreateRangeAddress(c *constant){

@@ -33,7 +33,7 @@ func (p *PendingStruct) GetPending(originator int) PendingNode {
 	if ok {
 		return pendingNode
 	}
-	return PendingNode{ChunkIds: make([]int, 0, 10000), PendingCounter: 0}
+	return PendingNode{ChunkIds: []int{}, PendingCounter: 0}
 }
 
 func (p *PendingStruct) IncrementPending(originator int) {
