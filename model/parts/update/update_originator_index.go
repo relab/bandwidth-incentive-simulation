@@ -7,7 +7,7 @@ import (
 )
 
 // OriginatorIndex Used by the requestWorker
-func OriginatorIndex(state *types.State, timeStep int32) int32 {
+func OriginatorIndex(state *types.State, timeStep int) int32 {
 
 	curOriginatorIndex := atomic.LoadInt32(&state.OriginatorIndex)
 	if constants.Constants.GetSameOriginator() {

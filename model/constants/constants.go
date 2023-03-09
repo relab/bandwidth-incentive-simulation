@@ -34,6 +34,7 @@ type constant struct {
 	writeStatesToFile                bool
 	iterationMeansUniqueChunk        bool
 	numGoroutines                    int
+	epoke                            int
 }
 
 var Constants = constant{
@@ -54,7 +55,7 @@ var Constants = constant{
 	forgivenessEnabled:               true,
 	paymentEnabled:                   false,
 	maxPOCheckEnabled:                false,
-	waitingEnabled:                   true,
+	waitingEnabled:                   false,
 	onlyOriginatorPays:               false,
 	payOnlyForCurrentRequest:         false,
 	payIfOrigPays:                    false,
@@ -63,13 +64,14 @@ var Constants = constant{
 	cacheIsEnabled:                   false,
 	preferredChunks:                  false, // Fits well with cache
 	adjustableThreshold:              false,
-	edgeLock:                         true,  // Should always be true when using concurrency
-	sameOriginator:                   false, // For testing the usefulness of locking the edges
-	precomputeRespNodes:              true,  // Precompute the responsible nodes for every possible chunkId
-	writeRoutesToFile:                false, // Write the routes to file during run
-	writeStatesToFile:                false, // Write a subset of the states to file during the run
-	iterationMeansUniqueChunk:        true,  // If a single iteration means all unique chunks or include chunks we look for again relating to waiting/retry
-	numGoroutines:                    25,    // 25 seems to currently be the sweet spot
+	edgeLock:                         true,   // Should always be true when using concurrency
+	sameOriginator:                   false,  // For testing the usefulness of locking the edges
+	precomputeRespNodes:              true,   // Precompute the responsible nodes for every possible chunkId
+	writeRoutesToFile:                false,  // Write the routes to file during run
+	writeStatesToFile:                false,  // Write a subset of the states to file during the run
+	iterationMeansUniqueChunk:        true,   // If a single iteration means all unique chunks or include chunks we look for again relating to waiting/retry
+	numGoroutines:                    25,     // 25 seems to currently be the sweet spot
+	epoke:                            500000, //
 }
 
 // func CreateRangeAddress(c *constant){
@@ -210,4 +212,8 @@ func (c *constant) IsIterationMeansUniqueChunk() bool {
 
 func (c *constant) GetNumGoroutines() int {
 	return c.numGoroutines
+}
+
+func (c *constant) GetEpoke() int {
+	return c.epoke
 }

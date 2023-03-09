@@ -50,7 +50,7 @@ func RoutingWorker(requestChan chan types.Request, routeChan chan types.RouteDat
 		if constants.Constants.IsWriteStatesToFile() {
 			// TODO: Decide on what subset of values we actually would like to store
 			stateSubset = types.StateSubset{
-				OriginatorIndex:         request.OriginatorIndex,
+				OriginatorIndex:         int32(request.OriginatorIndex),
 				PendingMap:              int32(len(pendingStruct.PendingMap)),
 				RerouteMap:              int32(len(rerouteStruct.RerouteMap)),
 				CacheStruct:             int32(len(cacheStruct.CacheMap)),
