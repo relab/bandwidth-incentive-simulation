@@ -52,20 +52,20 @@ var constants = constant{
 	maxProximityOrder:                16,
 	price:                            1,
 	chunks:                           10000,
-	requestsPerSecond:                12500, // 12500
-	thresholdEnabled:                 true,
-	forgivenessEnabled:               true,
-	paymentEnabled:                   false,
-	maxPOCheckEnabled:                false,
-	waitingEnabled:                   false,
-	onlyOriginatorPays:               false,
-	payOnlyForCurrentRequest:         false,
-	payIfOrigPays:                    false,
-	forwarderPayForceOriginatorToPay: false,
-	retryWithAnotherPeer:             false,
-	cacheIsEnabled:                   false,
-	preferredChunks:                  false, // Fits well with cache
-	adjustableThreshold:              false,
+	requestsPerSecond:                12500,   // 12500
+	thresholdEnabled:                 true,    // The maximum limit of debt an edge can have in one direction
+	forgivenessEnabled:               true,    // Edge debt gets forgiven some amount on an interval (amortized)
+	paymentEnabled:                   false,   // Nodes pay if they Threshold fail
+	maxPOCheckEnabled:                false,   // Used to find the proper variable called "omega" in the python paper
+	onlyOriginatorPays:               false,   // Only the originator will pay, others will threshold fail or wait
+	payOnlyForCurrentRequest:         false,   // Only pay for current request or the full debt on the edge
+	payIfOrigPays:                    false,   // Only pay if the originator pays -- NOT NEEDED
+	forwarderPayForceOriginatorToPay: false,   // If Threshold fails, forces all the nodes in the route to pay for the current request
+	waitingEnabled:                   false,   // When Threshold fails, will wait before trying to traverse same route
+	retryWithAnotherPeer:             false,   // The Route to the chunk will try to take many paths to find the chunk
+	cacheIsEnabled:                   false,   // Cache, which stores previously looked after chunks on the nodes
+	preferredChunks:                  false,   // Fits well with cache, where some chunkIds are chosen more often
+	adjustableThreshold:              false,   // The Threshold limit of an edge is determined based on the XOR distance
 	edgeLock:                         true,    // Should always be true when using concurrency
 	sameOriginator:                   false,   // For testing the usefulness of locking the edges
 	precomputeRespNodes:              true,    // Precompute the responsible nodes for every possible chunkId
