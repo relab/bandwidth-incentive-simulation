@@ -51,13 +51,12 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 			if constants.Constants.IsWaitingEnabled() {
 				pendingNode := globalState.PendingStruct.GetPending(originatorId)
 
-				//var epoke int32 = 50_000
-				//if (timeStep-originatorIndex)%epoke == 0 {
-				if len(pendingNode.ChunkIds) > 0 {
-					pendingNode.EpokeDecrement = int32(len(pendingNode.ChunkIds))
-					atomic.AddInt32(&globalState.PendingStruct.Counter, int32(len(pendingNode.ChunkIds)))
+				if (timeStep-originatorIndex)%constants.Constants.GetEpoke() == 0 {
+					if len(pendingNode.ChunkIds) > 0 {
+						pendingNode.EpokeDecrement = int32(len(pendingNode.ChunkIds))
+						atomic.AddInt32(&globalState.PendingStruct.Counter, int32(len(pendingNode.ChunkIds)))
+					}
 				}
-				//}
 
 				if pendingNode.EpokeDecrement > 0 {
 					pendingNodeIds := pendingNode.ChunkIds

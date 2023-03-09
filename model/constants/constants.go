@@ -33,6 +33,7 @@ type constant struct {
 	writeRoutesToFile                bool
 	writeStatesToFile                bool
 	numGoroutines                    int
+	epoke                            int32
 }
 
 var Constants = constant{
@@ -68,6 +69,7 @@ var Constants = constant{
 	writeRoutesToFile:                false, // Write the routes to file during run
 	writeStatesToFile:                false, // Write a subset of the states to file during the run
 	numGoroutines:                    25,    // 25 seems to currently be the sweet spot
+	epoke:                            50000, //
 }
 
 // func CreateRangeAddress(c *constant){
@@ -204,4 +206,8 @@ func (c *constant) IsWriteStatesToFile() bool {
 
 func (c *constant) GetNumGoroutines() int {
 	return c.numGoroutines
+}
+
+func (c *constant) GetEpoke() int32 {
+	return c.epoke
 }
