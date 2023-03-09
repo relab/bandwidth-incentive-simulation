@@ -87,12 +87,47 @@ func CreateGraphNetwork(net *Network) (*Graph, error) {
 	return graph, nil
 }
 
-func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, g *Graph) bool {
+func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, g *Graph, request *Request) bool {
 	if Constants.GetThresholdEnabled() {
 		edgeDataFirst := g.GetEdgeData(firstNodeId, secondNodeId)
 		p2pFirst := edgeDataFirst.A2B
 		edgeDataSecond := g.GetEdgeData(secondNodeId, firstNodeId)
 		p2pSecond := edgeDataSecond.A2B
+
+		// TODO: This logic used to be in update_graph. Decide if we want it here, test that is works as expected and figure out why it is so much slower with waiting enabled
+		//if Constants.IsForgivenessEnabled() {
+		//	passedTime := (int(request.TimeStep) - edgeDataFirst.Last) / Constants.GetRequestsPerSecond()
+		//	if passedTime > 0 {
+		//		refreshRate := Constants.GetRefreshRate()
+		//		if Constants.IsAdjustableThreshold() {
+		//			refreshRate = int(math.Ceil(float64(edgeDataFirst.Threshold / 2)))
+		//		}
+		//		removedDeptAmount := passedTime * refreshRate
+		//		newEdgeData := edgeDataFirst
+		//		newEdgeData.A2B -= removedDeptAmount
+		//		if newEdgeData.A2B < 0 {
+		//			newEdgeData.A2B = 0
+		//		}
+		//		newEdgeData.Last = int(request.TimeStep)
+		//		g.SetEdgeData(firstNodeId, secondNodeId, newEdgeData)
+		//	}
+		//
+		//	passedTime = (int(request.TimeStep) - edgeDataSecond.Last) / Constants.GetRequestsPerSecond()
+		//	if passedTime > 0 {
+		//		refreshRate := Constants.GetRefreshRate()
+		//		if Constants.IsAdjustableThreshold() {
+		//			refreshRate = int(math.Ceil(float64(edgeDataSecond.Threshold / 2)))
+		//		}
+		//		removedDeptAmount := passedTime * refreshRate
+		//		newEdgeData := edgeDataFirst
+		//		newEdgeData.A2B -= removedDeptAmount
+		//		if newEdgeData.A2B < 0 {
+		//			newEdgeData.A2B = 0
+		//		}
+		//		newEdgeData.Last = int(request.TimeStep)
+		//		g.SetEdgeData(secondNodeId, firstNodeId, newEdgeData)
+		//	}
+		//}
 
 		threshold := Constants.GetThreshold()
 		if Constants.IsAdjustableThreshold() {
@@ -107,7 +142,7 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, g *Graph)
 	return false
 }
 
-func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, prevNodePaid bool, rerouteStruct RerouteStruct) (int, []Threshold, bool, bool, Payment, bool) {
+func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, prevNodePaid bool, rerouteStruct RerouteStruct, request *Request) (int, []Threshold, bool, bool, Payment, bool) {
 	var nextNodeId int
 	var payNextId int
 	var thresholdList []Threshold
@@ -136,7 +171,7 @@ func getNext(firstNodeId int, chunkId int, graph *Graph, mainOriginatorId int, p
 			graph.LockEdge(firstNodeId, nodeId)
 			lockedEdges = append(lockedEdges, nodeId)
 		}
-		if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph) {
+		if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph, request) {
 			thresholdFailed = false
 			// Could probably clean this one up, but keeping it close to original for now
 			if dist < currDist {
@@ -316,7 +351,7 @@ func ConsumeTask(request *Request, graph *Graph, rerouteStruct RerouteStruct, ca
 			//fmt.Printf("\n orig: %d, chunk_id: %d", mainOriginatorId, chunkId)
 			//nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originatorId, chunkId, graph, mainOriginatorId, prevNodePaid, rerouteMap)
 
-			nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originatorId, chunkId, graph, mainOriginatorId, prevNodePaid, rerouteStruct)
+			nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originatorId, chunkId, graph, mainOriginatorId, prevNodePaid, rerouteStruct, request)
 
 			//if nextNodeId == -2 {
 			//	// Access Failed

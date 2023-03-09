@@ -32,6 +32,7 @@ type constant struct {
 	precomputeRespNodes              bool
 	writeRoutesToFile                bool
 	writeStatesToFile                bool
+	iterationMeansUniqueChunk        bool
 	numGoroutines                    int
 }
 
@@ -53,7 +54,7 @@ var Constants = constant{
 	forgivenessEnabled:               true,
 	paymentEnabled:                   false,
 	maxPOCheckEnabled:                false,
-	waitingEnabled:                   false,
+	waitingEnabled:                   true,
 	onlyOriginatorPays:               false,
 	payOnlyForCurrentRequest:         false,
 	payIfOrigPays:                    false,
@@ -67,6 +68,7 @@ var Constants = constant{
 	precomputeRespNodes:              true,  // Precompute the responsible nodes for every possible chunkId
 	writeRoutesToFile:                false, // Write the routes to file during run
 	writeStatesToFile:                false, // Write a subset of the states to file during the run
+	iterationMeansUniqueChunk:        true,  // If a single iteration means all unique chunks or include chunks we look for again relating to waiting/retry
 	numGoroutines:                    25,    // 25 seems to currently be the sweet spot
 }
 
@@ -200,6 +202,10 @@ func (c *constant) IsWriteRoutesToFile() bool {
 
 func (c *constant) IsWriteStatesToFile() bool {
 	return c.writeStatesToFile
+}
+
+func (c *constant) IsIterationMeansUniqueChunk() bool {
+	return c.iterationMeansUniqueChunk
 }
 
 func (c *constant) GetNumGoroutines() int {

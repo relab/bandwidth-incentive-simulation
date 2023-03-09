@@ -12,17 +12,10 @@ func PendingMap(state *types.State, policyInput types.RequestResult) types.Pendi
 		originator := route[0]
 		chunkId := route[len(route)-1]
 		//pendingNode := state.PendingStruct.GetPending(originator)
+		// -1 Threshold Fail, -2 Access Fail
 
-		if !general.Contains(route, -1) && !general.Contains(route, -2) {
-			if !state.PendingStruct.IsEmpty(originator) {
-				pendingNodeIndex := state.PendingStruct.GetPendingIndex(originator, chunkId)
-				if pendingNodeIndex != -1 {
-					// if found then delete the chunkId from the pendingNode
-					state.PendingStruct.DeletePendingNodeId(originator, pendingNodeIndex)
-				}
-			}
-		} else if constants.Constants.IsRetryWithAnotherPeer() {
-			if general.Contains(route, -1) && general.Contains(route, -2) {
+		if constants.Constants.IsRetryWithAnotherPeer() {
+			if general.Contains(route, -1) || general.Contains(route, -2) {
 				if state.PendingStruct.IsEmpty(originator) {
 					// if the pendingNode is empty then add the chunkId to the pendingNode
 					state.PendingStruct.AddPending(originator, chunkId)
@@ -41,9 +34,15 @@ func PendingMap(state *types.State, policyInput types.RequestResult) types.Pendi
 				state.PendingStruct.AddToPendingQueue(originator, chunkId)
 			}
 
+		} else if !state.PendingStruct.IsEmpty(originator) {
+			pendingNodeIndex := state.PendingStruct.GetPendingIndex(originator, chunkId)
+			if pendingNodeIndex != -1 {
+				// if found then delete the chunkId from the pendingNode
+				state.PendingStruct.DeletePendingNodeId(originator, pendingNodeIndex)
+			}
 		}
-
 	}
+
 	return state.PendingStruct
 }
 

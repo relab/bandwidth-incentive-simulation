@@ -114,6 +114,8 @@ func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int)
 			}
 		}
 	}
+
+	// TODO: Decide on if this logic should be here or moved to the isThresholdFailed function
 	if constants.Constants.GetThresholdEnabled() && constants.Constants.IsForgivenessEnabled() {
 		thresholdFailedLists := policyInput.ThresholdFailedLists
 		if len(thresholdFailedLists) > 0 {
@@ -143,6 +145,7 @@ func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int)
 			}
 		}
 	}
+
 	// Unlocks all the edges between the nodes in the route
 	if constants.Constants.GetEdgeLock() {
 		if !general.Contains(route, -1) && !general.Contains(route, -2) {

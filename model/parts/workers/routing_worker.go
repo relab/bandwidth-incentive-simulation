@@ -14,8 +14,7 @@ func RoutingWorker(requestChan chan types.Request, routeChan chan types.RouteDat
 	var request types.Request
 	var stateSubset types.StateSubset
 	var requestResult types.RequestResult
-	for i := 0; i < numLoops; i++ {
-		request = <-requestChan
+	for request = range requestChan {
 
 		found, route, thresholdFailed, accessFailed, paymentsList := utils.ConsumeTask(&request, globalState.Graph, globalState.RerouteStruct, globalState.CacheStruct)
 
