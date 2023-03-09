@@ -40,9 +40,7 @@ func PendingMap(state *types.State, policyInput types.RequestResult) types.Pendi
 				// if the pendingNode is not empty then add the chunkId to the pendingNodeIds
 				state.PendingStruct.AddToPendingQueue(originator, chunkId)
 			}
-
 		}
-
 	}
 	return state.PendingStruct
 }

@@ -51,16 +51,16 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 			if constants.Constants.IsWaitingEnabled() {
 				pendingNode := globalState.PendingStruct.GetPending(originatorId)
 
-				var epoke int32 = 50_000
-				if (timeStep-originatorIndex)%epoke == 0 {
-					if len(pendingNode.NodeIds) > 0 {
-						pendingNode.EpokeDecrement = int32(len(pendingNode.NodeIds))
-						atomic.AddInt32(&globalState.PendingStruct.Counter, int32(len(pendingNode.NodeIds)))
-					}
+				//var epoke int32 = 50_000
+				//if (timeStep-originatorIndex)%epoke == 0 {
+				if len(pendingNode.ChunkIds) > 0 {
+					pendingNode.EpokeDecrement = int32(len(pendingNode.ChunkIds))
+					atomic.AddInt32(&globalState.PendingStruct.Counter, int32(len(pendingNode.ChunkIds)))
 				}
+				//}
 
 				if pendingNode.EpokeDecrement > 0 {
-					pendingNodeIds := pendingNode.NodeIds
+					pendingNodeIds := pendingNode.ChunkIds
 					if !globalState.PendingStruct.IsEmpty(originatorId) {
 						chunkId = pendingNodeIds[pendingNode.EpokeDecrement-1]
 						responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)

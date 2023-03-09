@@ -5,7 +5,7 @@ import (
 )
 
 type PendingNode struct {
-	NodeIds        []int
+	ChunkIds       []int
 	PendingCounter int32
 	EpokeDecrement int32
 }
@@ -20,7 +20,7 @@ type PendingStruct struct {
 
 func (p *PendingStruct) IsEmpty(originator int) bool {
 	pending := p.GetPending(originator)
-	if len(pending.NodeIds) > 0 {
+	if len(pending.ChunkIds) > 0 {
 		return false
 	}
 	return true
@@ -33,7 +33,7 @@ func (p *PendingStruct) GetPending(originator int) PendingNode {
 	if ok {
 		return pendingNode
 	}
-	return PendingNode{NodeIds: make([]int, 0, 10000), PendingCounter: 0}
+	return PendingNode{ChunkIds: make([]int, 0, 10000), PendingCounter: 0}
 }
 
 func (p *PendingStruct) IncrementPending(originator int) {
@@ -47,7 +47,7 @@ func (p *PendingStruct) IncrementPending(originator int) {
 func (p *PendingStruct) AddPending(originator int, chunkId int) {
 	p.PendingMutex.Lock()
 	pendingNode := p.PendingMap[originator]
-	pendingNode.NodeIds = append(pendingNode.NodeIds, chunkId)
+	pendingNode.ChunkIds = append(pendingNode.ChunkIds, chunkId)
 	pendingNode.PendingCounter = 1
 	p.PendingMap[originator] = pendingNode
 	p.PendingMutex.Unlock()
@@ -56,7 +56,7 @@ func (p *PendingStruct) AddPending(originator int, chunkId int) {
 func (p *PendingStruct) AddToPendingQueue(originator int, chunkId int) {
 	p.PendingMutex.Lock()
 	pendingNode := p.PendingMap[originator]
-	pendingNode.NodeIds = append(pendingNode.NodeIds, chunkId)
+	pendingNode.ChunkIds = append(pendingNode.ChunkIds, chunkId)
 	pendingNode.PendingCounter++
 	p.PendingMap[originator] = pendingNode
 	p.PendingMutex.Unlock()
@@ -65,7 +65,7 @@ func (p *PendingStruct) AddToPendingQueue(originator int, chunkId int) {
 func (p *PendingStruct) DeletePendingNodeId(originator int, pendingNodeIdIndex int) {
 	p.PendingMutex.Lock()
 	pendingNode := p.PendingMap[originator]
-	pendingNode.NodeIds = append(pendingNode.NodeIds[:pendingNodeIdIndex])
+	pendingNode.ChunkIds = append(pendingNode.ChunkIds[:pendingNodeIdIndex])
 	p.PendingMap[originator] = pendingNode
 	p.PendingMutex.Unlock()
 }
@@ -78,7 +78,7 @@ func (p *PendingStruct) DeletePending(originator int) {
 func (p *PendingStruct) GetPendingIndex(originator int, chunkId int) int {
 	p.PendingMutex.Lock()
 	defer p.PendingMutex.Unlock()
-	pendingNodes := p.PendingMap[originator].NodeIds
+	pendingNodes := p.PendingMap[originator].ChunkIds
 	for i, v := range pendingNodes {
 		if v == chunkId {
 			return i
