@@ -33,11 +33,13 @@ type constant struct {
 	writeRoutesToFile                bool
 	writeStatesToFile                bool
 	iterationMeansUniqueChunk        bool
+	debugPrints                      bool
+	debugInterval                    int
 	numGoroutines                    int
 	epoke                            int
 }
 
-var Constants = constant{
+var constants = constant{
 	runs:                             1,
 	bits:                             16,
 	networkSize:                      10000,
@@ -64,14 +66,16 @@ var Constants = constant{
 	cacheIsEnabled:                   false,
 	preferredChunks:                  false, // Fits well with cache
 	adjustableThreshold:              false,
-	edgeLock:                         true,   // Should always be true when using concurrency
-	sameOriginator:                   false,  // For testing the usefulness of locking the edges
-	precomputeRespNodes:              true,   // Precompute the responsible nodes for every possible chunkId
-	writeRoutesToFile:                false,  // Write the routes to file during run
-	writeStatesToFile:                false,  // Write a subset of the states to file during the run
-	iterationMeansUniqueChunk:        true,   // If a single iteration means all unique chunks or include chunks we look for again relating to waiting/retry
-	numGoroutines:                    25,     // 25 seems to currently be the sweet spot
-	epoke:                            500000, //
+	edgeLock:                         true,    // Should always be true when using concurrency
+	sameOriginator:                   false,   // For testing the usefulness of locking the edges
+	precomputeRespNodes:              true,    // Precompute the responsible nodes for every possible chunkId
+	writeRoutesToFile:                false,   // Write the routes to file during run
+	writeStatesToFile:                false,   // Write a subset of the states to file during the run
+	iterationMeansUniqueChunk:        true,    // If a single iteration means all unique chunks or include chunks we look for again relating to waiting/retry
+	debugPrints:                      true,    // Prints out many useful debug prints during the run
+	debugInterval:                    1000000, // How many iterations between each debug print
+	numGoroutines:                    25,      // 25 seems to currently be the sweet spot
+	epoke:                            500000,  //
 }
 
 // func CreateRangeAddress(c *constant){
@@ -82,138 +86,146 @@ var Constants = constant{
 // 	c.originators = int(0.001 * float64(c.networkSize))
 // }
 
-func (c *constant) IsAdjustableThreshold() bool {
-	return c.adjustableThreshold
+func IsAdjustableThreshold() bool {
+	return constants.adjustableThreshold
 }
 
-func (c *constant) IsForgivenessEnabled() bool {
-	return c.forgivenessEnabled
+func IsForgivenessEnabled() bool {
+	return constants.forgivenessEnabled
 }
 
-func (c *constant) IsCacheEnabled() bool {
-	return c.cacheIsEnabled
+func IsCacheEnabled() bool {
+	return constants.cacheIsEnabled
 }
 
-func (c *constant) IsPreferredChunksEnabled() bool {
-	return c.preferredChunks
+func IsPreferredChunksEnabled() bool {
+	return constants.preferredChunks
 }
 
-func (c *constant) IsRetryWithAnotherPeer() bool {
-	return c.retryWithAnotherPeer
+func IsRetryWithAnotherPeer() bool {
+	return constants.retryWithAnotherPeer
 }
 
-func (c *constant) IsForwarderPayForceOriginatorToPay() bool {
-	return c.forwarderPayForceOriginatorToPay
+func IsForwarderPayForceOriginatorToPay() bool {
+	return constants.forwarderPayForceOriginatorToPay
 }
 
-func (c *constant) IsPayIfOrigPays() bool {
-	return c.payIfOrigPays
+func IsPayIfOrigPays() bool {
+	return constants.payIfOrigPays
 }
 
-func (c *constant) IsPayOnlyForCurrentRequest() bool {
-	return c.payOnlyForCurrentRequest
+func IsPayOnlyForCurrentRequest() bool {
+	return constants.payOnlyForCurrentRequest
 }
 
-func (c *constant) IsOnlyOriginatorPays() bool {
-	return c.onlyOriginatorPays
+func IsOnlyOriginatorPays() bool {
+	return constants.onlyOriginatorPays
 }
 
-func (c *constant) IsWaitingEnabled() bool {
-	return c.waitingEnabled
+func IsWaitingEnabled() bool {
+	return constants.waitingEnabled
 }
 
-func (c *constant) GetMaxPOCheckEnabled() bool {
-	return c.maxPOCheckEnabled
+func GetMaxPOCheckEnabled() bool {
+	return constants.maxPOCheckEnabled
 }
 
-func (c *constant) GetThresholdEnabled() bool {
-	return c.thresholdEnabled
+func GetThresholdEnabled() bool {
+	return constants.thresholdEnabled
 }
 
-func (c *constant) GetPaymentEnabled() bool {
-	return c.paymentEnabled
+func GetPaymentEnabled() bool {
+	return constants.paymentEnabled
 }
 
-func (c *constant) GetRequestsPerSecond() int {
-	return c.requestsPerSecond
+func GetRequestsPerSecond() int {
+	return constants.requestsPerSecond
 }
 
-func (c *constant) GetChunks() int {
-	return c.chunks
+func GetChunks() int {
+	return constants.chunks
 }
 
-func (c *constant) GetBits() int {
-	return c.bits
+func GetBits() int {
+	return constants.bits
 }
 
-func (c *constant) GetNetworkSize() int {
-	return c.networkSize
+func GetNetworkSize() int {
+	return constants.networkSize
 }
 
-func (c *constant) GetBinSize() int {
-	return c.binSize
+func GetBinSize() int {
+	return constants.binSize
 }
 
 func GetSimulationRuns() int {
 	return 125000
 }
 
-func (c *constant) GetRangeAddress() int {
-	return c.rangeAddress
+func GetRangeAddress() int {
+	return constants.rangeAddress
 }
 
-func (c *constant) GetOriginators() int {
-	return c.originators
+func GetOriginators() int {
+	return constants.originators
 }
 
-func (c *constant) GetRefreshRate() int {
-	return c.refreshRate
+func GetRefreshRate() int {
+	return constants.refreshRate
 }
 
-func (c *constant) GetThreshold() int {
-	return c.threshold
+func GetThreshold() int {
+	return constants.threshold
 }
 
-func (c *constant) GetRandomSeed() int64 {
-	return c.randomSeed
+func GetRandomSeed() int64 {
+	return constants.randomSeed
 }
 
-func (c *constant) GetMaxProximityOrder() int {
-	return c.maxProximityOrder
+func GetMaxProximityOrder() int {
+	return constants.maxProximityOrder
 }
 
-func (c *constant) GetPrice() int {
-	return c.price
+func GetPrice() int {
+	return constants.price
 }
 
-func (c *constant) GetSameOriginator() bool {
-	return c.sameOriginator
+func GetSameOriginator() bool {
+	return constants.sameOriginator
 }
 
-func (c *constant) GetEdgeLock() bool {
-	return c.edgeLock
+func GetEdgeLock() bool {
+	return constants.edgeLock
 }
 
-func (c *constant) IsPrecomputeRespNodes() bool {
-	return c.precomputeRespNodes
+func IsPrecomputeRespNodes() bool {
+	return constants.precomputeRespNodes
 }
 
-func (c *constant) IsWriteRoutesToFile() bool {
-	return c.writeRoutesToFile
+func IsWriteRoutesToFile() bool {
+	return constants.writeRoutesToFile
 }
 
-func (c *constant) IsWriteStatesToFile() bool {
-	return c.writeStatesToFile
+func IsWriteStatesToFile() bool {
+	return constants.writeStatesToFile
 }
 
-func (c *constant) IsIterationMeansUniqueChunk() bool {
-	return c.iterationMeansUniqueChunk
+func IsIterationMeansUniqueChunk() bool {
+	return constants.iterationMeansUniqueChunk
 }
 
-func (c *constant) GetNumGoroutines() int {
-	return c.numGoroutines
+func IsDebugPrints() bool {
+	return constants.debugPrints
 }
 
-func (c *constant) GetEpoke() int {
-	return c.epoke
+func GetDebugInterval() int {
+	return constants.debugInterval
+}
+
+func GetNumGoroutines() int {
+	return constants.numGoroutines
+}
+
+func GetEpoke() int {
+	return constants.epoke
 }

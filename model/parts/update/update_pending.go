@@ -7,14 +7,14 @@ import (
 )
 
 func PendingMap(state *types.State, policyInput types.RequestResult) types.PendingStruct {
-	if constants.Constants.IsWaitingEnabled() {
+	if constants.IsWaitingEnabled() {
 		route := policyInput.Route
 		originator := route[0]
 		chunkId := route[len(route)-1]
 		//pendingNode := state.PendingStruct.GetPending(originator)
 		// -1 Threshold Fail, -2 Access Fail
 
-		if constants.Constants.IsRetryWithAnotherPeer() {
+		if constants.IsRetryWithAnotherPeer() {
 			if general.Contains(route, -1) || general.Contains(route, -2) {
 				if state.PendingStruct.IsEmpty(originator) {
 					// if the pendingNode is empty then add the chunkId to the pendingNode
@@ -48,7 +48,7 @@ func PendingMap(state *types.State, policyInput types.RequestResult) types.Pendi
 
 //func PendingMap(state *types.State, policyInput types.RequestResult) types.PendingStruct {
 //	//pendingStruct := state.PendingStruct
-//	if constants.Constants.IsWaitingEnabled() {
+//	if constants.constants.IsWaitingEnabled() {
 //		route := policyInput.Route
 //		originator := route[0]
 //		chunkId := route[len(route)-1]
@@ -62,7 +62,7 @@ func PendingMap(state *types.State, policyInput types.RequestResult) types.Pendi
 //					state.PendingStruct.DeletePending(originator)
 //				}
 //			}
-//		} else if constants.Constants.IsRetryWithAnotherPeer() {
+//		} else if constants.constants.IsRetryWithAnotherPeer() {
 //			if general.Contains(route, -1) && general.Contains(route, -2) {
 //				pendingNodeId := pendingNode.NodeId
 //				if pendingNodeId != -1 {

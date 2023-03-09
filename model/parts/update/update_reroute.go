@@ -8,7 +8,7 @@ import (
 
 func RerouteMap(state *types.State, policyInput types.RequestResult) types.RerouteStruct {
 	//rerouteStruct := state.RerouteStruct
-	if constants.Constants.IsRetryWithAnotherPeer() {
+	if constants.IsRetryWithAnotherPeer() {
 		route := policyInput.Route
 		originator := route[0]
 		if !general.Contains(route, -1) && !general.Contains(route, -2) {
@@ -53,12 +53,12 @@ func RerouteMap(state *types.State, policyInput types.RequestResult) types.Rerou
 		}
 		reroute := state.RerouteStruct.GetRerouteMap(originator)
 		if reroute != nil {
-			if len(reroute) > constants.Constants.GetBinSize() {
+			if len(reroute) > constants.GetBinSize() {
 				state.RerouteStruct.DeleteReroute(originator)
 			}
 		}
 		//if _, ok := rerouteMap[originator]; ok {
-		//	if len(rerouteMap[originator]) > Constants.GetBinSize() {
+		//	if len(rerouteMap[originator]) > constants.GetBinSize() {
 		//		delete(rerouteMap, originator)
 		//	}
 		//}

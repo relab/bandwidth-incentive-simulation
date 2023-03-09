@@ -33,8 +33,8 @@ func main() {
 
 	const iterations = 10_000_000
 
-	numGoroutines := constants.Constants.GetNumGoroutines()
-	numLoops := iterations / numGoroutines
+	numGoroutines := constants.GetNumGoroutines()
+	//numLoops := iterations / numGoroutines
 
 	wgMain := &sync.WaitGroup{}
 	wgFlush := &sync.WaitGroup{}
@@ -42,13 +42,13 @@ func main() {
 	routeChan := make(chan types.RouteData, numGoroutines)
 	stateChan := make(chan types.StateSubset, 10000)
 
-	if constants.Constants.IsWriteRoutesToFile() {
+	if constants.IsWriteRoutesToFile() {
 		wgFlush.Add(1)
-		go workers.RouteFlushWorker(routeChan, &globalState, wgFlush, iterations)
+		go workers.RouteFlushWorker(routeChan, wgFlush)
 	}
-	if constants.Constants.IsWriteStatesToFile() {
+	if constants.IsWriteStatesToFile() {
 		wgFlush.Add(1)
-		go workers.StateFlushWorker(stateChan, wgFlush, iterations)
+		go workers.StateFlushWorker(stateChan, wgFlush)
 	}
 
 	go workers.RequestWorker(requestChan, &globalState, wgMain, iterations)
@@ -56,13 +56,14 @@ func main() {
 
 	for i := 0; i < numGoroutines; i++ {
 		wgMain.Add(1)
-		go workers.RoutingWorker(requestChan, routeChan, stateChan, &globalState, wgMain, numLoops)
+		go workers.RoutingWorker(requestChan, routeChan, stateChan, &globalState, wgMain)
 	}
 	wgMain.Wait()
 	close(stateChan)
 	close(routeChan)
 	wgFlush.Wait()
 
+	fmt.Println("")
 	fmt.Println("end of main: ")
 	elapsed := time.Since(start)
 	fmt.Println("Time taken:", elapsed)

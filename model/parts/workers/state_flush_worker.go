@@ -10,7 +10,7 @@ import (
 	"sync"
 )
 
-func StateFlushWorker(stateChan chan types.StateSubset, wg *sync.WaitGroup, iterations int) {
+func StateFlushWorker(stateChan chan types.StateSubset, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var message *protoGenerated.StateSubsets
 	var stateSubset types.StateSubset
@@ -42,8 +42,7 @@ func StateFlushWorker(stateChan chan types.StateSubset, wg *sync.WaitGroup, iter
 		}
 	}(writer)
 
-	for counter := 0; counter < iterations; counter++ {
-		stateSubset = <-stateChan
+	for stateSubset = range stateChan {
 
 		message = &protoGenerated.StateSubsets{
 			Subset: make([]*protoGenerated.StateSubset, 0),

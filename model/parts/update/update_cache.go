@@ -9,7 +9,7 @@ import (
 func CacheMap(state *types.State, policyInput types.RequestResult) types.CacheStruct {
 	chunkId := 0
 
-	if constants.Constants.IsCacheEnabled() {
+	if constants.IsCacheEnabled() {
 		route := policyInput.Route
 		if general.Contains(route, -3) {
 			// -3 means found by caching

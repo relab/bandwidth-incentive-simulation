@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-func RoutingWorker(requestChan chan types.Request, routeChan chan types.RouteData, stateChan chan types.StateSubset, globalState *types.State, wg *sync.WaitGroup, numLoops int) {
+func RoutingWorker(requestChan chan types.Request, routeChan chan types.RouteData, stateChan chan types.StateSubset, globalState *types.State, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var request types.Request
 	var stateSubset types.StateSubset
@@ -28,26 +28,31 @@ func RoutingWorker(requestChan chan types.Request, routeChan chan types.RouteDat
 
 		// TODO: decide on where we should update the timestep. At request creation or request fulfillment
 		//curTimeStep := update.Timestep(globalState)
-		curTimeStep := int(request.TimeStep)
+		curTimeStep := request.TimeStep
+
 		update.Graph(globalState, requestResult, curTimeStep)
 		pendingStruct := update.PendingMap(globalState, requestResult)
 		rerouteStruct := update.RerouteMap(globalState, requestResult)
 		cacheStruct := update.CacheMap(globalState, requestResult)
+
 		// TODO: originatorIndex is now updated by the requestWorker
 		//originatorIndex := UpdateOriginatorIndex(globalState)
+
 		successfulFound := update.SuccessfulFound(globalState, requestResult)
 		failedRequestThreshold := update.FailedRequestsThreshold(globalState, requestResult)
 		failedRequestAccess := update.FailedRequestsAccess(globalState, requestResult)
 		//routeLists := update.RouteListAndFlush(globalState, requestResult, curTimeStep)
 
-		if constants.Constants.IsWriteRoutesToFile() {
-			if curTimeStep%1000000 == 0 {
-				fmt.Println("routeChan length: ", len(routeChan))
+		if constants.IsWriteRoutesToFile() {
+			if constants.IsDebugPrints() {
+				if curTimeStep%constants.GetDebugInterval() == 0 {
+					fmt.Println("routeChan length: ", len(routeChan))
+				}
 			}
 			routeChan <- types.RouteData{TimeStep: int32(curTimeStep), Route: route}
 		}
 
-		if constants.Constants.IsWriteStatesToFile() {
+		if constants.IsWriteStatesToFile() {
 			// TODO: Decide on what subset of values we actually would like to store
 			stateSubset = types.StateSubset{
 				OriginatorIndex:         int32(request.OriginatorIndex),
@@ -59,10 +64,11 @@ func RoutingWorker(requestChan chan types.Request, routeChan chan types.RouteDat
 				FailedRequestsAccess:    failedRequestAccess,
 				TimeStep:                int32(curTimeStep),
 			}
-			if curTimeStep%1000000 == 0 {
-				fmt.Println("stateChan length: ", len(stateChan))
+			if constants.IsDebugPrints() {
+				if curTimeStep%constants.GetDebugInterval() == 0 {
+					fmt.Println("stateChan length: ", len(stateChan))
+				}
 			}
-
 			stateChan <- stateSubset
 		}
 
