@@ -2,8 +2,7 @@ package types
 
 import (
 	"encoding/json"
-	. "go-incentive-simulation/model/general"
-	"io/ioutil"
+	"go-incentive-simulation/model/general"
 	"math/rand"
 	"os"
 	"sort"
@@ -108,8 +107,8 @@ func (network *Network) Generate(count int) []*Node {
 		}
 	}
 	shufflePairs(pairs)
-	for _, nodes := range pairs {
-		nodes[0].add(nodes[1])
+	for _, pair := range pairs {
+		pair[0].add(pair[1])
 	}
 	return nodes
 }
@@ -138,7 +137,7 @@ func (network *Network) Dump(path string) error {
 		}{node.Id, result})
 	}
 	file, _ := json.Marshal(data)
-	err := ioutil.WriteFile(path, file, 0644)
+	err := os.WriteFile(path, file, 0644)
 	if err != nil {
 		return err
 	}
@@ -177,11 +176,11 @@ func (node *Node) add(other *Node) bool {
 	if other.AdjIds == nil {
 		other.AdjIds = make([][]int, other.Network.Bits)
 	}
-	bit := node.Network.Bits - BitLength(node.Id^other.Id)
+	bit := node.Network.Bits - general.BitLength(node.Id^other.Id)
 	if bit < 0 || bit >= node.Network.Bits {
 		return false
 	}
-	isDup := Contains(node.AdjIds[bit], other.Id) || Contains(other.AdjIds[bit], node.Id)
+	isDup := general.Contains(node.AdjIds[bit], other.Id) || general.Contains(other.AdjIds[bit], node.Id)
 	if len(node.AdjIds[bit]) < node.Network.Bin && len(other.AdjIds[bit]) < node.Network.Bin && !isDup {
 		node.AdjIds[bit] = append(node.AdjIds[bit], other.Id)
 		other.AdjIds[bit] = append(other.AdjIds[bit], node.Id)

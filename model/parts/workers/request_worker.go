@@ -1,59 +1,55 @@
 package workers
 
 import (
+	"fmt"
 	"go-incentive-simulation/model/constants"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/update"
 	"math/rand"
 	"sync"
-	"sync/atomic"
 )
 
-func RequestWorker(requestChan chan types.Request, globalState *types.State, wg *sync.WaitGroup, iterations int32) {
+func RequestWorker(requestChan chan types.Request, globalState *types.State, wg *sync.WaitGroup, iterations int) {
 
 	defer wg.Done()
-	requestQueueSize := 10
-	var originatorIndex int32
-	var timeStep int32 = 0
-	for timeStep < iterations {
+	var requestQueueSize = 10
+	var originatorIndex = 0
+	var timeStep = 0
+	var counter = 0
+
+	defer close(requestChan)
+
+	for counter < iterations {
 		if len(requestChan) <= requestQueueSize {
 
 			// TODO: decide on where we should update the timestep. At request creation or request fulfillment
-			timeStep = int32(update.Timestep(globalState))
+			timeStep = update.Timestep(globalState)
 			//timeStep = atomic.LoadInt32(&globalState.TimeStep)
+			if constants.IsDebugPrints() {
+				if timeStep%constants.GetDebugInterval() == 0 {
+					fmt.Println("TimeStep is currently:", timeStep)
+				}
+			}
 
 			//if timeStep%(iterations/2) == 0 {
 			//	fmt.Println("PendingMap is currently:", globalState.PendingStruct.PendingMap)
 			//	fmt.Println("RerouteMap is currently:", globalState.RerouteStruct.RerouteMap)
 			//}
 
-			originatorIndex = update.OriginatorIndex(globalState, timeStep)
+			originatorIndex = int(update.OriginatorIndex(globalState, timeStep))
 
-			chunkId := rand.Intn(constants.Constants.GetRangeAddress() - 1)
-
-			if constants.Constants.IsPreferredChunksEnabled() {
-				var random float32
-				numPreferredChunks := 1000
-				random = rand.Float32()
-				if float32(random) <= 0.5 {
-					chunkId = rand.Intn(numPreferredChunks)
-				} else {
-					chunkId = rand.Intn(constants.Constants.GetRangeAddress()-numPreferredChunks) + numPreferredChunks
-				}
-			}
-			//fmt.Println("counter is:", counter)
-
-			responsibleNodes := globalState.Graph.FindResponsibleNodes(chunkId)
 			originatorId := globalState.Originators[originatorIndex]
-			//originatorId := prevState.Originators[rand.Intn(Constants.GetOriginators())]
-			//
-			if constants.Constants.IsWaitingEnabled() {
+
+			chunkId := -1
+			responsibleNodes := [4]int{}
+
+			if constants.IsWaitingEnabled() {
 				pendingNode := globalState.PendingStruct.GetPending(originatorId)
 
-				if (timeStep-originatorIndex)%constants.Constants.GetEpoke() == 0 {
+				if (timeStep-originatorIndex)%constants.GetEpoke() == 0 || timeStep > iterations {
 					if len(pendingNode.ChunkIds) > 0 {
 						pendingNode.EpokeDecrement = int32(len(pendingNode.ChunkIds))
-						atomic.AddInt32(&globalState.PendingStruct.Counter, int32(len(pendingNode.ChunkIds)))
+						//atomic.AddInt32(&globalState.PendingStruct.Counter, int32(len(pendingNode.ChunkIds)))
 					}
 				}
 
@@ -64,36 +60,52 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 						responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 						pendingNode.EpokeDecrement--
 					}
+
 				}
 			}
 
-			//if _, ok := globalState.PendingMap[originatorId]; ok {
-			//	chunkId = globalState.PendingMap[originatorId]
-			//	responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
-			//}
+			if constants.IsRetryWithAnotherPeer() {
+				reroute := globalState.RerouteStruct.GetRerouteMap(originatorId)
+				if reroute != nil {
+					chunkId = reroute[len(reroute)-1]
+					responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+				}
+			}
 
-			reroute := globalState.RerouteStruct.GetRerouteMap(originatorId)
-			if reroute != nil {
-				chunkId = reroute[len(reroute)-1]
+			if constants.IsIterationMeansUniqueChunk() {
+				if chunkId == -1 {
+					counter++
+				}
+			} else {
+				counter++
+			}
+
+			if chunkId == -1 && timeStep < iterations { // No waiting and no retry, and
+				chunkId = rand.Intn(constants.GetRangeAddress() - 1)
+
+				if constants.IsPreferredChunksEnabled() {
+					var random float32
+					numPreferredChunks := 1000
+					random = rand.Float32()
+					if float32(random) <= 0.5 {
+						chunkId = rand.Intn(numPreferredChunks)
+					} else {
+						chunkId = rand.Intn(constants.GetRangeAddress()-numPreferredChunks) + numPreferredChunks
+					}
+				}
 				responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 			}
 
-			//if _, ok := globalState.RerouteMap[originatorId]; ok {
-			//	chunkId = globalState.RerouteMap[originatorId][len(globalState.RerouteMap[originatorId])-1]
-			//	responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
-			//}
-
-			//if timeStep%(iterations/10) == 0 {
-			//	fmt.Println("TimeStep is currently:", timeStep)
-			//}
-
-			requestChan <- types.Request{
-				OriginatorIndex: originatorIndex,
-				OriginatorId:    originatorId,
-				TimeStep:        timeStep,
-				ChunkId:         chunkId,
-				RespNodes:       responsibleNodes,
+			if chunkId != -1 {
+				requestChan <- types.Request{
+					OriginatorIndex: originatorIndex,
+					OriginatorId:    originatorId,
+					TimeStep:        timeStep,
+					ChunkId:         chunkId,
+					RespNodes:       responsibleNodes,
+				}
 			}
+
 		}
 	}
 }

@@ -33,36 +33,41 @@ func main() {
 
 	const iterations = 10_000_000
 
-	numGoroutines := constants.Constants.GetNumGoroutines()
-	numLoops := iterations / numGoroutines
+	numGoroutines := constants.GetNumGoroutines()
+	//numLoops := iterations / numGoroutines
 
-	wg := &sync.WaitGroup{}
+	wgMain := &sync.WaitGroup{}
+	wgFlush := &sync.WaitGroup{}
 	requestChan := make(chan types.Request, numGoroutines)
 	routeChan := make(chan types.RouteData, numGoroutines)
-	stateChan := make(chan types.StateSubset, 100000)
+	stateChan := make(chan types.StateSubset, 10000)
 
-	if constants.Constants.IsWriteRoutesToFile() {
-		wg.Add(1)
-		go workers.RouteFlushWorker(routeChan, &globalState, wg, iterations)
+	if constants.IsWriteRoutesToFile() {
+		wgFlush.Add(1)
+		go workers.RouteFlushWorker(routeChan, wgFlush)
 	}
-	if constants.Constants.IsWriteStatesToFile() {
-		wg.Add(1)
-		go workers.StateFlushWorker(stateChan, wg, iterations)
+	if constants.IsWriteStatesToFile() {
+		wgFlush.Add(1)
+		go workers.StateFlushWorker(stateChan, wgFlush)
 	}
 
-	go workers.RequestWorker(requestChan, &globalState, wg, iterations)
-	wg.Add(1)
+	go workers.RequestWorker(requestChan, &globalState, wgMain, iterations)
+	wgMain.Add(1)
 
 	for i := 0; i < numGoroutines; i++ {
-		wg.Add(1)
-		go workers.RoutingWorker(requestChan, routeChan, stateChan, &globalState, wg, numLoops)
+		wgMain.Add(1)
+		go workers.RoutingWorker(requestChan, routeChan, stateChan, &globalState, wgMain)
 	}
-	wg.Wait()
+	wgMain.Wait()
+	close(stateChan)
+	close(routeChan)
+	wgFlush.Wait()
 
+	fmt.Println("")
 	fmt.Println("end of main: ")
 	elapsed := time.Since(start)
 	fmt.Println("Time taken:", elapsed)
-	fmt.Println("Number of iterations: ", iterations)
+	fmt.Println("Number of Iterations: ", iterations)
 	fmt.Println("Number of Goroutines: ", numGoroutines)
 	// allReq, thresholdFails, requestsToBucketZero, rejectedBucketZero, rejectedFirstHop := ReadRoutes("routes.json")
 	// fmt.Println("allReq: ", allReq)

@@ -2,8 +2,8 @@ package types
 
 import (
 	"fmt"
-	. "go-incentive-simulation/model/constants"
-	. "go-incentive-simulation/model/general"
+	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/model/general"
 	"sort"
 	"sync"
 )
@@ -42,7 +42,7 @@ type EdgeAttrs struct {
 //}
 
 func (g *Graph) FindResponsibleNodes(chunkId int) [4]int {
-	if Constants.IsPrecomputeRespNodes() {
+	if constants.IsPrecomputeRespNodes() {
 		return g.RespNodes[chunkId]
 
 	} else {
@@ -50,8 +50,8 @@ func (g *Graph) FindResponsibleNodes(chunkId int) [4]int {
 			return g.RespNodes[chunkId]
 
 		} else {
-			numNodesSearch := Constants.GetBits()
-			closestNodes := BinarySearchClosest(g.NodeIds, chunkId, numNodesSearch)
+			numNodesSearch := constants.GetBits()
+			closestNodes := general.BinarySearchClosest(g.NodeIds, chunkId, numNodesSearch)
 			distances := make([]int, len(closestNodes))
 			result := [4]int{}
 
