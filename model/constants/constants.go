@@ -52,7 +52,7 @@ var Constants = constant{
 	thresholdEnabled:                 true,
 	forgivenessEnabled:               true,
 	paymentEnabled:                   false,
-	maxPOCheckEnabled:                false,
+	maxPOCheckEnabled:                true,
 	waitingEnabled:                   false,
 	onlyOriginatorPays:               false,
 	payOnlyForCurrentRequest:         false,

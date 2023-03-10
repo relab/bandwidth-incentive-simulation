@@ -62,3 +62,23 @@ type RequestResult struct {
 	AccessFailed         bool
 	PaymentList          []Payment
 }
+
+type RouteWithPrice struct {
+	RequesterNode int
+	ProviderNode  int
+	Price         int
+}
+
+type PaymentWithPrice struct {
+	Payment Payment
+	Price   int
+}
+
+type Output struct {
+	RoutesWithPrice   []RouteWithPrice
+	PaymentsWithPrice []PaymentWithPrice
+}
+
+type Outputs struct {
+	Outputs []Output
+}

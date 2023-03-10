@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-func RoutingWorker(requestChan chan types.Request, routeChan chan types.RouteData, stateChan chan types.StateSubset, globalState *types.State, wg *sync.WaitGroup, numLoops int) {
+func RoutingWorker(requestChan chan types.Request, outputChan chan types.Output, routeChan chan types.RouteData, stateChan chan types.StateSubset, globalState *types.State, wg *sync.WaitGroup, numLoops int) {
 	defer wg.Done()
 	var request types.Request
 	var stateSubset types.StateSubset
@@ -30,7 +30,7 @@ func RoutingWorker(requestChan chan types.Request, routeChan chan types.RouteDat
 		// TODO: decide on where we should update the timestep. At request creation or request fulfillment
 		//curTimeStep := update.Timestep(globalState)
 		curTimeStep := int(request.TimeStep)
-		update.Graph(globalState, requestResult, curTimeStep)
+		output := update.Graph(globalState, requestResult, curTimeStep)
 		pendingStruct := update.PendingMap(globalState, requestResult)
 		rerouteStruct := update.RerouteMap(globalState, requestResult)
 		cacheStruct := update.CacheMap(globalState, requestResult)
@@ -40,6 +40,9 @@ func RoutingWorker(requestChan chan types.Request, routeChan chan types.RouteDat
 		failedRequestThreshold := update.FailedRequestsThreshold(globalState, requestResult)
 		failedRequestAccess := update.FailedRequestsAccess(globalState, requestResult)
 		//routeLists := update.RouteListAndFlush(globalState, requestResult, curTimeStep)
+
+		// sending the "output" to the outputWorker
+		outputChan <- output
 
 		if constants.Constants.IsWriteRoutesToFile() {
 			if curTimeStep%1000000 == 0 {

@@ -36,6 +36,7 @@ func main() {
 
 	wg := &sync.WaitGroup{}
 	requestChan := make(chan types.Request, numGoroutines)
+	outputChan := make(chan types.Output, numGoroutines)
 	routeChan := make(chan types.RouteData, numGoroutines)
 	stateChan := make(chan types.StateSubset, 100000)
 
@@ -51,9 +52,11 @@ func main() {
 	go workers.RequestWorker(requestChan, &globalState, wg, iterations)
 	wg.Add(1)
 
+	go workers.OutputWorker(outputChan)
+
 	for i := 0; i < numGoroutines; i++ {
 		wg.Add(1)
-		go workers.RoutingWorker(requestChan, routeChan, stateChan, &globalState, wg, numLoops)
+		go workers.RoutingWorker(requestChan, outputChan, routeChan, stateChan, &globalState, wg, numLoops)
 	}
 	wg.Wait()
 
