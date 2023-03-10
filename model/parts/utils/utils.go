@@ -87,6 +87,7 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 	return graph, nil
 }
 
+// Todo : forgives only if they had reached threshold
 func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, graph *types.Graph, request types.Request) bool {
 	if constants.GetThresholdEnabled() {
 		edgeDataFirst := graph.GetEdgeData(firstNodeId, secondNodeId)
