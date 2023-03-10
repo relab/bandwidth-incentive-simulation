@@ -4,6 +4,7 @@ import (
 	"go-incentive-simulation/model/constants"
 	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
+	"math"
 	"sort"
 )
 
@@ -95,39 +96,41 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, g *types.
 		p2pSecond := edgeDataSecond.A2B
 
 		// TODO: This logic used to be in update_graph. Decide if we want it here, test that is works as expected and figure out why it is so much slower with waiting enabled
-		//if constants.IsForgivenessEnabled() {
-		//	passedTime := (int(request.TimeStep) - edgeDataFirst.Last) / constants.GetRequestsPerSecond()
-		//	if passedTime > 0 {
-		//		refreshRate := constants.GetRefreshRate()
-		//		if constants.IsAdjustableThreshold() {
-		//			refreshRate = int(math.Ceil(float64(edgeDataFirst.Threshold / 2)))
-		//		}
-		//		removedDeptAmount := passedTime * refreshRate
-		//		newEdgeData := edgeDataFirst
-		//		newEdgeData.A2B -= removedDeptAmount
-		//		if newEdgeData.A2B < 0 {
-		//			newEdgeData.A2B = 0
-		//		}
-		//		newEdgeData.Last = int(request.TimeStep)
-		//		g.SetEdgeData(firstNodeId, secondNodeId, newEdgeData)
-		//	}
-		//
-		//	passedTime = (int(request.TimeStep) - edgeDataSecond.Last) / constants.GetRequestsPerSecond()
-		//	if passedTime > 0 {
-		//		refreshRate := constants.GetRefreshRate()
-		//		if constants.IsAdjustableThreshold() {
-		//			refreshRate = int(math.Ceil(float64(edgeDataSecond.Threshold / 2)))
-		//		}
-		//		removedDeptAmount := passedTime * refreshRate
-		//		newEdgeData := edgeDataFirst
-		//		newEdgeData.A2B -= removedDeptAmount
-		//		if newEdgeData.A2B < 0 {
-		//			newEdgeData.A2B = 0
-		//		}
-		//		newEdgeData.Last = int(request.TimeStep)
-		//		g.SetEdgeData(secondNodeId, firstNodeId, newEdgeData)
-		//	}
-		//}
+		if constants.IsForgivenessDuringRouting() {
+			if constants.IsForgivenessEnabled() {
+				passedTime := (int(request.TimeStep) - edgeDataFirst.Last) / constants.GetRequestsPerSecond()
+				if passedTime > 0 {
+					refreshRate := constants.GetRefreshRate()
+					if constants.IsAdjustableThreshold() {
+						refreshRate = int(math.Ceil(float64(edgeDataFirst.Threshold / 2)))
+					}
+					removedDeptAmount := passedTime * refreshRate
+					newEdgeData := edgeDataFirst
+					newEdgeData.A2B -= removedDeptAmount
+					if newEdgeData.A2B < 0 {
+						newEdgeData.A2B = 0
+					}
+					newEdgeData.Last = int(request.TimeStep)
+					g.SetEdgeData(firstNodeId, secondNodeId, newEdgeData)
+				}
+
+				passedTime = (int(request.TimeStep) - edgeDataSecond.Last) / constants.GetRequestsPerSecond()
+				if passedTime > 0 {
+					refreshRate := constants.GetRefreshRate()
+					if constants.IsAdjustableThreshold() {
+						refreshRate = int(math.Ceil(float64(edgeDataSecond.Threshold / 2)))
+					}
+					removedDeptAmount := passedTime * refreshRate
+					newEdgeData := edgeDataFirst
+					newEdgeData.A2B -= removedDeptAmount
+					if newEdgeData.A2B < 0 {
+						newEdgeData.A2B = 0
+					}
+					newEdgeData.Last = int(request.TimeStep)
+					g.SetEdgeData(secondNodeId, firstNodeId, newEdgeData)
+				}
+			}
+		}
 
 		threshold := constants.GetThreshold()
 		if constants.IsAdjustableThreshold() {
@@ -208,6 +211,7 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 					payNextId = nodeId
 				}
 			}
+			// This is only used when doing forgiveness in updateGraph
 			listItem := types.Threshold{firstNodeId, nodeId}
 			thresholdList = append(thresholdList, listItem)
 		}

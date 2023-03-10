@@ -31,10 +31,16 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 				}
 			}
 
-			//if timeStep%(iterations/2) == 0 {
-			//	fmt.Println("PendingMap is currently:", globalState.PendingStruct.PendingMap)
-			//	fmt.Println("RerouteMap is currently:", globalState.RerouteStruct.RerouteMap)
-			//}
+			if constants.IsDebugPrints() {
+				if timeStep%(iterations/2) == 0 {
+					if constants.IsWaitingEnabled() {
+						fmt.Println("PendingMap is currently:", globalState.PendingStruct.PendingMap)
+					}
+					if constants.IsRetryWithAnotherPeer() {
+						fmt.Println("RerouteMap is currently:", globalState.RerouteStruct.RerouteMap)
+					}
+				}
+			}
 
 			originatorIndex = int(update.OriginatorIndex(globalState, timeStep))
 
