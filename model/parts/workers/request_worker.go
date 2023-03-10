@@ -60,7 +60,8 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 				}
 				if pendingNode.EpokeDecrement > 0 {
 					pendingNodeIds := pendingNode.ChunkIds
-					if !globalState.PendingStruct.IsEmpty(originatorId) {
+					if len(pendingNodeIds) > 0 {
+						//if !globalState.PendingStruct.IsEmpty(originatorId) {
 						chunkId = pendingNodeIds[pendingNode.EpokeDecrement-1]
 						responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 						pendingNode.EpokeDecrement--
