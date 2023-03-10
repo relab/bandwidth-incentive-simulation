@@ -11,12 +11,23 @@ func RerouteMap(state *types.State, policyInput types.RequestResult) types.Rerou
 	if constants.IsRetryWithAnotherPeer() {
 		route := policyInput.Route
 		originator := route[0]
+		chunkId := route[len(route)-1]
 		if !general.Contains(route, -1) && !general.Contains(route, -2) {
 			reroute := state.RerouteStruct.GetRerouteMap(originator)
 			if reroute != nil {
 				if reroute[len(reroute)-1] == route[len(route)-1] {
 					//remove rerouteMap[originator]
 					state.RerouteStruct.DeleteReroute(originator)
+					// If found remove from waiting queue
+					if constants.IsWaitingEnabled() {
+						if !state.PendingStruct.IsEmpty(originator) {
+							pendingNodeIndex := state.PendingStruct.GetPendingIndex(originator, chunkId)
+							if pendingNodeIndex != -1 {
+								// if found then delete the chunkId from the pendingNode
+								state.PendingStruct.DeletePendingNodeId(originator, pendingNodeIndex)
+							}
+						}
+					}
 				}
 			}
 			//if _, ok := rerouteMap[originator]; ok {
@@ -55,6 +66,15 @@ func RerouteMap(state *types.State, policyInput types.RequestResult) types.Rerou
 		if reroute != nil {
 			if len(reroute) > constants.GetBinSize() {
 				state.RerouteStruct.DeleteReroute(originator)
+				if constants.IsWaitingEnabled() {
+					if !state.PendingStruct.IsEmpty(originator) {
+						pendingNodeIndex := state.PendingStruct.GetPendingIndex(originator, chunkId)
+						if pendingNodeIndex != -1 {
+							// if found then delete the chunkId from the pendingNode
+							state.PendingStruct.DeletePendingNodeId(originator, pendingNodeIndex)
+						}
+					}
+				}
 			}
 		}
 		//if _, ok := rerouteMap[originator]; ok {
