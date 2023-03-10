@@ -16,12 +16,12 @@ func RoutingWorker(requestChan chan types.Request, routeChan chan types.RouteDat
 	var requestResult types.RequestResult
 	for request = range requestChan {
 
-		found, route, thresholdFailedLists, accessFailed, paymentsList := utils.ConsumeTask(&request, globalState.Graph, globalState.RerouteStruct, globalState.CacheStruct)
+		found, route, thresholdFailed, accessFailed, paymentsList := utils.ConsumeTask(request, globalState.Graph, globalState.RerouteStruct, globalState.CacheStruct)
 
 		requestResult = types.RequestResult{
 			Found:                found,
 			Route:                route,
-			ThresholdFailedLists: thresholdFailedLists,
+			ThresholdFailedLists: thresholdFailed,
 			AccessFailed:         accessFailed,
 			PaymentList:          paymentsList,
 		}

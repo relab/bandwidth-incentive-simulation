@@ -31,7 +31,7 @@ func main() {
 	start := time.Now()
 	globalState := state.MakeInitialState("./data/nodes_data_16_10000.txt")
 
-	const iterations = 10_000_000
+	const iterations = 100_000_000
 
 	numGoroutines := constants.GetNumGoroutines()
 	//numLoops := iterations / numGoroutines
@@ -139,7 +139,7 @@ func PrintState(state types.State) {
 	fmt.Println("CacheHits:", state.CacheStruct.CacheHits)
 	fmt.Println("TimeStep: ", state.TimeStep)
 	fmt.Println("OriginatorIndex: ", state.OriginatorIndex)
-	fmt.Println("PendingMap: ", state.PendingStruct.PendingMap, state.PendingStruct.Counter)
-	fmt.Println("RerouteMap: ", state.RerouteStruct.RerouteMap)
+	//fmt.Println("PendingMap: ", state.PendingStruct.PendingMap, state.PendingStruct.Counter)
+	//fmt.Println("RerouteMap: ", state.RerouteStruct.RerouteMap)
 	//fmt.Println("RouteLists: ", state.RouteLists)
 }

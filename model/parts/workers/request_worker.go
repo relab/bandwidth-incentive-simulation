@@ -58,7 +58,6 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 						//atomic.AddInt32(&globalState.PendingStruct.Counter, int32(len(pendingNode.ChunkIds)))
 					}
 				}
-
 				if pendingNode.EpokeDecrement > 0 {
 					pendingNodeIds := pendingNode.ChunkIds
 					if !globalState.PendingStruct.IsEmpty(originatorId) {
@@ -66,7 +65,6 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 						responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 						pendingNode.EpokeDecrement--
 					}
-
 				}
 			}
 

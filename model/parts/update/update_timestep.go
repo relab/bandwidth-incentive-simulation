@@ -5,8 +5,8 @@ import (
 	"sync/atomic"
 )
 
-func Timestep(prevState *types.State) int {
-	curTimeStep := int(atomic.AddInt32(&prevState.TimeStep, 1))
+func Timestep(state *types.State) int {
+	curTimeStep := int(atomic.AddInt32(&state.TimeStep, 1))
 	return curTimeStep
 
 }

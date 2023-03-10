@@ -23,22 +23,30 @@ func PendingMap(state *types.State, policyInput types.RequestResult) types.Pendi
 					// if the pendingNode is not empty then add the chunkId to the pendingNodeIds
 					state.PendingStruct.AddToPendingQueue(originator, chunkId)
 				}
+			} else if !state.PendingStruct.IsEmpty(originator) {
+				pendingNodeIndex := state.PendingStruct.GetPendingIndex(originator, chunkId)
+				if pendingNodeIndex != -1 {
+					// if found then delete the chunkId from the pendingNode
+					state.PendingStruct.DeletePendingNodeId(originator, pendingNodeIndex)
+				}
 			}
 
-		} else if general.Contains(route, -1) {
-			if state.PendingStruct.IsEmpty(originator) {
-				// if the pendingNode is empty then add the chunkId to the pendingNode
-				state.PendingStruct.AddPending(originator, chunkId)
-			} else {
-				// if the pendingNode is not empty then add the chunkId to the pendingNodeIds
-				state.PendingStruct.AddToPendingQueue(originator, chunkId)
-			}
+		} else {
+			if general.Contains(route, -1) {
+				if state.PendingStruct.IsEmpty(originator) {
+					// if the pendingNode is empty then add the chunkId to the pendingNode
+					state.PendingStruct.AddPending(originator, chunkId)
+				} else {
+					// if the pendingNode is not empty then add the chunkId to the pendingNodeIds
+					state.PendingStruct.AddToPendingQueue(originator, chunkId)
+				}
 
-		} else if !state.PendingStruct.IsEmpty(originator) {
-			pendingNodeIndex := state.PendingStruct.GetPendingIndex(originator, chunkId)
-			if pendingNodeIndex != -1 {
-				// if found then delete the chunkId from the pendingNode
-				state.PendingStruct.DeletePendingNodeId(originator, pendingNodeIndex)
+			} else if !state.PendingStruct.IsEmpty(originator) {
+				pendingNodeIndex := state.PendingStruct.GetPendingIndex(originator, chunkId)
+				if pendingNodeIndex != -1 {
+					// if found then delete the chunkId from the pendingNode
+					state.PendingStruct.DeletePendingNodeId(originator, pendingNodeIndex)
+				}
 			}
 		}
 	}
