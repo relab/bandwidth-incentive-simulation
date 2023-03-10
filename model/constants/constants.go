@@ -63,7 +63,7 @@ var constants = constant{
 	payOnlyForCurrentRequest:         false,   // Only pay for current request or the full debt on the edge
 	payIfOrigPays:                    false,   // Only pay if the originator pays -- NOT NEEDED
 	forwarderPayForceOriginatorToPay: false,   // If Threshold fails, forces all the nodes in the route to pay for the current request
-	waitingEnabled:                   false,   // When Threshold fails, will wait before trying to traverse same route
+	waitingEnabled:                   true,    // When Threshold fails, will wait before trying to traverse same route
 	retryWithAnotherPeer:             true,    // The Route to the chunk will try to take many paths to find the chunk
 	cacheIsEnabled:                   false,   // Cache, which stores previously looked after chunks on the nodes
 	preferredChunks:                  false,   // Fits well with cache, where some chunkIds are chosen more often
@@ -77,7 +77,7 @@ var constants = constant{
 	debugPrints:                      true,    // Prints out many useful debug prints during the run
 	debugInterval:                    1000000, // How many iterations between each debug print
 	numGoroutines:                    25,      // 25 seems to currently be the sweet spot
-	epoke:                            500000,  //
+	epoke:                            50000,   //
 }
 
 // func CreateRangeAddress(c *constant){
