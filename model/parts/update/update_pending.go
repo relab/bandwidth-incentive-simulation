@@ -16,13 +16,14 @@ func PendingMap(state *types.State, policyInput types.RequestResult) types.Pendi
 
 		if constants.IsRetryWithAnotherPeer() {
 			if general.Contains(route, -1) || general.Contains(route, -2) {
-				if state.PendingStruct.IsEmpty(originator) {
-					// if the pendingNode is empty then add the chunkId to the pendingNode
-					state.PendingStruct.AddPending(originator, chunkId)
-				} else {
-					// if the pendingNode is not empty then add the chunkId to the pendingNodeIds
-					state.PendingStruct.AddToPendingQueue(originator, chunkId)
-				}
+				state.PendingStruct.AddPendingChunkIdToQueue(originator, chunkId)
+				//if state.PendingStruct.IsEmpty(originator) {
+				//	// if the pendingNode is empty then add the chunkId to the pendingNode
+				//	state.PendingStruct.AddPending(originator, chunkId)
+				//} else {
+				//	// if the pendingNode is not empty then add the chunkId to the pendingNodeIds
+				//	state.PendingStruct.AddToPendingQueue(originator, chunkId)
+				//}
 			} else if !state.PendingStruct.IsEmpty(originator) {
 				pendingNodeIndex := state.PendingStruct.GetPendingIndex(originator, chunkId)
 				if pendingNodeIndex != -1 {
@@ -33,13 +34,14 @@ func PendingMap(state *types.State, policyInput types.RequestResult) types.Pendi
 
 		} else {
 			if general.Contains(route, -1) {
-				if state.PendingStruct.IsEmpty(originator) {
-					// if the pendingNode is empty then add the chunkId to the pendingNode
-					state.PendingStruct.AddPending(originator, chunkId)
-				} else {
-					// if the pendingNode is not empty then add the chunkId to the pendingNodeIds
-					state.PendingStruct.AddToPendingQueue(originator, chunkId)
-				}
+				state.PendingStruct.AddPendingChunkIdToQueue(originator, chunkId)
+				//if state.PendingStruct.IsEmpty(originator) {
+				//	// if the pendingNode is empty then add the chunkId to the pendingNode
+				//	state.PendingStruct.AddPending(originator, chunkId)
+				//} else {
+				//	// if the pendingNode is not empty then add the chunkId to the pendingNodeIds
+				//	state.PendingStruct.AddToPendingQueue(originator, chunkId)
+				//}
 
 			} else if !state.PendingStruct.IsEmpty(originator) {
 				pendingNodeIndex := state.PendingStruct.GetPendingIndex(originator, chunkId)
