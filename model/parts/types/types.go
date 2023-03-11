@@ -1,8 +1,8 @@
 package types
 
 type Request struct {
-	TimeStep        int32
-	OriginatorIndex int32
+	TimeStep        int
+	OriginatorIndex int
 	OriginatorId    int
 	ChunkId         int
 	RespNodes       [4]int

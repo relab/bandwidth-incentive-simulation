@@ -1,7 +1,7 @@
 package policy
 
 //import (
-//	. "go-incentive-simulation/model/state"
+//	"go-incentive-simulation/model/state"
 //	"testing"
 //
 //	"gotest.tools/assert"

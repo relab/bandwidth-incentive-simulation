@@ -2,8 +2,8 @@ package utils
 
 import (
 	"fmt"
-	. "go-incentive-simulation/model/constants"
-	. "go-incentive-simulation/model/parts/types"
+	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/model/parts/types"
 	"testing"
 	"time"
 
@@ -14,7 +14,7 @@ const path = "../../../data/nodes_data_8_10000.txt"
 
 func TestCreateGraphNetwork(t *testing.T) {
 	// fileName := "input_test.txt"
-	network := &Network{}
+	network := &types.Network{}
 	network.Load(path)
 	graph, err := CreateGraphNetwork(network)
 
@@ -26,13 +26,13 @@ func TestCreateGraphNetwork(t *testing.T) {
 // TODO: not working right now
 func TestCreateDowloaderList(t *testing.T) {
 	// Create a network
-	network := &Network{}
+	network := &types.Network{}
 	// Load data to network
 	network.Load(path)
 	// Creates graph
 	graph, _ := CreateGraphNetwork(network)
 	// Get number of originators used in the func
-	c := Constants.GetOriginators()
+	c := constants.GetOriginators()
 
 	// Create a list of downloaders
 	l := CreateDownloadersList(graph)
@@ -55,7 +55,7 @@ func TestGetNext(t *testing.T) {
 }
 
 func TestPrecomputeRespNodes(t *testing.T) {
-	network := &Network{}
+	network := &types.Network{}
 	network.Load(path)
 	sortedNodeIds := SortedKeys(network.NodesMap)
 	loops := 10

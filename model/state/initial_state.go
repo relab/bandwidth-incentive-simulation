@@ -2,32 +2,32 @@ package state
 
 import (
 	"fmt"
-	. "go-incentive-simulation/model/constants"
-	. "go-incentive-simulation/model/parts/types"
-	. "go-incentive-simulation/model/parts/utils"
+	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/model/parts/types"
+	"go-incentive-simulation/model/parts/utils"
 	"math/rand"
 	"sync"
 )
 
-func MakeInitialState(path string) State {
+func MakeInitialState(path string) types.State {
 	// Initialize the state
 	fmt.Println("start of make initial state")
-	rand.Seed(Constants.GetRandomSeed())
-	network := Network{}
+	rand.Seed(constants.GetRandomSeed())
+	network := types.Network{}
 	network.Load(path)
-	graph, err := CreateGraphNetwork(&network)
+	graph, err := utils.CreateGraphNetwork(&network)
 	if err != nil {
 		fmt.Println("create graph network returned an error: ", err)
 	}
-	pendingStruct := PendingStruct{PendingMap: make(PendingMap, 0), PendingMutex: &sync.Mutex{}}
-	rerouteStruct := RerouteStruct{RerouteMap: make(RerouteMap, 0), RerouteMutex: &sync.Mutex{}}
-	cacheStruct := CacheStruct{CacheHits: 0, CacheMap: make(CacheMap), CacheMutex: &sync.Mutex{}}
+	pendingStruct := types.PendingStruct{PendingMap: make(types.PendingMap, 0), PendingMutex: &sync.Mutex{}}
+	rerouteStruct := types.RerouteStruct{RerouteMap: make(types.RerouteMap, 0), RerouteMutex: &sync.Mutex{}}
+	cacheStruct := types.CacheStruct{CacheHits: 0, CacheMap: make(types.CacheMap), CacheMutex: &sync.Mutex{}}
 
-	initialState := State{
+	initialState := types.State{
 		Graph:                   graph,
-		Originators:             CreateDownloadersList(graph),
-		NodesId:                 CreateNodesList(graph),
-		RouteLists:              make([]Route, 10000),
+		Originators:             utils.CreateDownloadersList(graph),
+		NodesId:                 utils.CreateNodesList(graph),
+		RouteLists:              make([]types.Route, 10000),
 		PendingStruct:           pendingStruct,
 		RerouteStruct:           rerouteStruct,
 		CacheStruct:             cacheStruct,

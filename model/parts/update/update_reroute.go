@@ -7,25 +7,24 @@ import (
 )
 
 func RerouteMap(state *types.State, policyInput types.RequestResult) types.RerouteStruct {
-	//rerouteStruct := state.RerouteStruct
-	if constants.Constants.IsRetryWithAnotherPeer() {
+	if constants.IsRetryWithAnotherPeer() {
 		route := policyInput.Route
 		originator := route[0]
+		chunkId := route[len(route)-1]
+
+		// -1 Threshold Fail, -2 Access Fail
 		if !general.Contains(route, -1) && !general.Contains(route, -2) {
 			reroute := state.RerouteStruct.GetRerouteMap(originator)
 			if reroute != nil {
 				if reroute[len(reroute)-1] == route[len(route)-1] {
 					//remove rerouteMap[originator]
 					state.RerouteStruct.DeleteReroute(originator)
+					// If found remove from waiting queue (pending map)
+					if constants.IsWaitingEnabled() {
+						state.PendingStruct.DeleteChunkIdFromPendingQueue(originator, chunkId)
+					}
 				}
 			}
-			//if _, ok := rerouteMap[originator]; ok {
-			//	val := rerouteMap[originator]
-			//	if val[len(val)-1] == route[len(route)-1] {
-			//		//remove rerouteMap[originator]
-			//		delete(rerouteMap, originator)
-			//	}
-			//}
 		} else {
 			if len(route) > 3 {
 				reroute := state.RerouteStruct.GetRerouteMap(originator)
@@ -39,30 +38,17 @@ func RerouteMap(state *types.State, policyInput types.RequestResult) types.Rerou
 					state.RerouteStruct.RerouteMap[originator] = []int{route[1], route[len(route)-1]}
 				}
 				state.RerouteStruct.RerouteMutex.Unlock()
-
-				//if _, ok := rerouteMap[originator]; ok {
-				//	val := rerouteMap[originator]
-				//	if !Contains(val, route[1]) {
-				//		val = append([]int{route[1]}, val...)
-				//		rerouteMap[originator] = val
-				//	}
-				//} else {
-				//	rerouteMap[originator] = []int{route[1], route[len(route)-1]}
-				//}
 			}
 		}
 		reroute := state.RerouteStruct.GetRerouteMap(originator)
 		if reroute != nil {
-			if len(reroute) > constants.Constants.GetBinSize() {
+			if len(reroute) > constants.GetBinSize() {
 				state.RerouteStruct.DeleteReroute(originator)
+				if constants.IsWaitingEnabled() {
+					state.PendingStruct.DeleteChunkIdFromPendingQueue(originator, chunkId)
+				}
 			}
 		}
-		//if _, ok := rerouteMap[originator]; ok {
-		//	if len(rerouteMap[originator]) > Constants.GetBinSize() {
-		//		delete(rerouteMap, originator)
-		//	}
-		//}
 	}
-	//state.RerouteStruct = rerouteStruct
 	return state.RerouteStruct
 }

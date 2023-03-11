@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-func RouteFlushWorker(routeChan chan types.RouteData, globalState *types.State, wg *sync.WaitGroup, iterations int) {
+func RouteFlushWorker(routeChan chan types.RouteData, wg *sync.WaitGroup) {
 	defer wg.Done()
 	//var message *protoGenerated.RouteData
 	var routeData types.RouteData
@@ -42,8 +42,7 @@ func RouteFlushWorker(routeChan chan types.RouteData, globalState *types.State, 
 		}
 	}(writer)
 
-	for counter := 0; counter < iterations; counter++ {
-		routeData = <-routeChan
+	for routeData = range routeChan {
 
 		bytes, err = json.Marshal(routeData)
 

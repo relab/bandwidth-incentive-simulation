@@ -16,6 +16,7 @@ type constant struct {
 	requestsPerSecond                int
 	thresholdEnabled                 bool
 	forgivenessEnabled               bool
+	forgivenessDuringRouting         bool
 	paymentEnabled                   bool
 	maxPOCheckEnabled                bool
 	waitingEnabled                   bool
@@ -32,10 +33,14 @@ type constant struct {
 	precomputeRespNodes              bool
 	writeRoutesToFile                bool
 	writeStatesToFile                bool
+	iterationMeansUniqueChunk        bool
+	debugPrints                      bool
+	debugInterval                    int
 	numGoroutines                    int
+	epoke                            int
 }
 
-var Constants = constant{
+var constants = constant{
 	runs:                             1,
 	bits:                             16,
 	networkSize:                      10000,
@@ -48,26 +53,31 @@ var Constants = constant{
 	maxProximityOrder:                16,
 	price:                            1,
 	chunks:                           10000,
-	requestsPerSecond:                12500, // 12500
-	thresholdEnabled:                 true,
-	forgivenessEnabled:               true,
-	paymentEnabled:                   false,
-	maxPOCheckEnabled:                false,
-	waitingEnabled:                   true,
-	onlyOriginatorPays:               false,
-	payOnlyForCurrentRequest:         false,
-	payIfOrigPays:                    false,
-	forwarderPayForceOriginatorToPay: false,
-	retryWithAnotherPeer:             false,
-	cacheIsEnabled:                   false,
-	preferredChunks:                  false, // Fits well with cache
-	adjustableThreshold:              false,
-	edgeLock:                         true,  // Should always be true when using concurrency
-	sameOriginator:                   false, // For testing the usefulness of locking the edges
-	precomputeRespNodes:              true,  // Precompute the responsible nodes for every possible chunkId
-	writeRoutesToFile:                false, // Write the routes to file during run
-	writeStatesToFile:                false, // Write a subset of the states to file during the run
-	numGoroutines:                    25,    // 25 seems to currently be the sweet spot
+	requestsPerSecond:                12500,   // 12500
+	thresholdEnabled:                 true,    // The maximum limit of debt an edge can have in one direction
+	forgivenessEnabled:               true,    // Edge debt gets forgiven some amount on an interval (amortized)
+	forgivenessDuringRouting:         true,    // If the forgiveness should happen before threshold is checked or after in updateGraph
+	paymentEnabled:                   false,   // Nodes pay if they Threshold fail
+	maxPOCheckEnabled:                false,   // Used to find the proper variable called "omega" in the python paper
+	onlyOriginatorPays:               false,   // Only the originator will pay, others will threshold fail or wait
+	payOnlyForCurrentRequest:         false,   // Only pay for current request or the full debt on the edge
+	payIfOrigPays:                    false,   // Only pay if the originator pays -- NOT NEEDED
+	forwarderPayForceOriginatorToPay: false,   // If Threshold fails, forces all the nodes in the route to pay for the current request
+	waitingEnabled:                   true,    // When Threshold fails, will wait before trying to traverse same route
+	retryWithAnotherPeer:             true,    // The Route to the chunk will try to take many paths to find the chunk
+	cacheIsEnabled:                   false,   // Cache, which stores previously looked after chunks on the nodes
+	preferredChunks:                  false,   // Fits well with cache, where some chunkIds are chosen more often
+	adjustableThreshold:              false,   // The Threshold limit of an edge is determined based on the XOR distance
+	edgeLock:                         true,    // Should always be true when using concurrency
+	sameOriginator:                   false,   // For testing the usefulness of locking the edges
+	precomputeRespNodes:              true,    // Precompute the responsible nodes for every possible chunkId
+	writeRoutesToFile:                false,   // Write the routes to file during run
+	writeStatesToFile:                false,   // Write a subset of the states to file during the run
+	iterationMeansUniqueChunk:        false,   // If a single iteration means all unique chunks or include chunks we look for again relating to waiting/retry
+	debugPrints:                      true,    // Prints out many useful debug prints during the run
+	debugInterval:                    1000000, // How many iterations between each debug print
+	numGoroutines:                    25,      // 25 seems to currently be the sweet spot
+	epoke:                            50000,   //
 }
 
 // func CreateRangeAddress(c *constant){
@@ -78,130 +88,150 @@ var Constants = constant{
 // 	c.originators = int(0.001 * float64(c.networkSize))
 // }
 
-func (c *constant) IsAdjustableThreshold() bool {
-	return c.adjustableThreshold
+func IsAdjustableThreshold() bool {
+	return constants.adjustableThreshold
 }
 
-func (c *constant) IsForgivenessEnabled() bool {
-	return c.forgivenessEnabled
+func IsForgivenessEnabled() bool {
+	return constants.forgivenessEnabled
 }
 
-func (c *constant) IsCacheEnabled() bool {
-	return c.cacheIsEnabled
+func IsForgivenessDuringRouting() bool {
+	return constants.forgivenessDuringRouting
 }
 
-func (c *constant) IsPreferredChunksEnabled() bool {
-	return c.preferredChunks
+func IsCacheEnabled() bool {
+	return constants.cacheIsEnabled
 }
 
-func (c *constant) IsRetryWithAnotherPeer() bool {
-	return c.retryWithAnotherPeer
+func IsPreferredChunksEnabled() bool {
+	return constants.preferredChunks
 }
 
-func (c *constant) IsForwarderPayForceOriginatorToPay() bool {
-	return c.forwarderPayForceOriginatorToPay
+func IsRetryWithAnotherPeer() bool {
+	return constants.retryWithAnotherPeer
 }
 
-func (c *constant) IsPayIfOrigPays() bool {
-	return c.payIfOrigPays
+func IsForwarderPayForceOriginatorToPay() bool {
+	return constants.forwarderPayForceOriginatorToPay
 }
 
-func (c *constant) IsPayOnlyForCurrentRequest() bool {
-	return c.payOnlyForCurrentRequest
+func IsPayIfOrigPays() bool {
+	return constants.payIfOrigPays
 }
 
-func (c *constant) IsOnlyOriginatorPays() bool {
-	return c.onlyOriginatorPays
+func IsPayOnlyForCurrentRequest() bool {
+	return constants.payOnlyForCurrentRequest
 }
 
-func (c *constant) IsWaitingEnabled() bool {
-	return c.waitingEnabled
+func IsOnlyOriginatorPays() bool {
+	return constants.onlyOriginatorPays
 }
 
-func (c *constant) GetMaxPOCheckEnabled() bool {
-	return c.maxPOCheckEnabled
+func IsWaitingEnabled() bool {
+	return constants.waitingEnabled
 }
 
-func (c *constant) GetThresholdEnabled() bool {
-	return c.thresholdEnabled
+func GetMaxPOCheckEnabled() bool {
+	return constants.maxPOCheckEnabled
 }
 
-func (c *constant) GetPaymentEnabled() bool {
-	return c.paymentEnabled
+func GetThresholdEnabled() bool {
+	return constants.thresholdEnabled
 }
 
-func (c *constant) GetRequestsPerSecond() int {
-	return c.requestsPerSecond
+func GetPaymentEnabled() bool {
+	return constants.paymentEnabled
 }
 
-func (c *constant) GetChunks() int {
-	return c.chunks
+func GetRequestsPerSecond() int {
+	return constants.requestsPerSecond
 }
 
-func (c *constant) GetBits() int {
-	return c.bits
+func GetChunks() int {
+	return constants.chunks
 }
 
-func (c *constant) GetNetworkSize() int {
-	return c.networkSize
+func GetBits() int {
+	return constants.bits
 }
 
-func (c *constant) GetBinSize() int {
-	return c.binSize
+func GetNetworkSize() int {
+	return constants.networkSize
+}
+
+func GetBinSize() int {
+	return constants.binSize
 }
 
 func GetSimulationRuns() int {
 	return 125000
 }
 
-func (c *constant) GetRangeAddress() int {
-	return c.rangeAddress
+func GetRangeAddress() int {
+	return constants.rangeAddress
 }
 
-func (c *constant) GetOriginators() int {
-	return c.originators
+func GetOriginators() int {
+	return constants.originators
 }
 
-func (c *constant) GetRefreshRate() int {
-	return c.refreshRate
+func GetRefreshRate() int {
+	return constants.refreshRate
 }
 
-func (c *constant) GetThreshold() int {
-	return c.threshold
+func GetThreshold() int {
+	return constants.threshold
 }
 
-func (c *constant) GetRandomSeed() int64 {
-	return c.randomSeed
+func GetRandomSeed() int64 {
+	return constants.randomSeed
 }
 
-func (c *constant) GetMaxProximityOrder() int {
-	return c.maxProximityOrder
+func GetMaxProximityOrder() int {
+	return constants.maxProximityOrder
 }
 
-func (c *constant) GetPrice() int {
-	return c.price
+func GetPrice() int {
+	return constants.price
 }
 
-func (c *constant) GetSameOriginator() bool {
-	return c.sameOriginator
+func GetSameOriginator() bool {
+	return constants.sameOriginator
 }
 
-func (c *constant) GetEdgeLock() bool {
-	return c.edgeLock
+func GetEdgeLock() bool {
+	return constants.edgeLock
 }
 
-func (c *constant) IsPrecomputeRespNodes() bool {
-	return c.precomputeRespNodes
+func IsPrecomputeRespNodes() bool {
+	return constants.precomputeRespNodes
 }
 
-func (c *constant) IsWriteRoutesToFile() bool {
-	return c.writeRoutesToFile
+func IsWriteRoutesToFile() bool {
+	return constants.writeRoutesToFile
 }
 
-func (c *constant) IsWriteStatesToFile() bool {
-	return c.writeStatesToFile
+func IsWriteStatesToFile() bool {
+	return constants.writeStatesToFile
 }
 
-func (c *constant) GetNumGoroutines() int {
-	return c.numGoroutines
+func IsIterationMeansUniqueChunk() bool {
+	return constants.iterationMeansUniqueChunk
+}
+
+func IsDebugPrints() bool {
+	return constants.debugPrints
+}
+
+func GetDebugInterval() int {
+	return constants.debugInterval
+}
+
+func GetNumGoroutines() int {
+	return constants.numGoroutines
+}
+
+func GetEpoke() int {
+	return constants.epoke
 }
