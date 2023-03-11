@@ -2,7 +2,7 @@ package types
 
 import "sync"
 
-type RerouteMap map[int][]int
+type RerouteMap map[int]Route
 
 type RerouteStruct struct {
 	RerouteMap   RerouteMap

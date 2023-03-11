@@ -2,8 +2,8 @@ package workers
 
 //
 //import (
-//	. "go-incentive-simulation/model/parts/types"
-//	. "go-incentive-simulation/model/parts/update"
+//	"go-incentive-simulation/model/parts/types"
+//	"go-incentive-simulation/model/parts/update"
 //	"sync"
 //	"sync/atomic"
 //)
