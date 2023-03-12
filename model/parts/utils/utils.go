@@ -87,7 +87,6 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 	return graph, nil
 }
 
-// Todo : forgives only if they had reached threshold
 func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, graph *types.Graph, request types.Request) bool {
 	if constants.GetThresholdEnabled() {
 		edgeDataFirst := graph.GetEdgeData(firstNodeId, secondNodeId)
@@ -102,12 +101,12 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, graph *ty
 
 		peerPriceChunk := PeerPriceChunk(secondNodeId, chunkId)
 		price := p2pFirst - p2pSecond + peerPriceChunk
-		// fmt.Printf("price: %d = p2pFirst: %d - p2pSecond: %d + PeerPriceChunk: %d \n", price, p2pFirst, p2pSecond, peerPriceChunk)
+		//fmt.Printf("price: %d = p2pFirst: %d - p2pSecond: %d + PeerPriceChunk: %d \n", price, p2pFirst, p2pSecond, peerPriceChunk)
 
 		if price > threshold {
 			if constants.IsForgivenessDuringRouting() && constants.IsForgivenessEnabled() {
 				newP2pFirst, forgivenFirst := CheckForgiveness(edgeDataFirst, firstNodeId, secondNodeId, graph, request)
-				//newP2pSecond, forgivenSecond := CheckForgiveness(edgeDataSecond, secondNodeId, firstNodeId, graph, request)
+				//_, _ = CheckForgiveness(edgeDataSecond, secondNodeId, firstNodeId, graph, request)
 				if forgivenFirst {
 					price = newP2pFirst - p2pSecond + peerPriceChunk
 				}
@@ -143,7 +142,9 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 		if general.BitLength(dist) >= general.BitLength(lastDistance) {
 			continue
 		}
+		// TODO: Decide on where to put this dist < currDist check, as having it here is faster but resulting in more thresholdFails
 		if dist < currDist {
+			// This means the node is now actively trying to communicate with the other node
 			if constants.GetEdgeLock() {
 				graph.LockEdge(firstNodeId, nodeId)
 				lockedEdges = append(lockedEdges, nodeId)
@@ -167,6 +168,7 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 					currDist = dist
 					nextNodeId = nodeId
 				}
+
 			} else {
 				thresholdFailed = true
 				if constants.GetPaymentEnabled() {
@@ -175,6 +177,15 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 						payNextId = nodeId
 					}
 				}
+			}
+		}
+	}
+
+	// unlocks all nodes except the nextNodeId lock
+	if constants.GetEdgeLock() {
+		for _, nodeId := range lockedEdges {
+			if nodeId != nextNodeId {
+				graph.UnlockEdge(firstNodeId, nodeId)
 			}
 		}
 	}
@@ -243,16 +254,7 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 			}
 		}
 	}
-	// unlocks all nodes except the nextNodeId lock
-	if constants.GetEdgeLock() {
-		for _, nodeId := range lockedEdges {
-			if nodeId != nextNodeId {
-				graph.UnlockEdge(firstNodeId, nodeId)
-			}
-		}
-	}
 
-	// TODO: Usikker på dette
 	if constants.GetPaymentEnabled() {
 	out:
 		for i, item := range thresholdList {
