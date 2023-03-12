@@ -95,13 +95,6 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, graph *ty
 		edgeDataSecond := graph.GetEdgeData(secondNodeId, firstNodeId)
 		p2pSecond := edgeDataSecond.A2B
 
-		// TODO: This logic used to be in update_graph. Decide if we want it here, test that is works as expected and figure out why it is so much slower with waiting enabled
-		if constants.IsForgivenessDuringRouting() {
-			if constants.IsForgivenessEnabled() {
-				CheckForgiveness(edgeDataFirst, firstNodeId, secondNodeId, graph, request)
-				CheckForgiveness(edgeDataSecond, secondNodeId, firstNodeId, graph, request)
-			}
-		}
 		threshold := constants.GetThreshold()
 		if constants.IsAdjustableThreshold() {
 			threshold = edgeDataFirst.Threshold
@@ -110,6 +103,16 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, graph *ty
 		peerPriceChunk := PeerPriceChunk(secondNodeId, chunkId)
 		price := p2pFirst - p2pSecond + peerPriceChunk
 		// fmt.Printf("price: %d = p2pFirst: %d - p2pSecond: %d + PeerPriceChunk: %d \n", price, p2pFirst, p2pSecond, peerPriceChunk)
+
+		if price > threshold {
+			if constants.IsForgivenessDuringRouting() && constants.IsForgivenessEnabled() {
+				newP2pFirst, forgivenFirst := CheckForgiveness(edgeDataFirst, firstNodeId, secondNodeId, graph, request)
+				//newP2pSecond, forgivenSecond := CheckForgiveness(edgeDataSecond, secondNodeId, firstNodeId, graph, request)
+				if forgivenFirst {
+					price = newP2pFirst - p2pSecond + peerPriceChunk
+				}
+			}
+		}
 		return price > threshold
 	}
 	return false
@@ -174,41 +177,6 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 				}
 			}
 		}
-		//if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph, request) {
-		//	thresholdFailed = false
-		//	// Could probably clean this one up, but keeping it close to original for now
-		//	if dist < currDist {
-		//		if constants.IsRetryWithAnotherPeer() {
-		//			reroute := rerouteStruct.GetRerouteMap(mainOriginatorId)
-		//			if reroute != nil {
-		//				allExceptLast := len(reroute)
-		//				if general.Contains(reroute[:allExceptLast], nodeId) {
-		//					continue
-		//				} else {
-		//					currDist = dist
-		//					nextNodeId = nodeId
-		//				}
-		//			} else {
-		//				currDist = dist
-		//				nextNodeId = nodeId
-		//			}
-		//		} else {
-		//			currDist = dist
-		//			nextNodeId = nodeId
-		//		}
-		//	}
-		//} else {
-		//	thresholdFailed = true
-		//	if constants.GetPaymentEnabled() {
-		//		if dist < payDist {
-		//			payDist = dist
-		//			payNextId = nodeId
-		//		}
-		//	}
-		//	// This is only used when doing forgiveness in updateGraph
-		//	listItem := types.Threshold{firstNodeId, nodeId}
-		//	thresholdList = append(thresholdList, listItem)
-		//}
 	}
 
 	if nextNodeId != 0 {
