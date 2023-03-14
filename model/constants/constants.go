@@ -57,8 +57,8 @@ var constants = constant{
 	thresholdEnabled:                 true,    // The maximum limit of debt an edge can have in one direction
 	forgivenessEnabled:               true,    // Edge debt gets forgiven some amount on an interval (amortized)
 	forgivenessDuringRouting:         true,    // If the forgiveness should happen before threshold is checked or after in updateGraph
-	paymentEnabled:                   false,   // Nodes pay if they Threshold fail
-	maxPOCheckEnabled:                false,   // Used to find the proper variable called "omega" in the python paper
+	paymentEnabled:                   true,    // Nodes pay if they Threshold fail
+	maxPOCheckEnabled:                true,    // Used to find the proper variable called "omega" in the python paper
 	onlyOriginatorPays:               false,   // Only the originator will pay, others will threshold fail or wait
 	payOnlyForCurrentRequest:         false,   // Only pay for current request or the full debt on the edge
 	payIfOrigPays:                    false,   // Only pay if the originator pays -- NOT NEEDED

@@ -131,7 +131,7 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 	currDist := lastDistance
 	payDist := lastDistance
 
-	//var lockedEdges []int
+	var lockedEdges []int
 	//var unlockedEdges []int
 
 	//firstNode := graph.NodesMap[firstNodeId]
@@ -148,6 +148,7 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 		// This means the node is now actively trying to communicate with the other node
 		if constants.GetEdgeLock() {
 			graph.LockEdge(firstNodeId, nodeId)
+			lockedEdges = append(lockedEdges, nodeId)
 		}
 		if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph, request) {
 			if dist < currDist {
@@ -160,57 +161,48 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 							continue
 						} else {
 							if payNextId != 0 {
-								graph.UnlockEdge(firstNodeId, payNextId)
+								//graph.UnlockEdge(firstNodeId, payNextId)
 							}
 							if nextNodeId != 0 {
-								graph.UnlockEdge(firstNodeId, nextNodeId)
+								//graph.UnlockEdge(firstNodeId, nextNodeId)
 							}
 							currDist = dist
 							nextNodeId = nodeId
 						}
 					} else {
 						if nextNodeId != 0 {
-							graph.UnlockEdge(firstNodeId, nextNodeId)
+							//graph.UnlockEdge(firstNodeId, nextNodeId)
 						}
 						currDist = dist
 						nextNodeId = nodeId
 					}
 				} else {
 					if nextNodeId != 0 {
-						graph.UnlockEdge(firstNodeId, nextNodeId)
+						//graph.UnlockEdge(firstNodeId, nextNodeId)
 					}
 					currDist = dist
 					nextNodeId = nodeId
 				}
 			} else {
-				graph.UnlockEdge(firstNodeId, nodeId)
+				//graph.UnlockEdge(firstNodeId, nodeId)
 			}
 		} else {
 			thresholdFailed = true
 			if constants.GetPaymentEnabled() {
 				if dist < payDist {
 					if payNextId != 0 {
-						graph.UnlockEdge(firstNodeId, payNextId)
+						//graph.UnlockEdge(firstNodeId, payNextId)
 					}
 					payDist = dist
 					payNextId = nodeId
 				} else {
-					graph.UnlockEdge(firstNodeId, nodeId)
+					//graph.UnlockEdge(firstNodeId, nodeId)
 				}
 			} else {
-				graph.UnlockEdge(firstNodeId, nodeId)
+				//graph.UnlockEdge(firstNodeId, nodeId)
 			}
 		}
 	}
-
-	//// unlocks all nodes except the nextNodeId lock
-	//if constants.GetEdgeLock() {
-	//	for _, nodeId := range lockedEdges {
-	//		if nodeId != nextNodeId {
-	//			graph.UnlockEdge(firstNodeId, nodeId)
-	//		}
-	//	}
-	//}
 
 	if nextNodeId != 0 {
 		thresholdFailed = false
@@ -273,6 +265,15 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 					payment.PayNextId = payNextId
 					payment.ChunkId = chunkId
 				}
+			}
+		}
+	}
+
+	// unlocks all nodes except the nextNodeId lock
+	if constants.GetEdgeLock() {
+		for _, nodeId := range lockedEdges {
+			if nodeId != nextNodeId {
+				graph.UnlockEdge(firstNodeId, nodeId)
 			}
 		}
 	}

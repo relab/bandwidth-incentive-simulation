@@ -125,29 +125,32 @@ func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int)
 			}
 		}
 	}
-	if constants.GetThresholdEnabled() && constants.IsForgivenessEnabled() {
-		thresholdFailedLists := policyInput.ThresholdFailedLists
-		if len(thresholdFailedLists) > 0 {
-			for _, thresholdFailedL := range thresholdFailedLists {
-				if len(thresholdFailedL) > 0 {
-					for _, couple := range thresholdFailedL {
-						requesterNode := couple[0]
-						providerNode := couple[1]
-						edgeData := state.Graph.GetEdgeData(requesterNode, providerNode)
-						passedTime := (curTimeStep - edgeData.Last) / constants.GetRequestsPerSecond()
-						if passedTime > 0 {
-							refreshRate := constants.GetRefreshRate()
-							if constants.IsAdjustableThreshold() {
-								refreshRate = int(math.Ceil(float64(edgeData.Threshold / 2)))
+	// TODO: Decide on if this logic should be here or moved to the isThresholdFailed function
+	if !constants.IsForgivenessDuringRouting() {
+		if constants.GetThresholdEnabled() && constants.IsForgivenessEnabled() {
+			thresholdFailedLists := policyInput.ThresholdFailedLists
+			if len(thresholdFailedLists) > 0 {
+				for _, thresholdFailedL := range thresholdFailedLists {
+					if len(thresholdFailedL) > 0 {
+						for _, couple := range thresholdFailedL {
+							requesterNode := couple[0]
+							providerNode := couple[1]
+							edgeData := state.Graph.GetEdgeData(requesterNode, providerNode)
+							passedTime := (curTimeStep - edgeData.Last) / constants.GetRequestsPerSecond()
+							if passedTime > 0 {
+								refreshRate := constants.GetRefreshRate()
+								if constants.IsAdjustableThreshold() {
+									refreshRate = int(math.Ceil(float64(edgeData.Threshold / 2)))
+								}
+								removedDeptAmount := passedTime * refreshRate
+								newEdgeData := edgeData
+								newEdgeData.A2B -= removedDeptAmount
+								if newEdgeData.A2B < 0 {
+									newEdgeData.A2B = 0
+								}
+								newEdgeData.Last = curTimeStep
+								state.Graph.SetEdgeData(requesterNode, providerNode, newEdgeData)
 							}
-							removedDeptAmount := passedTime * refreshRate
-							newEdgeData := edgeData
-							newEdgeData.A2B -= removedDeptAmount
-							if newEdgeData.A2B < 0 {
-								newEdgeData.A2B = 0
-							}
-							newEdgeData.Last = curTimeStep
-							state.Graph.SetEdgeData(requesterNode, providerNode, newEdgeData)
 						}
 					}
 				}
