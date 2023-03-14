@@ -143,13 +143,15 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 			continue
 		}
 		// TODO: Decide on where to put this dist < currDist check, as having it here is faster but resulting in more thresholdFails
-		if dist < currDist {
-			// This means the node is now actively trying to communicate with the other node
-			if constants.GetEdgeLock() {
-				graph.LockEdge(firstNodeId, nodeId)
-				lockedEdges = append(lockedEdges, nodeId)
-			}
-			if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph, request) {
+		//if dist < currDist {
+		// This means the node is now actively trying to communicate with the other node
+		if constants.GetEdgeLock() {
+			graph.LockEdge(firstNodeId, nodeId)
+			lockedEdges = append(lockedEdges, nodeId)
+		}
+		if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph, request) {
+			if dist < currDist {
+				// This means the node is now actively trying to communicate with the other node
 				if constants.IsRetryWithAnotherPeer() {
 					reroute := rerouteStruct.GetRerouteMap(mainOriginatorId)
 					if reroute != nil {
@@ -168,14 +170,13 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 					currDist = dist
 					nextNodeId = nodeId
 				}
-
-			} else {
-				thresholdFailed = true
-				if constants.GetPaymentEnabled() {
-					if dist < payDist {
-						payDist = dist
-						payNextId = nodeId
-					}
+			}
+		} else {
+			thresholdFailed = true
+			if constants.GetPaymentEnabled() {
+				if dist < payDist {
+					payDist = dist
+					payNextId = nodeId
 				}
 			}
 		}

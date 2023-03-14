@@ -58,6 +58,7 @@ func main() {
 		wgMain.Add(1)
 		go workers.RoutingWorker(requestChan, routeChan, stateChan, &globalState, wgMain)
 	}
+
 	wgMain.Wait()
 	close(stateChan)
 	close(routeChan)
