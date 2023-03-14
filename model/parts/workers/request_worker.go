@@ -110,7 +110,6 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 					RespNodes:       responsibleNodes,
 				}
 			}
-
 		}
 	}
 }

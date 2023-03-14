@@ -87,7 +87,6 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 	return graph, nil
 }
 
-// Todo : forgives only if they had reached threshold
 func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, graph *types.Graph, request types.Request) bool {
 	if constants.GetThresholdEnabled() {
 		edgeDataFirst := graph.GetEdgeData(firstNodeId, secondNodeId)
@@ -95,13 +94,6 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, graph *ty
 		edgeDataSecond := graph.GetEdgeData(secondNodeId, firstNodeId)
 		p2pSecond := edgeDataSecond.A2B
 
-		// TODO: This logic used to be in update_graph. Decide if we want it here, test that is works as expected and figure out why it is so much slower with waiting enabled
-		if constants.IsForgivenessDuringRouting() {
-			if constants.IsForgivenessEnabled() {
-				CheckForgiveness(edgeDataFirst, firstNodeId, secondNodeId, graph, request)
-				CheckForgiveness(edgeDataSecond, secondNodeId, firstNodeId, graph, request)
-			}
-		}
 		threshold := constants.GetThreshold()
 		if constants.IsAdjustableThreshold() {
 			threshold = edgeDataFirst.Threshold
@@ -109,15 +101,25 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, graph *ty
 
 		peerPriceChunk := PeerPriceChunk(secondNodeId, chunkId)
 		price := p2pFirst - p2pSecond + peerPriceChunk
-		// fmt.Printf("price: %d = p2pFirst: %d - p2pSecond: %d + PeerPriceChunk: %d \n", price, p2pFirst, p2pSecond, peerPriceChunk)
+		//fmt.Printf("price: %d = p2pFirst: %d - p2pSecond: %d + PeerPriceChunk: %d \n", price, p2pFirst, p2pSecond, peerPriceChunk)
+
+		if price > threshold {
+			if constants.IsForgivenessDuringRouting() && constants.IsForgivenessEnabled() {
+				newP2pFirst, forgivenFirst := CheckForgiveness(edgeDataFirst, firstNodeId, secondNodeId, graph, request)
+				//_, _ = CheckForgiveness(edgeDataSecond, secondNodeId, firstNodeId, graph, request)
+				if forgivenFirst {
+					price = newP2pFirst - p2pSecond + peerPriceChunk
+				}
+			}
+		}
 		return price > threshold
 	}
 	return false
 }
 
 func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId int, prevNodePaid bool, rerouteStruct types.RerouteStruct, request types.Request) (int, []types.Threshold, bool, bool, types.Payment, bool) {
-	var nextNodeId int
-	var payNextId int
+	var nextNodeId = 0
+	var payNextId = 0
 	var thresholdList []types.Threshold
 	var thresholdFailed bool
 	var accessFailed bool
@@ -129,7 +131,8 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 	currDist := lastDistance
 	payDist := lastDistance
 
-	var lockedEdges []int
+	//var lockedEdges []int
+	//var unlockedEdges []int
 
 	//firstNode := graph.NodesMap[firstNodeId]
 	bin := constants.GetBits() - general.BitLength(firstNodeId^chunkId)
@@ -140,12 +143,15 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 		if general.BitLength(dist) >= general.BitLength(lastDistance) {
 			continue
 		}
-		if dist < currDist {
-			if constants.GetEdgeLock() {
-				graph.LockEdge(firstNodeId, nodeId)
-				lockedEdges = append(lockedEdges, nodeId)
-			}
-			if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph, request) {
+		// TODO: Decide on where to put this dist < currDist check, as having it here is faster but resulting in more thresholdFails
+		//if dist < currDist {
+		// This means the node is now actively trying to communicate with the other node
+		if constants.GetEdgeLock() {
+			graph.LockEdge(firstNodeId, nodeId)
+		}
+		if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph, request) {
+			if dist < currDist {
+				// This means the node is now actively trying to communicate with the other node
 				if constants.IsRetryWithAnotherPeer() {
 					reroute := rerouteStruct.GetRerouteMap(mainOriginatorId)
 					if reroute != nil {
@@ -153,63 +159,58 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 						if general.Contains(reroute[:allExceptLast], nodeId) {
 							continue
 						} else {
+							if payNextId != 0 {
+								graph.UnlockEdge(firstNodeId, payNextId)
+							}
+							if nextNodeId != 0 {
+								graph.UnlockEdge(firstNodeId, nextNodeId)
+							}
 							currDist = dist
 							nextNodeId = nodeId
 						}
 					} else {
+						if nextNodeId != 0 {
+							graph.UnlockEdge(firstNodeId, nextNodeId)
+						}
 						currDist = dist
 						nextNodeId = nodeId
 					}
 				} else {
+					if nextNodeId != 0 {
+						graph.UnlockEdge(firstNodeId, nextNodeId)
+					}
 					currDist = dist
 					nextNodeId = nodeId
 				}
 			} else {
-				thresholdFailed = true
-				if constants.GetPaymentEnabled() {
-					if dist < payDist {
-						payDist = dist
-						payNextId = nodeId
+				graph.UnlockEdge(firstNodeId, nodeId)
+			}
+		} else {
+			thresholdFailed = true
+			if constants.GetPaymentEnabled() {
+				if dist < payDist {
+					if payNextId != 0 {
+						graph.UnlockEdge(firstNodeId, payNextId)
 					}
+					payDist = dist
+					payNextId = nodeId
+				} else {
+					graph.UnlockEdge(firstNodeId, nodeId)
 				}
+			} else {
+				graph.UnlockEdge(firstNodeId, nodeId)
 			}
 		}
-		//if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph, request) {
-		//	thresholdFailed = false
-		//	// Could probably clean this one up, but keeping it close to original for now
-		//	if dist < currDist {
-		//		if constants.IsRetryWithAnotherPeer() {
-		//			reroute := rerouteStruct.GetRerouteMap(mainOriginatorId)
-		//			if reroute != nil {
-		//				allExceptLast := len(reroute)
-		//				if general.Contains(reroute[:allExceptLast], nodeId) {
-		//					continue
-		//				} else {
-		//					currDist = dist
-		//					nextNodeId = nodeId
-		//				}
-		//			} else {
-		//				currDist = dist
-		//				nextNodeId = nodeId
-		//			}
-		//		} else {
-		//			currDist = dist
-		//			nextNodeId = nodeId
-		//		}
-		//	}
-		//} else {
-		//	thresholdFailed = true
-		//	if constants.GetPaymentEnabled() {
-		//		if dist < payDist {
-		//			payDist = dist
-		//			payNextId = nodeId
-		//		}
-		//	}
-		//	// This is only used when doing forgiveness in updateGraph
-		//	listItem := types.Threshold{firstNodeId, nodeId}
-		//	thresholdList = append(thresholdList, listItem)
-		//}
 	}
+
+	//// unlocks all nodes except the nextNodeId lock
+	//if constants.GetEdgeLock() {
+	//	for _, nodeId := range lockedEdges {
+	//		if nodeId != nextNodeId {
+	//			graph.UnlockEdge(firstNodeId, nodeId)
+	//		}
+	//	}
+	//}
 
 	if nextNodeId != 0 {
 		thresholdFailed = false
@@ -275,16 +276,7 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 			}
 		}
 	}
-	// unlocks all nodes except the nextNodeId lock
-	if constants.GetEdgeLock() {
-		for _, nodeId := range lockedEdges {
-			if nodeId != nextNodeId {
-				graph.UnlockEdge(firstNodeId, nodeId)
-			}
-		}
-	}
 
-	// TODO: Usikker på dette
 	if constants.GetPaymentEnabled() {
 	out:
 		for i, item := range thresholdList {

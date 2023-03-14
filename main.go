@@ -31,7 +31,7 @@ func main() {
 	start := time.Now()
 	globalState := state.MakeInitialState("./data/nodes_data_16_10000.txt")
 
-	const iterations = 10_000_000
+	const iterations = 100_000_000
 
 	numGoroutines := constants.GetNumGoroutines()
 	//numLoops := iterations / numGoroutines
@@ -58,6 +58,7 @@ func main() {
 		wgMain.Add(1)
 		go workers.RoutingWorker(requestChan, routeChan, stateChan, &globalState, wgMain)
 	}
+
 	wgMain.Wait()
 	close(stateChan)
 	close(routeChan)
