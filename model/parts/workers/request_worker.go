@@ -16,6 +16,8 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 	var originatorIndex = 0
 	var timeStep = 0
 	var counter = 0
+	var responsibleNodes [4]int
+	var chunkId int
 
 	defer close(requestChan)
 
@@ -46,8 +48,7 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 
 			originatorId := globalState.Originators[originatorIndex]
 
-			chunkId := -1
-			responsibleNodes := [4]int{}
+			chunkId = -1
 
 			if constants.IsWaitingEnabled() {
 				pendingNode := globalState.PendingStruct.GetPending(originatorId)

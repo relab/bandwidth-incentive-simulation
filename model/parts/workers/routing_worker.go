@@ -47,6 +47,11 @@ func RoutingWorker(requestChan chan types.Request, outputChan chan types.Output,
 
 		// sending the "output" to the outputWorker
 		if constants.GetMaxPOCheckEnabled() {
+			if constants.IsDebugPrints() {
+				if curTimeStep%constants.GetDebugInterval() == 0 {
+					fmt.Println("outputChan length: ", len(outputChan))
+				}
+			}
 			outputChan <- output
 		}
 
