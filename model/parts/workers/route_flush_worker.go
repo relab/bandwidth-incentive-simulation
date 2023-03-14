@@ -14,7 +14,7 @@ func RouteFlushWorker(routeChan chan types.RouteData, wg *sync.WaitGroup) {
 	//var message *protoGenerated.RouteData
 	var routeData types.RouteData
 	var bytes []byte
-	filePath := "./results/routes.json"
+	filePath := "./results/routes.txt"
 
 	err := os.Remove(filePath)
 	if err != nil {
@@ -45,6 +45,11 @@ func RouteFlushWorker(routeChan chan types.RouteData, wg *sync.WaitGroup) {
 	for routeData = range routeChan {
 
 		bytes, err = json.Marshal(routeData)
+		// _, err = writer.Write(bytes)
+		if err != nil {
+			panic(err)
+
+		}
 
 		// TODO: uncomment below to use messagePack
 		//bytes, err = msgpack.Marshal(routeData)
@@ -65,12 +70,8 @@ func RouteFlushWorker(routeChan chan types.RouteData, wg *sync.WaitGroup) {
 		//if err != nil {
 		//	panic(err)
 		//}
-
-		_, err = writer.Write(bytes)
-		if err != nil {
-			panic(err)
-
-		}
+		actualFile.Write(bytes)
+		actualFile.WriteString(("\n"))
 
 	}
 }

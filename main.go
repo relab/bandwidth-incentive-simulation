@@ -29,16 +29,17 @@ import (
 
 func main() {
 	start := time.Now()
-	globalState := state.MakeInitialState("./data/nodes_data_16_10000.txt")
+	network := fmt.Sprintf("./data/nodes_data_%d_10000.txt", constants.GetBinSize())
+	globalState := state.MakeInitialState(network)
 
 	const iterations = 100_000_000
-
 	numGoroutines := constants.GetNumGoroutines()
 	//numLoops := iterations / numGoroutines
 
 	wgMain := &sync.WaitGroup{}
 	wgFlush := &sync.WaitGroup{}
 	requestChan := make(chan types.Request, numGoroutines)
+	outputChan := make(chan types.Output, numGoroutines)
 	routeChan := make(chan types.RouteData, numGoroutines)
 	stateChan := make(chan types.StateSubset, 10000)
 
@@ -54,9 +55,11 @@ func main() {
 	go workers.RequestWorker(requestChan, &globalState, wgMain, iterations)
 	wgMain.Add(1)
 
+	go workers.OutputWorker(outputChan)
+
 	for i := 0; i < numGoroutines; i++ {
 		wgMain.Add(1)
-		go workers.RoutingWorker(requestChan, routeChan, stateChan, &globalState, wgMain)
+		go workers.RoutingWorker(requestChan, outputChan, routeChan, stateChan, &globalState, wgMain)
 	}
 
 	wgMain.Wait()

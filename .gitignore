@@ -15,8 +15,11 @@
 # vendor/
 
 .idea/**
+.results/*.txt
 
 **/states.json
+**/routes.txt
+**/output*
 **/performance*
 **/**.bin
 **/routes.json
