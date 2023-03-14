@@ -7,25 +7,25 @@ import (
 
 func TestAvgRewardPerEachForwardingAction(t *testing.T) {
 	result := AvgRewardPerEachForwardingAction()
-	t.Log("Average reward per each forwarding action: ", result, "with k: ", constants.Constants.GetBinSize())
+	t.Log("Average reward per each forwarding action: ", result, "with k: ", constants.GetBinSize())
 }
 
 func TestAvgNumberOfHops(t *testing.T) {
 	result := AvgNumberOfHops()
-	t.Log("Average number of hops from originator to store: ", result, "with k: ", constants.Constants.GetBinSize())
+	t.Log("Average number of hops from originator to store: ", result, "with k: ", constants.GetBinSize())
 }
 
 func TestAvgFractionOfTotalRewards(t *testing.T) {
 	fractoionRewardsK16, fractionRewardsK8 := AvgFractionOfTotalRewards()
-	if constants.Constants.GetBinSize() == 16 {
-		t.Log("Average percent of total rewards for 1 hop: ", fractoionRewardsK16.hop1*100, "with k: ", constants.Constants.GetBinSize())
-		t.Log("Average percent of total rewards for 2 hop: ", fractoionRewardsK16.hop2*100, "with k: ", constants.Constants.GetBinSize())
-		t.Log("Average percent of total rewards for 3 hop: ", fractoionRewardsK16.hop3*100, "with k: ", constants.Constants.GetBinSize())
-	} else if constants.Constants.GetBinSize() == 8 {
-		t.Log("Average percent of total rewards for 1 hop: ", fractionRewardsK8.hop1*100, "with k: ", constants.Constants.GetBinSize())
-		t.Log("Average percent of total rewards for 2 hop: ", fractionRewardsK8.hop2*100, "with k: ", constants.Constants.GetBinSize())
-		t.Log("Average percent of total rewards for 3 hop: ", fractionRewardsK8.hop3*100, "with k: ", constants.Constants.GetBinSize())
-		t.Log("Average percnt of total rewards for 4 hop: ", fractionRewardsK8.hop4*100, "with k: ", constants.Constants.GetBinSize())
+	if constants.GetBinSize() == 16 {
+		t.Log("Average percent of total rewards for 1 hop: ", fractoionRewardsK16.hop1*100, "with k: ", constants.GetBinSize())
+		t.Log("Average percent of total rewards for 2 hop: ", fractoionRewardsK16.hop2*100, "with k: ", constants.GetBinSize())
+		t.Log("Average percent of total rewards for 3 hop: ", fractoionRewardsK16.hop3*100, "with k: ", constants.GetBinSize())
+	} else if constants.GetBinSize() == 8 {
+		t.Log("Average percent of total rewards for 1 hop: ", fractionRewardsK8.hop1*100, "with k: ", constants.GetBinSize())
+		t.Log("Average percent of total rewards for 2 hop: ", fractionRewardsK8.hop2*100, "with k: ", constants.GetBinSize())
+		t.Log("Average percent of total rewards for 3 hop: ", fractionRewardsK8.hop3*100, "with k: ", constants.GetBinSize())
+		t.Log("Average percnt of total rewards for 4 hop: ", fractionRewardsK8.hop4*100, "with k: ", constants.GetBinSize())
 	}
 }
 
