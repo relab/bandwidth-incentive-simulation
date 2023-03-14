@@ -50,8 +50,8 @@ var Constants = constant{
 	chunks:                           10000,
 	requestsPerSecond:                12500, // 12500
 	thresholdEnabled:                 true,
-	forgivenessEnabled:               true,
-	paymentEnabled:                   false,
+	forgivenessEnabled:               false,
+	paymentEnabled:                   true,
 	maxPOCheckEnabled:                true,
 	waitingEnabled:                   false,
 	onlyOriginatorPays:               false,

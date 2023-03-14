@@ -28,9 +28,10 @@ import (
 
 func main() {
 	start := time.Now()
-	globalState := state.MakeInitialState("./data/nodes_data_16_10000.txt")
+	network := fmt.Sprintf("./data/nodes_data_%d_10000.txt", constants.Constants.GetBinSize())
+	globalState := state.MakeInitialState(network)
 
-	const iterations = 1_000_000_000
+	const iterations = 250_000
 	numGoroutines := constants.Constants.GetNumGoroutines()
 	numLoops := iterations / numGoroutines
 
