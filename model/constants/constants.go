@@ -50,14 +50,14 @@ var Constants = constant{
 	chunks:                           10000,
 	requestsPerSecond:                12500, // 12500
 	thresholdEnabled:                 true,
-	forgivenessEnabled:               false,
+	forgivenessEnabled:               true,
 	paymentEnabled:                   true,
 	maxPOCheckEnabled:                true,
 	waitingEnabled:                   false,
 	onlyOriginatorPays:               false,
 	payOnlyForCurrentRequest:         false,
 	payIfOrigPays:                    false,
-	forwarderPayForceOriginatorToPay: false,
+	forwarderPayForceOriginatorToPay: true,
 	retryWithAnotherPeer:             false,
 	cacheIsEnabled:                   false,
 	preferredChunks:                  false, // Fits well with cache
