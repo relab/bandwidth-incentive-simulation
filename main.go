@@ -6,6 +6,7 @@ import (
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/workers"
 	"go-incentive-simulation/model/state"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -32,13 +33,14 @@ func main() {
 	network := fmt.Sprintf("./data/nodes_data_%d_10000.txt", constants.GetBinSize())
 	globalState := state.MakeInitialState(network)
 
-	const iterations = 10_000_000_000
-	numGoroutines := constants.GetNumGoroutines()
+	const iterations = 10_000_000
+	numTotalGoRoutines := runtime.NumCPU()
+	numRoutingGoroutines := constants.SetNumRoutingGoroutines(numTotalGoRoutines)
 	//numLoops := iterations / numGoroutines
 
 	wgMain := &sync.WaitGroup{}
 	wgOutput := &sync.WaitGroup{}
-	requestChan := make(chan types.Request, numGoroutines)
+	requestChan := make(chan types.Request, numRoutingGoroutines)
 	outputChan := make(chan types.Output, 100000)
 	routeChan := make(chan types.RouteData, 10000)
 	stateChan := make(chan types.StateSubset, 10000)
@@ -58,7 +60,7 @@ func main() {
 	go workers.OutputWorker(outputChan, wgOutput)
 	wgOutput.Add(1)
 
-	for i := 0; i < numGoroutines; i++ {
+	for i := 0; i < numRoutingGoroutines; i++ {
 		wgMain.Add(1)
 		go workers.RoutingWorker(requestChan, outputChan, routeChan, stateChan, &globalState, wgMain)
 	}
@@ -74,7 +76,8 @@ func main() {
 	elapsed := time.Since(start)
 	fmt.Println("Time taken:", elapsed)
 	fmt.Println("Number of Iterations: ", iterations)
-	fmt.Println("Number of Goroutines: ", numGoroutines)
+	fmt.Println("Number of Total Goroutines: ", numTotalGoRoutines)
+	fmt.Println("Number of Routing Goroutines: ", numRoutingGoroutines)
 	// allReq, thresholdFails, requestsToBucketZero, rejectedBucketZero, rejectedFirstHop := ReadRoutes("routes.json")
 	// fmt.Println("allReq: ", allReq)
 	// fmt.Println("thresholdFails: ", thresholdFails)
