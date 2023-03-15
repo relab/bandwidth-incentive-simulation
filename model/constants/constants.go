@@ -36,7 +36,7 @@ type constant struct {
 	iterationMeansUniqueChunk        bool
 	debugPrints                      bool
 	debugInterval                    int
-	numGoroutines                    int
+	numRoutingGoroutines             int
 	epoke                            int
 }
 
@@ -58,7 +58,7 @@ var constants = constant{
 	forgivenessEnabled:               true,    // Edge debt gets forgiven some amount on an interval (amortized)
 	forgivenessDuringRouting:         true,    // If the forgiveness should happen before threshold is checked or after in updateGraph
 	paymentEnabled:                   true,    // Nodes pay if they Threshold fail
-	maxPOCheckEnabled:                false,   // Used to find the proper variable called "omega" in the python paper
+	maxPOCheckEnabled:                true,    // Used to find the proper variable called "omega" in the python paper
 	onlyOriginatorPays:               false,   // Only the originator will pay, others will threshold fail or wait
 	payOnlyForCurrentRequest:         false,   // Only pay for current request or the full debt on the edge
 	payIfOrigPays:                    false,   // Only pay if the originator pays -- NOT NEEDED
@@ -71,13 +71,26 @@ var constants = constant{
 	edgeLock:                         true,    // Should always be true when using concurrency
 	sameOriginator:                   false,   // For testing the usefulness of locking the edges
 	precomputeRespNodes:              true,    // Precompute the responsible nodes for every possible chunkId
-	writeRoutesToFile:                false,   // Write the routes to file during run
+	writeRoutesToFile:                true,    // Write the routes to file during run
 	writeStatesToFile:                false,   // Write a subset of the states to file during the run
 	iterationMeansUniqueChunk:        false,   // If a single iteration means all unique chunks or include chunks we look for again relating to waiting/retry
 	debugPrints:                      true,    // Prints out many useful debug prints during the run
 	debugInterval:                    1000000, // How many iterations between each debug print
-	numGoroutines:                    25,      // 25 seems to currently be the sweet spot
+	numRoutingGoroutines:             25,      // 25 seems to currently be the sweet spot
 	epoke:                            50000,   //
+}
+
+func SetNumRoutingGoroutines(num int) int {
+	//num-- // fot the outputWorker
+	//if IsWriteStatesToFile() {
+	//	num--
+	//}
+	//if IsWriteRoutesToFile() {
+	//	num--
+	//}
+	num-- // for the requestWorker
+	constants.numRoutingGoroutines = num
+	return num
 }
 
 // func CreateRangeAddress(c *constant){
@@ -228,8 +241,8 @@ func GetDebugInterval() int {
 	return constants.debugInterval
 }
 
-func GetNumGoroutines() int {
-	return constants.numGoroutines
+func GetNumRoutingGoroutines() int {
+	return constants.numRoutingGoroutines
 }
 
 func GetEpoke() int {
