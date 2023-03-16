@@ -17,12 +17,11 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 	var requestResult types.RequestResult
 	for {
 		select {
-		case justPause := <-pauseChan:
-			if justPause {
-				continueChan <- true
-			}
-		case request, ok := <-requestChan:
-			if !ok {
+		case <-pauseChan:
+			continueChan <- true
+
+		case request, open := <-requestChan:
+			if !open {
 				return
 			}
 
