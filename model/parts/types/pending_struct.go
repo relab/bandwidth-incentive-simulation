@@ -5,7 +5,8 @@ import (
 )
 
 type PendingNode struct {
-	ChunkIds       []int
+	ChunkIds []int
+	//Node           *Node
 	PendingCounter int32
 	EpokeDecrement int32
 }

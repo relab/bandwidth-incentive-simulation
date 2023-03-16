@@ -2,6 +2,7 @@ package types
 
 type Request struct {
 	TimeStep        int
+	Epoke           int
 	OriginatorIndex int
 	OriginatorId    int
 	ChunkId         int

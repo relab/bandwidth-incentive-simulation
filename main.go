@@ -18,8 +18,8 @@ import (
 //	found, route, thresholdFailed, accessFailed, paymentsList := policy.SendRequest(state, index)
 //
 
-//	p := types.RequestResult{
-//		Found:                found,
+//p := types.RequestResult{
+//	Found:                found,
 //		Route:                route,
 //		ThresholdFailedLists: thresholdFailed,
 //		AccessFailed:         accessFailed,
@@ -44,6 +44,8 @@ func main() {
 	outputChan := make(chan types.Output, 100000)
 	routeChan := make(chan types.RouteData, 10000)
 	stateChan := make(chan types.StateSubset, 10000)
+	pauseChan := make(chan bool, numRoutingGoroutines)
+	continueChan := make(chan bool, numRoutingGoroutines)
 
 	if constants.IsWriteRoutesToFile() {
 		wgOutput.Add(1)
@@ -54,7 +56,7 @@ func main() {
 		go workers.StateFlushWorker(stateChan, wgOutput)
 	}
 
-	go workers.RequestWorker(requestChan, &globalState, wgMain, iterations)
+	go workers.RequestWorker(pauseChan, continueChan, requestChan, &globalState, wgMain, iterations)
 	wgMain.Add(1)
 
 	go workers.OutputWorker(outputChan, wgOutput)
@@ -62,7 +64,7 @@ func main() {
 
 	for i := 0; i < numRoutingGoroutines; i++ {
 		wgMain.Add(1)
-		go workers.RoutingWorker(requestChan, outputChan, routeChan, stateChan, &globalState, wgMain)
+		go workers.RoutingWorker(pauseChan, continueChan, requestChan, outputChan, routeChan, stateChan, &globalState, wgMain)
 	}
 
 	wgMain.Wait()

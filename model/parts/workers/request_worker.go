@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-func RequestWorker(requestChan chan types.Request, globalState *types.State, wg *sync.WaitGroup, iterations int) {
+func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan types.Request, globalState *types.State, wg *sync.WaitGroup, iterations int) {
 
 	defer wg.Done()
 	var requestQueueSize = 10
@@ -18,6 +18,8 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 	var counter = 0
 	var responsibleNodes [4]int
 	var chunkId int
+	var curEpoke = constants.GetEpoke()
+	var newEpokeCounter = 0
 
 	defer close(requestChan)
 
@@ -30,6 +32,18 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 			if constants.IsDebugPrints() {
 				if timeStep%constants.GetDebugInterval() == 0 {
 					fmt.Println("TimeStep is currently:", timeStep)
+				}
+			}
+
+			if timeStep%constants.GetRequestsPerSecond() == 0 {
+				curEpoke = constants.UpdateEpoke()
+				newEpokeCounter = constants.GetOriginators()
+
+				for i := 0; i < constants.GetNumRoutingGoroutines(); i++ {
+					pauseChan <- true
+				}
+				for i := 0; i < constants.GetNumRoutingGoroutines(); i++ {
+					<-continueChan
 				}
 			}
 
@@ -48,12 +62,14 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 
 			originatorId := globalState.Originators[originatorIndex]
 
+			//originator := globalState.Graph.GetNode(originatorIndex)
+
 			chunkId = -1
 
 			if constants.IsWaitingEnabled() {
 				pendingNode := globalState.PendingStruct.GetPending(originatorId)
 
-				if (timeStep-originatorIndex)%constants.GetEpoke() == 0 || timeStep > iterations {
+				if newEpokeCounter > 0 || timeStep > iterations {
 					if len(pendingNode.ChunkIds) > 0 {
 						pendingNode.EpokeDecrement = int32(len(pendingNode.ChunkIds))
 						//atomic.AddInt32(&globalState.PendingStruct.Counter, int32(len(pendingNode.ChunkIds)))
@@ -68,6 +84,7 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 						pendingNode.EpokeDecrement--
 					}
 				}
+				newEpokeCounter--
 			}
 
 			if constants.IsRetryWithAnotherPeer() {
@@ -86,7 +103,7 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 				counter++
 			}
 
-			if chunkId == -1 && timeStep < iterations { // No waiting and no retry, and
+			if chunkId == -1 && timeStep <= iterations { // No waiting and no retry, and qualify for unique chunk
 				chunkId = rand.Intn(constants.GetRangeAddress() - 1)
 
 				if constants.IsPreferredChunksEnabled() {
@@ -107,6 +124,7 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 					OriginatorIndex: originatorIndex,
 					OriginatorId:    originatorId,
 					TimeStep:        timeStep,
+					Epoke:           curEpoke,
 					ChunkId:         chunkId,
 					RespNodes:       responsibleNodes,
 				}
