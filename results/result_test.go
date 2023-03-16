@@ -16,11 +16,11 @@ func TestAvgNumberOfHops(t *testing.T) {
 }
 
 func TestAvgFractionOfTotalRewards(t *testing.T) {
-	fractoionRewardsK16, fractionRewardsK8 := AvgFractionOfTotalRewards()
+	fractoionRewardsK16, fractionRewardsK8 := AvgFractionOfTotalRewards("output.txt")
 	if constants.GetBinSize() == 16 {
-		t.Log("Average percent of total rewards for 1 hop: ", fractoionRewardsK16.hop1*100, "with k: ", constants.GetBinSize())
-		t.Log("Average percent of total rewards for 2 hop: ", fractoionRewardsK16.hop2*100, "with k: ", constants.GetBinSize())
-		t.Log("Average percent of total rewards for 3 hop: ", fractoionRewardsK16.hop3*100, "with k: ", constants.GetBinSize())
+		t.Log("Average percent of total rewards for 1 hop: ", fractoionRewardsK16.Hop1*100, "with k: ", constants.GetBinSize())
+		t.Log("Average percent of total rewards for 2 hop: ", fractoionRewardsK16.Hop2*100, "with k: ", constants.GetBinSize())
+		t.Log("Average percent of total rewards for 3 hop: ", fractoionRewardsK16.Hop3*100, "with k: ", constants.GetBinSize())
 	} else if constants.GetBinSize() == 8 {
 		t.Log("Average percent of total rewards for 1 hop: ", fractionRewardsK8.hop1*100, "with k: ", constants.GetBinSize())
 		t.Log("Average percent of total rewards for 2 hop: ", fractionRewardsK8.hop2*100, "with k: ", constants.GetBinSize())
@@ -30,7 +30,7 @@ func TestAvgFractionOfTotalRewards(t *testing.T) {
 }
 
 func TestTest(t *testing.T) {
-	transactions := ReadOutput()
+	transactions := ReadOutput("output.txt")
 	var num1Length int
 	var num2Length int
 	var num3Length int

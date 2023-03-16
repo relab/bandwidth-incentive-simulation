@@ -14,9 +14,9 @@ func OutputWorker(outputChan chan types.Output) {
 	filePath := "./results/output.txt"
 	err := os.Remove(filePath)
 	if err != nil {
-		fmt.Println("No need to remove file with path: ", filePath)
+		fmt.Println("Could not remove the file", filePath)
 	}
-	file, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
 	defer func(file *os.File) {
 		err1 := file.Close()
 		if err1 != nil {

@@ -50,7 +50,7 @@ var constants = constant{
 	refreshRate:                      8,
 	threshold:                        16,
 	randomSeed:                       123456789,
-	maxProximityOrder:                16,
+	maxProximityOrder:                5,
 	price:                            1,
 	chunks:                           10000,
 	requestsPerSecond:                12500,   // 12500
@@ -87,6 +87,10 @@ var constants = constant{
 // func (c *constant) CreateOriginators(){
 // 	c.originators = int(0.001 * float64(c.networkSize))
 // }
+
+func SetProximityOrder(po int) {
+	constants.maxProximityOrder = po
+}
 
 func IsAdjustableThreshold() bool {
 	return constants.adjustableThreshold
