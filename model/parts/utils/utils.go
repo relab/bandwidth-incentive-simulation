@@ -183,10 +183,8 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 
 			if constants.GetPaymentEnabled() {
 				if dist < payDist && nextNodeId == 0 {
-					if constants.GetEdgeLock() {
-						if payNextId != 0 {
-							graph.UnlockEdge(firstNodeId, payNextId)
-						}
+					if constants.GetEdgeLock() && payNextId != 0 {
+						graph.UnlockEdge(firstNodeId, payNextId)
 					}
 					payDist = dist
 					payNextId = nodeId
