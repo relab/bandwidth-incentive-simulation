@@ -15,15 +15,15 @@ func PendingMap(state *types.State, policyInput types.RequestResult) types.Pendi
 		// -1 Threshold Fail, -2 Access Fail
 		if constants.IsRetryWithAnotherPeer() {
 			if general.Contains(route, -1) || general.Contains(route, -2) {
-				state.PendingStruct.AddPendingChunkIdToQueue(originator, chunkId)
+				state.PendingStruct.AddPendingChunkId(originator, chunkId)
 			} else {
-				state.PendingStruct.DeleteChunkIdFromPendingQueue(originator, chunkId)
+				state.PendingStruct.DeletePendingChunkId(originator, chunkId)
 			}
 		} else {
 			if general.Contains(route, -1) {
-				state.PendingStruct.AddPendingChunkIdToQueue(originator, chunkId)
+				state.PendingStruct.AddPendingChunkId(originator, chunkId)
 			} else {
-				state.PendingStruct.DeleteChunkIdFromPendingQueue(originator, chunkId)
+				state.PendingStruct.DeletePendingChunkId(originator, chunkId)
 			}
 		}
 	}

@@ -17,7 +17,6 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 	var timeStep = 0
 	var counter = 0
 	var responsibleNodes [4]int
-	var chunkId int
 	var curEpoke = constants.GetEpoke()
 	var newEpokeCounter = 0
 
@@ -64,24 +63,24 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 
 			//originator := globalState.Graph.GetNode(originatorIndex)
 
-			chunkId = -1
+			chunkId := -1
 
 			if constants.IsWaitingEnabled() {
-				pendingNode := globalState.PendingStruct.GetPending(originatorId)
+				pending := globalState.PendingStruct.GetPending(originatorId)
 
 				if newEpokeCounter > 0 || timeStep > iterations {
-					if len(pendingNode.ChunkIds) > 0 {
-						pendingNode.EpokeDecrement = int32(len(pendingNode.ChunkIds))
+					if len(pending.ChunkStructs) > 0 {
+						pending.EpokeDecrement = int32(len(pending.ChunkStructs))
 						//atomic.AddInt32(&globalState.PendingStruct.Counter, int32(len(pendingNode.ChunkIds)))
 					}
 				}
-				if pendingNode.EpokeDecrement > 0 {
-					pendingNodeIds := pendingNode.ChunkIds
-					if len(pendingNodeIds) > 0 {
+				if pending.EpokeDecrement > 0 {
+					pendingChunkStructs := pending.ChunkStructs
+					if len(pendingChunkStructs) > 0 {
 						//if !globalState.PendingStruct.IsEmpty(originatorId) {
-						chunkId = pendingNodeIds[pendingNode.EpokeDecrement-1]
-						responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
-						pendingNode.EpokeDecrement--
+						chunkStruct := pendingChunkStructs[pending.EpokeDecrement-1]
+						responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkStruct.ChunkId)
+						pending.EpokeDecrement--
 					}
 				}
 				newEpokeCounter--

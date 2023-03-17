@@ -153,11 +153,10 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 		}
 		if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph, request) {
 			thresholdFailed = false
-
 			if constants.IsRetryWithAnotherPeer() {
 				if reroute := rerouteStruct.GetRerouteMap(mainOriginatorId); reroute != nil {
-					allExceptLast := len(reroute) - 1
-					if general.Contains(reroute[:allExceptLast], nodeId) {
+					allNodesExceptChunk := len(reroute) - 1
+					if general.Contains(reroute[:allNodesExceptChunk], nodeId) {
 						if constants.GetEdgeLock() {
 							graph.UnlockEdge(firstNodeId, nodeId)
 						}
@@ -180,7 +179,6 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 
 		} else {
 			thresholdFailed = true
-
 			if constants.GetPaymentEnabled() {
 				if dist < payDist && nextNodeId == 0 {
 					if constants.GetEdgeLock() && payNextId != 0 {
