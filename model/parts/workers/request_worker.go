@@ -17,7 +17,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 	var timeStep = 0
 	var counter = 0
 	var responsibleNodes [4]int
-	var curEpoke = constants.GetEpoke()
+	var curEpoke = constants.GetEpoch()
 	var newEpokeCounter = 0
 
 	defer close(requestChan)
@@ -35,7 +35,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			}
 
 			if timeStep%constants.GetRequestsPerSecond() == 0 {
-				curEpoke = constants.UpdateEpoke()
+				curEpoke = constants.UpdateEpoch()
 				newEpokeCounter = constants.GetOriginators()
 
 				for i := 0; i < constants.GetNumRoutingGoroutines(); i++ {

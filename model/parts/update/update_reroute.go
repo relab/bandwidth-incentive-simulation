@@ -13,7 +13,7 @@ func RerouteMap(state *types.State, requestResult types.RequestResult) types.Rer
 		firstHopNode := route[1]
 		chunkId := route[len(route)-1]
 
-		// -1 = Threshold Fail, -2 = Access Fail
+		// -1 = Threshold Fail, -2 = Access Fail --> request was successful
 		if !general.Contains(route, -1) && !general.Contains(route, -2) {
 			routeStruct := state.RerouteStruct.GetRerouteMap(originator) // reroute = rejected nodes + chunk
 			if routeStruct.Reroute != nil {
