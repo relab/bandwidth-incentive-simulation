@@ -20,7 +20,7 @@ func CheckForgiveness(edgeData types.EdgeAttrs, firstNodeId int, secondNodeId in
 		if newEdgeData.A2B < 0 {
 			newEdgeData.A2B = 0
 		}
-		//newEdgeData.Last = request.Epoke
+		//newEdgeData.Last = request.Epoch
 		newEdgeData.EpokeLastForgiven = request.Epoke
 		graph.SetEdgeData(firstNodeId, secondNodeId, newEdgeData)
 		return newEdgeData.A2B, true

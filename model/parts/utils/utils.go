@@ -154,13 +154,12 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 		if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph, request) {
 			thresholdFailed = false
 			if constants.IsRetryWithAnotherPeer() {
-				if reroute := rerouteStruct.GetRerouteMap(mainOriginatorId); reroute != nil {
-					allNodesExceptChunk := len(reroute) - 1
-					if general.Contains(reroute[:allNodesExceptChunk], nodeId) {
+				if reroute := rerouteStruct.GetRerouteMap(mainOriginatorId).Reroute; reroute != nil {
+					if general.Contains(reroute, nodeId) {
 						if constants.GetEdgeLock() {
 							graph.UnlockEdge(firstNodeId, nodeId)
 						}
-						continue
+						continue // skips node that's been part of a failed route before
 					}
 				}
 			}

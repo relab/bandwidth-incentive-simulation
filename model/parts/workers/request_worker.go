@@ -87,10 +87,14 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			}
 
 			if constants.IsRetryWithAnotherPeer() {
-				reroute := globalState.RerouteStruct.GetRerouteMap(originatorId)
-				if reroute != nil {
-					chunkId = reroute[len(reroute)-1]
-					responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+
+				routeStruct := globalState.RerouteStruct.GetRerouteMap(originatorId)
+				if routeStruct.Epoch < curEpoke {
+					if routeStruct.Reroute != nil {
+						chunkId = routeStruct.ChunkId
+						responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+					}
+					globalState.RerouteStruct.UpdateEpoch(originatorId)
 				}
 			}
 
