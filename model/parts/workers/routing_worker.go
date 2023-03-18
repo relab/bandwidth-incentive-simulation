@@ -41,8 +41,8 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			curTimeStep := request.TimeStep
 			output := update.Graph(globalState, requestResult, curTimeStep)
 
-			pendingStruct := update.PendingMap(globalState, requestResult)
-			rerouteStruct := update.RerouteMap(globalState, requestResult)
+			pendingStruct := update.PendingMap(globalState, requestResult, request.Epoch)
+			rerouteStruct := update.RerouteMap(globalState, requestResult, request.Epoch)
 			cacheStruct := update.CacheMap(globalState, requestResult)
 
 			// TODO: originatorIndex is now updated by the requestWorker

@@ -6,7 +6,7 @@ import (
 	"go-incentive-simulation/model/parts/types"
 )
 
-func RerouteMap(state *types.State, requestResult types.RequestResult) types.RerouteStruct {
+func RerouteMap(state *types.State, requestResult types.RequestResult, curEpoch int) types.RerouteStruct {
 	if constants.IsRetryWithAnotherPeer() {
 		route := requestResult.Route
 		originator := route[0]
@@ -22,7 +22,7 @@ func RerouteMap(state *types.State, requestResult types.RequestResult) types.Rer
 					state.RerouteStruct.DeleteReroute(originator)
 					// If found remove from waiting queue (pending map)
 					//if constants.IsWaitingEnabled() {
-					//	state.PendingStruct.DeleteChunkIdFromPendingQueue(originator, chunkId)
+					//	state.PendingStruct.DeletePendingChunkId(originator, chunkId)
 					//}
 				}
 			}
@@ -34,7 +34,7 @@ func RerouteMap(state *types.State, requestResult types.RequestResult) types.Rer
 					state.RerouteStruct.AddNodeToReroute(originator, firstHopNode)
 				}
 			} else {
-				state.RerouteStruct.AddNewReroute(originator, firstHopNode, chunkId)
+				state.RerouteStruct.AddNewReroute(originator, firstHopNode, chunkId, curEpoch)
 			}
 		}
 
@@ -43,7 +43,7 @@ func RerouteMap(state *types.State, requestResult types.RequestResult) types.Rer
 			if len(routeStruct.Reroute) > constants.GetBinSize() {
 				state.RerouteStruct.DeleteReroute(originator)
 				//if constants.IsWaitingEnabled() {
-				//	state.PendingStruct.DeleteChunkIdFromPendingQueue(originator, chunkId)
+				//	state.PendingStruct.DeletePendingChunkId(originator, chunkId)
 				//}
 			}
 		}

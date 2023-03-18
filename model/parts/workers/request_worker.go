@@ -17,8 +17,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 	var timeStep = 0
 	var counter = 0
 	var responsibleNodes [4]int
-	var curEpoke = constants.GetEpoch()
-	var newEpokeCounter = 0
+	var curEpoch = constants.GetEpoch()
 
 	defer close(requestChan)
 
@@ -35,8 +34,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			}
 
 			if timeStep%constants.GetRequestsPerSecond() == 0 {
-				curEpoke = constants.UpdateEpoch()
-				newEpokeCounter = constants.GetOriginators()
+				curEpoch = update.Epoch(globalState)
 
 				for i := 0; i < constants.GetNumRoutingGoroutines(); i++ {
 					pauseChan <- true
@@ -58,43 +56,32 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			}
 
 			originatorIndex = int(update.OriginatorIndex(globalState, timeStep))
-
 			originatorId := globalState.Originators[originatorIndex]
-
 			//originator := globalState.Graph.GetNode(originatorIndex)
 
 			chunkId := -1
 
-			if constants.IsWaitingEnabled() {
-				pending := globalState.PendingStruct.GetPending(originatorId)
-
-				if newEpokeCounter > 0 || timeStep > iterations {
-					if len(pending.ChunkStructs) > 0 {
-						pending.EpokeDecrement = int32(len(pending.ChunkStructs))
-						//atomic.AddInt32(&globalState.PendingStruct.Counter, int32(len(pendingNode.ChunkIds)))
-					}
-				}
-				if pending.EpokeDecrement > 0 {
-					pendingChunkStructs := pending.ChunkStructs
-					if len(pendingChunkStructs) > 0 {
-						//if !globalState.PendingStruct.IsEmpty(originatorId) {
-						chunkStruct := pendingChunkStructs[pending.EpokeDecrement-1]
-						responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkStruct.ChunkId)
-						pending.EpokeDecrement--
-					}
-				}
-				newEpokeCounter--
-			}
-
 			if constants.IsRetryWithAnotherPeer() {
 
 				routeStruct := globalState.RerouteStruct.GetRerouteMap(originatorId)
-				if routeStruct.Epoch < curEpoke {
-					if routeStruct.Reroute != nil {
-						chunkId = routeStruct.ChunkId
-						responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+				//if routeStruct.LastEpoch < curEpoch {
+				if routeStruct.Reroute != nil {
+					chunkId = routeStruct.ChunkId
+					responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+				}
+				//globalState.RerouteStruct.UpdateEpoch(originatorId, curEpoch)
+			}
+
+			if constants.IsWaitingEnabled() && chunkId == -1 { // No valid chunkId in reroute
+				pending, ok := globalState.PendingStruct.GetPending(originatorId)
+
+				if ok && len(pending.ChunkQueue) > 0 {
+					chunkStruct, _ := globalState.PendingStruct.GetChunkFromQueue(originatorId)
+					if chunkStruct.LastEpoch < curEpoch {
+						chunkId = chunkStruct.ChunkId
+						responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkStruct.ChunkId)
+						globalState.PendingStruct.UpdateEpoch(originatorId, chunkId, curEpoch)
 					}
-					globalState.RerouteStruct.UpdateEpoch(originatorId)
 				}
 			}
 
@@ -127,7 +114,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 					OriginatorIndex: originatorIndex,
 					OriginatorId:    originatorId,
 					TimeStep:        timeStep,
-					Epoke:           curEpoke,
+					Epoch:           curEpoch,
 					ChunkId:         chunkId,
 					RespNodes:       responsibleNodes,
 				}
