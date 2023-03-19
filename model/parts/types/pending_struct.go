@@ -19,9 +19,9 @@ type Pending struct {
 type PendingMap map[int]Pending
 
 type PendingStruct struct {
-	PendingMap          PendingMap
-	PendingMutex        *sync.Mutex
-	TotalPendingCounter int32
+	PendingMap           PendingMap
+	PendingMutex         *sync.Mutex
+	UniquePendingCounter int32
 }
 
 func (p *PendingStruct) GetPending(originator int) (Pending, bool) {
@@ -49,13 +49,12 @@ func (p *PendingStruct) AddPendingChunkId(originator int, chunkId int, curEpoch 
 		}
 		pending.ChunkQueue = append([]ChunkStruct{newChunkStruct}, pending.ChunkQueue...)
 		p.PendingMap[originator] = pending
-		p.TotalPendingCounter++
+		p.UniquePendingCounter++
 
 	} else { // chunk seen before
 		if pending.ChunkQueue[chunkStructIndex].Counter < constants.GetBinSize() {
 			pending.ChunkQueue[chunkStructIndex].Counter++
 			p.PendingMap[originator] = pending
-			p.TotalPendingCounter++
 
 		} else {
 			pending.ChunkQueue = append(pending.ChunkQueue[:chunkStructIndex]) // remove chunkStruct
@@ -75,7 +74,6 @@ func (p *PendingStruct) DeletePendingChunkId(originator int, chunkId int) {
 			p.PendingMutex.Lock()
 			defer p.PendingMutex.Unlock()
 			pending.ChunkQueue = append(pending.ChunkQueue[:chunkIdIndex]) // Delete chunk front of queue
-			//pending.PendingCounters = append(pending.PendingCounters[:chunkIdIndex])
 			if len(pending.ChunkQueue) == 0 {
 				delete(p.PendingMap, originator)
 				return
@@ -91,7 +89,7 @@ func (p *PendingStruct) GetChunkFromQueue(originator int) (ChunkStruct, bool) {
 	if ok {
 		p.PendingMutex.Lock()
 		defer p.PendingMutex.Unlock()
-		currentIndex := p.CheckCurrentIndex(pending, originator)
+		currentIndex := p.GetAndUpdateCurrentIndex(pending, originator)
 		chunkFrontOfQueue := pending.ChunkQueue[currentIndex]
 		return chunkFrontOfQueue, true
 	}
@@ -113,7 +111,7 @@ func (p *PendingStruct) UpdateEpoch(originator int, chunkId int, curEpoch int) i
 
 }
 
-func (p *PendingStruct) CheckCurrentIndex(pending Pending, originator int) int {
+func (p *PendingStruct) GetAndUpdateCurrentIndex(pending Pending, originator int) int {
 
 	pending.CurrentIndex--
 	if pending.CurrentIndex < 0 || pending.CurrentIndex >= len(pending.ChunkQueue) {

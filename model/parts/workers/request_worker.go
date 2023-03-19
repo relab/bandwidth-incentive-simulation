@@ -18,6 +18,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 	var counter = 0
 	var responsibleNodes [4]int
 	var curEpoch = constants.GetEpoch()
+	var PickedFromWaiting int
 
 	defer close(requestChan)
 
@@ -81,6 +82,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 						chunkId = chunkStruct.ChunkId
 						responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkStruct.ChunkId)
 						globalState.PendingStruct.UpdateEpoch(originatorId, chunkId, curEpoch)
+						PickedFromWaiting++
 					}
 				}
 			}
@@ -121,4 +123,5 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			}
 		}
 	}
+	fmt.Println("Number of requests chunks picked from Pending: ", PickedFromWaiting)
 }
