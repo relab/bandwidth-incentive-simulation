@@ -37,7 +37,7 @@ type constant struct {
 	debugPrints                      bool
 	debugInterval                    int
 	numRoutingGoroutines             int
-	epoke                            int
+	epoch                            int
 }
 
 var constants = constant{
@@ -63,8 +63,8 @@ var constants = constant{
 	payOnlyForCurrentRequest:         false,   // Only pay for current request or the full debt on the edge
 	payIfOrigPays:                    false,   // Only pay if the originator pays -- NOT NEEDED
 	forwarderPayForceOriginatorToPay: false,   // If Threshold fails, forces all the nodes in the route to pay for the current request
-	waitingEnabled:                   false,   // When Threshold fails, will wait before trying to traverse same route
-	retryWithAnotherPeer:             false,   // The Route to the chunk will try to take many paths to find the chunk
+	waitingEnabled:                   true,    // When Threshold fails, will wait before trying to traverse same route
+	retryWithAnotherPeer:             true,    // The Route to the chunk will try to take many paths to find the chunk
 	cacheIsEnabled:                   false,   // Cache, which stores previously looked after chunks on the nodes
 	preferredChunks:                  false,   // Fits well with cache, where some chunkIds are chosen more often
 	adjustableThreshold:              false,   // The Threshold limit of an edge is determined based on the XOR distance
@@ -77,7 +77,7 @@ var constants = constant{
 	debugPrints:                      true,    // Prints out many useful debug prints during the run
 	debugInterval:                    1000000, // How many iterations between each debug print
 	numRoutingGoroutines:             25,      // 25 seems to currently be the sweet spot
-	epoke:                            1,       // Defined as timeStep / requestsPerSecond, updated by requestWorker
+	epoch:                            1,       // Defined as timeStep / requestsPerSecond, updated by requestWorker
 }
 
 func SetNumRoutingGoroutines(num int) int {
@@ -91,11 +91,6 @@ func SetNumRoutingGoroutines(num int) int {
 	num-- // for the requestWorker
 	constants.numRoutingGoroutines = num
 	return num
-}
-
-func UpdateEpoke() int {
-	constants.epoke++
-	return constants.epoke
 }
 
 // func CreateRangeAddress(c *constant){
@@ -250,6 +245,6 @@ func GetNumRoutingGoroutines() int {
 	return constants.numRoutingGoroutines
 }
 
-func GetEpoke() int {
-	return constants.epoke
+func GetEpoch() int {
+	return constants.epoch
 }

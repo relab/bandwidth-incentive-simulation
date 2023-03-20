@@ -73,7 +73,7 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 		for _, adjItems := range nodeAdj {
 			for _, item := range adjItems {
 				threshold := general.BitLength(nodeId ^ item)
-				epoke := constants.GetEpoke()
+				epoke := constants.GetEpoch()
 				attrs := types.EdgeAttrs{A2B: 0, Last: 0, EpokeLastForgiven: epoke, Threshold: threshold}
 				err := graph.AddEdge(node.Id, item, attrs)
 				if err != nil {
@@ -153,15 +153,13 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 		}
 		if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph, request) {
 			thresholdFailed = false
-
 			if constants.IsRetryWithAnotherPeer() {
-				if reroute := rerouteStruct.GetRerouteMap(mainOriginatorId); reroute != nil {
-					allExceptLast := len(reroute) - 1
-					if general.Contains(reroute[:allExceptLast], nodeId) {
+				if reroute := rerouteStruct.GetRerouteMap(mainOriginatorId).Reroute; reroute != nil {
+					if general.Contains(reroute, nodeId) {
 						if constants.GetEdgeLock() {
 							graph.UnlockEdge(firstNodeId, nodeId)
 						}
-						continue
+						continue // skips node that's been part of a failed route before
 					}
 				}
 			}
@@ -180,7 +178,6 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 
 		} else {
 			thresholdFailed = true
-
 			if constants.GetPaymentEnabled() {
 				if dist < payDist && nextNodeId == 0 {
 					if constants.GetEdgeLock() && payNextId != 0 {
