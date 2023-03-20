@@ -56,8 +56,8 @@ func (p *PendingStruct) AddPendingChunkId(originator int, chunkId int, curEpoch 
 			pending.ChunkQueue[chunkStructIndex].Counter++
 			p.PendingMap[originator] = pending
 
-		} else {
-			pending.ChunkQueue = append(pending.ChunkQueue[:chunkStructIndex]) // remove chunkStruct
+		} else { // remove chunkStruct
+			pending.ChunkQueue = append(pending.ChunkQueue[:chunkStructIndex], pending.ChunkQueue[chunkStructIndex+1:]...)
 			if len(pending.ChunkQueue) == 0 {
 				delete(p.PendingMap, originator)
 			}
@@ -108,7 +108,6 @@ func (p *PendingStruct) UpdateEpoch(originator int, chunkId int, curEpoch int) i
 		}
 	}
 	return -1
-
 }
 
 func (p *PendingStruct) GetAndUpdateCurrentIndex(pending Pending, originator int) int {
