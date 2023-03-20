@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	google.golang.org/protobuf v1.28.1
+	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools v2.2.0+incompatible
 )
 

@@ -1,5 +1,47 @@
 package types
 
+type Constants struct {
+	Runs                             int
+	Bits                             int
+	NetworkSize                      int
+	BinSize                          int
+	RangeAddress                     int
+	Originators                      int
+	RefreshRate                      int
+	Threshold                        int
+	RandomSeed                       int64
+	MaxProximityOrder                int
+	Price                            int
+	Chunks                           int
+	RequestsPerSecond                int
+	ThresholdEnabled                 bool
+	ForgivenessEnabled               bool
+	ForgivenessDuringRouting         bool
+	PaymentEnabled                   bool
+	MaxPOCheckEnabled                bool
+	WaitingEnabled                   bool
+	OnlyOriginatorPays               bool
+	PayOnlyForCurrentRequest         bool
+	PayIfOrigPays                    bool
+	ForwarderPayForceOriginatorToPay bool
+	RetryWithAnotherPeer             bool
+	CacheIsEnabled                   bool
+	PreferredChunks                  bool
+	AdjustableThreshold              bool
+	EdgeLock                         bool
+	SameOriginator                   bool
+	PrecomputeRespNodes              bool
+	WriteRoutesToFile                bool
+	WriteStatesToFile                bool
+	IterationMeansUniqueChunk        bool
+	DebugPrints                      bool
+	DebugInterval                    int
+	NumRoutingGoroutines             int
+	Epoch                            int
+}
+
+type Experiments map[int]Constants
+
 type Request struct {
 	TimeStep        int
 	Epoch           int
