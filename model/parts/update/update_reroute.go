@@ -18,12 +18,7 @@ func RerouteMap(state *types.State, requestResult types.RequestResult, curEpoch 
 			routeStruct := state.RerouteStruct.GetRerouteMap(originator) // reroute = rejected nodes + chunk
 			if routeStruct.Reroute != nil {
 				if routeStruct.ChunkId == chunkId { // If chunkId == chunkId
-					//fmt.Println("route: ", route, "reroute: ", reroute)
 					state.RerouteStruct.DeleteReroute(originator)
-					// If found remove from waiting queue (pending map)
-					//if constants.IsWaitingEnabled() {
-					//	state.PendingStruct.DeletePendingChunkId(originator, chunkId)
-					//}
 				}
 			}
 
@@ -42,9 +37,6 @@ func RerouteMap(state *types.State, requestResult types.RequestResult, curEpoch 
 		if routeStruct.Reroute != nil {
 			if len(routeStruct.Reroute) > constants.GetBinSize() {
 				state.RerouteStruct.DeleteReroute(originator)
-				//if constants.IsWaitingEnabled() {
-				//	state.PendingStruct.DeletePendingChunkId(originator, chunkId)
-				//}
 			}
 		}
 	}
