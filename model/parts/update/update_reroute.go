@@ -9,12 +9,10 @@ import (
 func RerouteMap(state *types.State, requestResult types.RequestResult, curEpoch int) types.RerouteStruct {
 	if constants.IsRetryWithAnotherPeer() {
 		route := requestResult.Route
+		chunkId := requestResult.ChunkId
 		originator := route[0]
-		firstHopNode := route[1]
-		chunkId := route[len(route)-1]
 
-		// -1 = Threshold Fail, -2 = Access Fail --> request was successful
-		if !general.Contains(route, -1) && !general.Contains(route, -2) {
+		if !requestResult.ThresholdFailed && !requestResult.AccessFailed {
 			routeStruct := state.RerouteStruct.GetRerouteMap(originator) // reroute = rejected nodes + chunk
 			if routeStruct.Reroute != nil {
 				if routeStruct.ChunkId == chunkId { // If chunkId == chunkId
@@ -22,8 +20,9 @@ func RerouteMap(state *types.State, requestResult types.RequestResult, curEpoch 
 				}
 			}
 
-		} else if len(route) > 3 { // Rejection in second hop (?), route contains at least originator, -1/-2, chunkId
+		} else if len(route) > 1 { // Rejection in second hop --> route have at least an originator and a firstHopeNode
 			routeStruct := state.RerouteStruct.GetRerouteMap(originator)
+			firstHopNode := route[1]
 			if routeStruct.Reroute != nil {
 				if !general.Contains(routeStruct.Reroute, firstHopNode) { // if the first hop in new route have not been searched before
 					state.RerouteStruct.AddNodeToReroute(originator, firstHopNode)

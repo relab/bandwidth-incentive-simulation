@@ -4,21 +4,36 @@ type Request struct {
 	TimeStep        int
 	Epoch           int
 	OriginatorIndex int
-	OriginatorId    int
-	ChunkId         int
-	RespNodes       [4]int
+	OriginatorId    NodeId
+	ChunkId         ChunkId
+	RespNodes       [4]NodeId
 }
 
-type Route []int
+type Route []NodeId
+
+type RequestResult struct {
+	Route           Route
+	ChunkId         ChunkId
+	Found           bool
+	AccessFailed    bool
+	ThresholdFailed bool
+	FoundByCaching  bool
+	PaymentList     []Payment
+}
+
+//type RequestResult struct {
+//	Route       RequestResult
+//	PaymentList []Payment
+//}
 
 type Payment struct {
-	FirstNodeId  int
-	PayNextId    int
-	ChunkId      int
+	FirstNodeId  NodeId
+	PayNextId    NodeId
+	ChunkId      ChunkId
 	IsOriginator bool
 }
 
-type Threshold [2]int
+type Threshold [2]NodeId
 
 type StateSubset struct {
 	OriginatorIndex         int32
@@ -32,8 +47,10 @@ type StateSubset struct {
 }
 
 type RouteData struct {
-	TimeStep int32 `json:"t"`
-	Route    Route `json:"r"`
+	TimeStep        int32 `json:"t"`
+	Route           Route `json:"r"`
+	ThresholdFailed bool
+	AccessFailed    bool
 }
 
 //type StateData struct {
@@ -43,9 +60,9 @@ type RouteData struct {
 
 type State struct {
 	Graph                   *Graph
-	Originators             []int
-	NodesId                 []int
-	RouteLists              []Route
+	Originators             []NodeId
+	NodesId                 []NodeId
+	RouteLists              []RequestResult
 	PendingStruct           PendingStruct
 	RerouteStruct           RerouteStruct
 	CacheStruct             CacheStruct
@@ -57,17 +74,9 @@ type State struct {
 	Epoch                   int
 }
 
-type RequestResult struct {
-	Found                bool
-	Route                Route
-	ThresholdFailedLists [][]Threshold
-	AccessFailed         bool
-	PaymentList          []Payment
-}
-
 type RouteWithPrice struct {
-	RequesterNode int
-	ProviderNode  int
+	RequesterNode NodeId
+	ProviderNode  NodeId
 	Price         int
 }
 

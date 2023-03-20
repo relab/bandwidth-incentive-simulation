@@ -16,7 +16,6 @@ type constant struct {
 	requestsPerSecond                int
 	thresholdEnabled                 bool
 	forgivenessEnabled               bool
-	forgivenessDuringRouting         bool
 	paymentEnabled                   bool
 	maxPOCheckEnabled                bool
 	waitingEnabled                   bool
@@ -56,17 +55,16 @@ var constants = constant{
 	requestsPerSecond:                12500,   // 12500
 	thresholdEnabled:                 true,    // The maximum limit of debt an edge can have in one direction
 	forgivenessEnabled:               true,    // Edge debt gets forgiven some amount on an interval (amortized)
-	forgivenessDuringRouting:         true,    // If the forgiveness should happen before threshold is checked or after in updateGraph
 	paymentEnabled:                   false,   // Nodes pay if they Threshold fail
 	maxPOCheckEnabled:                false,   // Used to find the proper variable called "omega" in the python paper
 	onlyOriginatorPays:               false,   // Only the originator will pay, others will threshold fail or wait
 	payOnlyForCurrentRequest:         false,   // Only pay for current request or the full debt on the edge
 	payIfOrigPays:                    false,   // Only pay if the originator pays -- NOT NEEDED
 	forwarderPayForceOriginatorToPay: false,   // If Threshold fails, forces all the nodes in the route to pay for the current request
-	waitingEnabled:                   true,    // When Threshold fails, will wait before trying to traverse same route
-	retryWithAnotherPeer:             true,    // The Route to the chunk will try to take many paths to find the chunk
+	waitingEnabled:                   false,   // When Threshold fails, will wait before trying to traverse same route
+	retryWithAnotherPeer:             false,   // The Route to the chunk will try to take many paths to find the chunk
 	cacheIsEnabled:                   false,   // Cache, which stores previously looked after chunks on the nodes
-	preferredChunks:                  false,   // Fits well with cache, where some chunkIds are chosen more often
+	preferredChunks:                  true,    // Fits well with cache, where some chunkIds are chosen more often
 	adjustableThreshold:              false,   // The Threshold limit of an edge is determined based on the XOR distance
 	edgeLock:                         true,    // Should always be true when using concurrency
 	sameOriginator:                   false,   // For testing the usefulness of locking the edges
@@ -109,9 +107,9 @@ func IsForgivenessEnabled() bool {
 	return constants.forgivenessEnabled
 }
 
-func IsForgivenessDuringRouting() bool {
-	return constants.forgivenessDuringRouting
-}
+//func IsForgivenessDuringRouting() bool {
+//	return constants.forgivenessDuringRouting
+//}
 
 func IsCacheEnabled() bool {
 	return constants.cacheIsEnabled

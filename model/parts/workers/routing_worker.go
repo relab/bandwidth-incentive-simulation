@@ -25,15 +25,7 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 				return
 			}
 
-			found, route, thresholdFailed, accessFailed, paymentsList := utils.ConsumeTask(request, globalState.Graph, globalState.RerouteStruct, globalState.CacheStruct)
-
-			requestResult = types.RequestResult{
-				Found:                found,
-				Route:                route,
-				ThresholdFailedLists: thresholdFailed,
-				AccessFailed:         accessFailed,
-				PaymentList:          paymentsList,
-			}
+			requestResult = utils.ConsumeTask(request, globalState.Graph, globalState.RerouteStruct, globalState.CacheStruct)
 
 			// TODO: decide on where we should update the timestep. At request creation or request fulfillment
 			//curTimeStep := update.Timestep(globalState)
@@ -69,7 +61,11 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 						fmt.Println("routeChan length: ", len(routeChan))
 					}
 				}
-				routeChan <- types.RouteData{TimeStep: int32(curTimeStep), Route: route}
+				routeChan <- types.RouteData{
+					TimeStep:        int32(curTimeStep),
+					Route:           requestResult.Route,
+					AccessFailed:    requestResult.AccessFailed,
+					ThresholdFailed: requestResult.ThresholdFailed}
 			}
 
 			if constants.IsWriteStatesToFile() {

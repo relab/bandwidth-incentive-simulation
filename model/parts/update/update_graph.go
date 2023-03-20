@@ -2,16 +2,14 @@ package update
 
 import (
 	"go-incentive-simulation/model/constants"
-	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/utils"
-	"math"
 )
 
-func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int) types.Output {
-	//network := state.Graph
-	route := policyInput.Route
-	paymentsList := policyInput.PaymentList
+func Graph(state *types.State, requestResult types.RequestResult, curTimeStep int) types.Output {
+	chunkId := requestResult.ChunkId
+	route := requestResult.Route
+	paymentsList := requestResult.PaymentList
 	var routeWithPrice types.RouteWithPrice
 	var paymentWithPrice types.PaymentWithPrice
 	var output types.Output
@@ -31,8 +29,6 @@ func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int)
 						continue
 					} else {
 						if !constants.IsPayOnlyForCurrentRequest() {
-							//edgeData1.A2B = 0
-							//edgeData2.A2B = 0
 							newEdgeData1 := edgeData1
 							newEdgeData1.A2B = 0
 							state.Graph.SetEdgeData(payment.FirstNodeId, payment.PayNextId, newEdgeData1)
@@ -58,8 +54,6 @@ func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int)
 						continue
 					} else {
 						if !constants.IsPayOnlyForCurrentRequest() {
-							//edgeData1.A2B = 0
-							//edgeData2.A2B = 0
 							newEdgeData1 := edgeData1
 							newEdgeData1.A2B = 0
 							state.Graph.SetEdgeData(payment.FirstNodeId, payment.PayNextId, newEdgeData1)
@@ -76,106 +70,68 @@ func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int)
 			}
 		}
 	}
-	if !general.Contains(route, -1) && !general.Contains(route, -2) {
-		if general.Contains(route, -3) {
-			chunkId := route[len(route)-2]
-			for i := 0; i < len(route)-3; i++ {
-				requesterNode := route[i]
-				providerNode := route[i+1]
-				price := utils.PeerPriceChunk(providerNode, chunkId)
-				edgeData := state.Graph.GetEdgeData(requesterNode, providerNode)
-				//edgeData1.A2B += price
-				newEdgeData := edgeData
-				newEdgeData.A2B += price
-				state.Graph.SetEdgeData(requesterNode, providerNode, newEdgeData)
 
-				if constants.GetMaxPOCheckEnabled() {
-					//routeWithPrice = append(routeWithPrice, requesterNode)
-					//routeWithPrice = append(routeWithPrice, price)
-					//routeWithPrice = append(routeWithPrice, providerNode)
-					routeWithPrice = types.RouteWithPrice{RequesterNode: requesterNode, ProviderNode: providerNode, Price: price}
-					output.RoutesWithPrice = append(output.RoutesWithPrice, routeWithPrice)
-				}
-			}
-			if constants.GetMaxPOCheckEnabled() {
-				//fmt.Println("Route with price ", routeWithPrice)
-			}
-		} else {
-			chunkId := route[len(route)-1]
-			for i := 0; i < len(route)-2; i++ {
-				requesterNode := route[i]
-				providerNode := route[i+1]
-				price := utils.PeerPriceChunk(providerNode, chunkId)
-				edgeData := state.Graph.GetEdgeData(requesterNode, providerNode)
-				//edgeData.A2B += price
-				newEdgeData := edgeData
-				newEdgeData.A2B += price
-				state.Graph.SetEdgeData(requesterNode, providerNode, newEdgeData)
+	if requestResult.Found {
+		for i := 0; i < len(route)-1; i++ {
+			requesterNode := route[i]
+			providerNode := route[i+1]
+			price := utils.PeerPriceChunk(providerNode, chunkId)
+			edgeData := state.Graph.GetEdgeData(requesterNode, providerNode)
+			//edgeData1.A2B += price
+			newEdgeData := edgeData
+			newEdgeData.A2B += price
+			state.Graph.SetEdgeData(requesterNode, providerNode, newEdgeData)
 
-				if constants.GetMaxPOCheckEnabled() {
-					//routeWithPrice = append(routeWithPrice, requesterNode)
-					//routeWithPrice = append(routeWithPrice, price)
-					//routeWithPrice = append(routeWithPrice, providerNode)
-					routeWithPrice = types.RouteWithPrice{RequesterNode: requesterNode, ProviderNode: providerNode, Price: price}
-					output.RoutesWithPrice = append(output.RoutesWithPrice, routeWithPrice)
-				}
-			}
 			if constants.GetMaxPOCheckEnabled() {
-				//fmt.Println("Route with price ", routeWithPrice)
+				//routeWithPrice = append(routeWithPrice, requesterNode)
+				//routeWithPrice = append(routeWithPrice, price)
+				//routeWithPrice = append(routeWithPrice, providerNode)
+				routeWithPrice = types.RouteWithPrice{RequesterNode: requesterNode, ProviderNode: providerNode, Price: price}
+				output.RoutesWithPrice = append(output.RoutesWithPrice, routeWithPrice)
 			}
 		}
-	}
-	// TODO: Decide on if this logic should be here or moved to the isThresholdFailed function
-	if !constants.IsForgivenessDuringRouting() {
-		if constants.GetThresholdEnabled() && constants.IsForgivenessEnabled() {
-			thresholdFailedLists := policyInput.ThresholdFailedLists
-			if len(thresholdFailedLists) > 0 {
-				for _, thresholdFailedL := range thresholdFailedLists {
-					if len(thresholdFailedL) > 0 {
-						for _, couple := range thresholdFailedL {
-							requesterNode := couple[0]
-							providerNode := couple[1]
-							edgeData := state.Graph.GetEdgeData(requesterNode, providerNode)
-							passedTime := (curTimeStep - edgeData.Last) / constants.GetRequestsPerSecond()
-							if passedTime > 0 {
-								refreshRate := constants.GetRefreshRate()
-								if constants.IsAdjustableThreshold() {
-									refreshRate = int(math.Ceil(float64(edgeData.Threshold / 2)))
-								}
-								removedDeptAmount := passedTime * refreshRate
-								newEdgeData := edgeData
-								newEdgeData.A2B -= removedDeptAmount
-								if newEdgeData.A2B < 0 {
-									newEdgeData.A2B = 0
-								}
-								newEdgeData.Last = curTimeStep
-								state.Graph.SetEdgeData(requesterNode, providerNode, newEdgeData)
-							}
-						}
-					}
-				}
-			}
+		if constants.GetMaxPOCheckEnabled() {
+			//fmt.Println("RequestResult with price ", routeWithPrice)
 		}
+
 	}
+	// TODO: Not needed, forgiveness is done during routing
+	//if constants.GetThresholdEnabled() && constants.IsForgivenessEnabled() {
+	//	thresholdFailedLists := policyInput.ThresholdFailedLists
+	//	if len(thresholdFailedLists) > 0 {
+	//		for _, thresholdFailedL := range thresholdFailedLists {
+	//			if len(thresholdFailedL) > 0 {
+	//				for _, couple := range thresholdFailedL {
+	//					requesterNode := couple[0]
+	//					providerNode := couple[1]
+	//					edgeData := state.Graph.GetEdgeData(requesterNode, providerNode)
+	//					passedTime := (curTimeStep - edgeData.Last) / constants.GetRequestsPerSecond()
+	//					if passedTime > 0 {
+	//						refreshRate := constants.GetRefreshRate()
+	//						if constants.IsAdjustableThreshold() {
+	//							refreshRate = int(math.Ceil(float64(edgeData.Threshold / 2)))
+	//						}
+	//						removedDeptAmount := passedTime * refreshRate
+	//						newEdgeData := edgeData
+	//						newEdgeData.A2B -= removedDeptAmount
+	//						if newEdgeData.A2B < 0 {
+	//							newEdgeData.A2B = 0
+	//						}
+	//						newEdgeData.Last = curTimeStep
+	//						state.Graph.SetEdgeData(requesterNode, providerNode, newEdgeData)
+	//					}
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
+
 	// Unlocks all the edges between the nodes in the route
 	if constants.GetEdgeLock() {
-		if !general.Contains(route, -1) && !general.Contains(route, -2) {
-			if general.Contains(route, -3) {
-				for i := 0; i < len(route)-3; i++ {
-					state.Graph.UnlockEdge(route[i], route[i+1])
-				}
-			} else {
-				for i := 0; i < len(route)-2; i++ {
-					state.Graph.UnlockEdge(route[i], route[i+1])
-				}
-			}
-		} else {
-			for i := 0; i < len(route)-3; i++ {
-				state.Graph.UnlockEdge(route[i], route[i+1])
-			}
+		for i := 0; i < len(route)-1; i++ {
+			state.Graph.UnlockEdge(route[i], route[i+1])
 		}
 	}
 
-	//state.Graph = network
 	return output
 }

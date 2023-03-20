@@ -5,12 +5,12 @@ import (
 )
 
 type RouteStruct struct {
-	Reroute   Route
-	ChunkId   int
+	Reroute   []NodeId
+	ChunkId   ChunkId
 	LastEpoch int
 }
 
-type RerouteMap map[int]RouteStruct
+type RerouteMap map[NodeId]RouteStruct
 
 type RerouteStruct struct {
 	RerouteMap           RerouteMap
@@ -18,7 +18,7 @@ type RerouteStruct struct {
 	UniqueRerouteCounter int
 }
 
-func (r *RerouteStruct) GetRerouteMap(originator int) RouteStruct {
+func (r *RerouteStruct) GetRerouteMap(originator NodeId) RouteStruct {
 	r.RerouteMutex.Lock()
 	defer r.RerouteMutex.Unlock()
 	reroute, ok := r.RerouteMap[originator]
@@ -28,20 +28,20 @@ func (r *RerouteStruct) GetRerouteMap(originator int) RouteStruct {
 	return RouteStruct{}
 }
 
-func (r *RerouteStruct) DeleteReroute(originator int) {
+func (r *RerouteStruct) DeleteReroute(originator NodeId) {
 	r.RerouteMutex.Lock()
 	defer r.RerouteMutex.Unlock()
 	delete(r.RerouteMap, originator)
 }
 
-func (r *RerouteStruct) AddNewReroute(originator int, nodeId int, chunkId int, curEpoch int) bool {
+func (r *RerouteStruct) AddNewReroute(originator NodeId, nodeId NodeId, chunkId ChunkId, curEpoch int) bool {
 	r.RerouteMutex.Lock()
 	defer r.RerouteMutex.Unlock()
 	_, ok := r.RerouteMap[originator]
 	if !ok {
 		r.UniqueRerouteCounter++
 		r.RerouteMap[originator] = RouteStruct{
-			Reroute:   []int{nodeId},
+			Reroute:   []NodeId{nodeId},
 			ChunkId:   chunkId,
 			LastEpoch: curEpoch,
 		}
@@ -50,7 +50,7 @@ func (r *RerouteStruct) AddNewReroute(originator int, nodeId int, chunkId int, c
 	return false
 }
 
-func (r *RerouteStruct) AddNodeToReroute(originator int, nodeId int) bool {
+func (r *RerouteStruct) AddNodeToReroute(originator NodeId, nodeId NodeId) bool {
 	r.RerouteMutex.Lock()
 	defer r.RerouteMutex.Unlock()
 	routeStruct, ok := r.RerouteMap[originator]
@@ -63,7 +63,7 @@ func (r *RerouteStruct) AddNodeToReroute(originator int, nodeId int) bool {
 	return false
 }
 
-func (r *RerouteStruct) UpdateEpoch(originator int, curEpoch int) int {
+func (r *RerouteStruct) UpdateEpoch(originator NodeId, curEpoch int) int {
 	r.RerouteMutex.Lock()
 	defer r.RerouteMutex.Unlock()
 	routeStruct, ok := r.RerouteMap[originator]

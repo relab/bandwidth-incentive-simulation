@@ -16,9 +16,10 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 	var originatorIndex = 0
 	var timeStep = 0
 	var counter = 0
-	var responsibleNodes [4]int
+	var responsibleNodes [4]types.NodeId
 	var curEpoch = constants.GetEpoch()
 	var PickedFromWaiting int
+	var chunkId types.ChunkId = -1
 
 	defer close(requestChan)
 
@@ -60,7 +61,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			originatorId := globalState.Originators[originatorIndex]
 			//originator := globalState.Graph.GetNode(originatorIndex)
 
-			chunkId := -1
+			chunkId = -1
 
 			if constants.IsRetryWithAnotherPeer() {
 
@@ -96,16 +97,16 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			}
 
 			if chunkId == -1 && timeStep <= iterations { // No waiting and no retry, and qualify for unique chunk
-				chunkId = rand.Intn(constants.GetRangeAddress() - 1)
+				chunkId = types.ChunkId(rand.Intn(constants.GetRangeAddress() - 1))
 
 				if constants.IsPreferredChunksEnabled() {
 					var random float32
 					numPreferredChunks := 1000
 					random = rand.Float32()
 					if float32(random) <= 0.5 {
-						chunkId = rand.Intn(numPreferredChunks)
+						chunkId = types.ChunkId(rand.Intn(numPreferredChunks))
 					} else {
-						chunkId = rand.Intn(constants.GetRangeAddress()-numPreferredChunks) + numPreferredChunks
+						chunkId = types.ChunkId(rand.Intn(constants.GetRangeAddress()-numPreferredChunks) + numPreferredChunks)
 					}
 				}
 				responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)

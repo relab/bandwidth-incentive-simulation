@@ -63,10 +63,10 @@ func RouteFlushWorker(routeChan chan types.RouteData, wg *sync.WaitGroup) {
 		// TODO: uncomment below to write to binary
 		//message = &protoGenerated.RouteData{
 		//	TimeStep: routeData.TimeStep,
-		//	Route:    &protoGenerated.Route{},
+		//	RequestResult:    &protoGenerated.RequestResult{},
 		//}
-		//for _, nodeId := range routeData.Route {
-		//	message.Route.Waypoints = append(message.Route.Waypoints, int32(nodeId))
+		//for _, nodeId := range routeData.RequestResult {
+		//	message.RequestResult.Waypoints = append(message.RequestResult.Waypoints, int32(nodeId))
 		//}
 		//
 		//bytes, err = proto.Marshal(message)
@@ -76,18 +76,18 @@ func RouteFlushWorker(routeChan chan types.RouteData, wg *sync.WaitGroup) {
 	}
 }
 
-//func routeListConvertAndDumpToFile(routes []types.Route, curTimeStep int, actualFile *os.File) error {
+//func routeListConvertAndDumpToFile(routes []types.RequestResult, curTimeStep int, actualFile *os.File) error {
 
 // message := &protoGenerated.RouteData{
 // 	TimeStep: int32(curTimeStep),
-// 	Routes:   make([]*protoGenerated.Route, len(routes)),
+// 	Routes:   make([]*protoGenerated.RequestResult, len(routes)),
 // }
 // for i, route := range routes {
 // 	var routeList []int32
 // 	for _, node := range route {
 // 		routeList = append(routeList, int32(node))
 // 	}
-// 	message.Routes[i] = &protoGenerated.Route{
+// 	message.Routes[i] = &protoGenerated.RequestResult{
 // 		Waypoints: routeList,
 // 	}
 // }
@@ -110,11 +110,11 @@ func RouteFlushWorker(routeChan chan types.RouteData, wg *sync.WaitGroup) {
 //return nil
 //}
 
-//func routeListAndFlush(state *types.State, route types.Route, curTimeStep int, actualFile *os.File) []types.Route {
+//func routeListAndFlush(state *types.State, route types.RequestResult, curTimeStep int, actualFile *os.File) []types.RequestResult {
 //	state.RouteLists[curTimeStep%10000] = route
 //	if (curTimeStep+5000)%10000 == 0 {
 //		routeListConvertAndDumpToFile(state.RouteLists, curTimeStep, actualFile)
-//		state.RouteLists = make([]types.Route, 10000)
+//		state.RouteLists = make([]types.RequestResult, 10000)
 //	}
 //	return state.RouteLists
 //}

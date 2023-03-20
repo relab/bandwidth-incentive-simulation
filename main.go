@@ -20,7 +20,7 @@ import (
 
 //p := types.RequestResult{
 //	Found:                found,
-//		Route:                route,
+//		RequestResult:                route,
 //		ThresholdFailedLists: thresholdFailed,
 //		AccessFailed:         accessFailed,
 //		PaymentList:          paymentsList,
@@ -136,7 +136,7 @@ func main() {
 	// 	if count == 10 {
 	// 		break
 	// 	}
-	// 	fmt.Printf("Route: %v\n", route.GetWaypoints())
+	// 	fmt.Printf("RequestResult: %v\n", route.GetWaypoints())
 	// 	fmt.Printf("Length: %d\n", route.GetLength())
 	// 	count++
 	// }

@@ -5,11 +5,8 @@ import (
 	"sync/atomic"
 )
 
-func FailedRequestsThreshold(state *types.State, policyInput types.RequestResult) int32 {
-	found := policyInput.Found
-	// thresholdFailedList := policyInput.thresholdFailedList
-	accessFailed := policyInput.AccessFailed
-	if !found && !accessFailed {
+func FailedRequestsThreshold(state *types.State, requestResult types.RequestResult) int32 {
+	if requestResult.ThresholdFailed {
 		return atomic.AddInt32(&state.FailedRequestsThreshold, 1)
 	}
 	return atomic.LoadInt32(&state.FailedRequestsThreshold)

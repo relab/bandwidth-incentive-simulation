@@ -13,14 +13,26 @@ import (
 type Network struct {
 	Bits     int
 	Bin      int
-	NodesMap map[int]*Node
+	NodesMap map[NodeId]*Node
+}
+
+type NodeId int32
+
+func (n NodeId) ToInt32() int32 {
+	return int32(n)
+}
+
+type ChunkId int32
+
+func (c ChunkId) ToInt32() int32 {
+	return int32(c)
 }
 
 type Node struct {
 	Network    *Network
-	Id         int
-	AdjIds     [][]int
-	CacheMap   map[int]int
+	Id         NodeId
+	AdjIds     [][]NodeId
+	CacheMap   map[ChunkId]int // int = counter
 	Mutex      *sync.Mutex
 	storageSet []int
 	cacheSet   []int
@@ -31,12 +43,12 @@ type jsonFormat struct {
 	Bits  int `json:"bits"`
 	Bin   int `json:"bin"`
 	Nodes []struct {
-		ID  int   `json:"id"`
+		Id  int   `json:"id"`
 		Adj []int `json:"adj"`
 	} `json:"Nodes"`
 }
 
-func (network *Network) Load(path string) (int, int, map[int]*Node) {
+func (network *Network) Load(path string) (int, int, map[NodeId]*Node) {
 	file, _ := os.Open(path)
 	defer func(file *os.File) {
 		err := file.Close()
@@ -53,13 +65,13 @@ func (network *Network) Load(path string) (int, int, map[int]*Node) {
 
 	network.Bits = test.Bits
 	network.Bin = test.Bin
-	network.NodesMap = make(map[int]*Node)
+	network.NodesMap = make(map[NodeId]*Node)
 
 	for _, node := range test.Nodes {
-		node1 := network.node(node.ID)
+		node1 := network.node(NodeId(node.Id))
 		sort.Ints(node.Adj)
 		for _, adj := range node.Adj {
-			node2 := network.node(adj)
+			node2 := network.node(NodeId(adj))
 			node1.add(node2)
 		}
 	}
@@ -67,36 +79,36 @@ func (network *Network) Load(path string) (int, int, map[int]*Node) {
 	return network.Bits, network.Bin, network.NodesMap
 }
 
-func (network *Network) node(value int) *Node {
-	if value < 0 || value >= (1<<network.Bits) {
+func (network *Network) node(nodeId NodeId) *Node {
+	if nodeId < 0 || nodeId >= (1<<network.Bits) {
 		panic("address out of range")
 	}
 	res := Node{
 		Network:    network,
-		Id:         value,
-		AdjIds:     make([][]int, network.Bits),
-		CacheMap:   make(map[int]int),
+		Id:         nodeId,
+		AdjIds:     make([][]NodeId, network.Bits),
+		CacheMap:   make(map[ChunkId]int),
 		Mutex:      &sync.Mutex{},
 		storageSet: []int{0},
 		cacheSet:   []int{0},
 		canPay:     true,
 	}
 	if len(network.NodesMap) == 0 {
-		network.NodesMap = make(map[int]*Node)
+		network.NodesMap = make(map[NodeId]*Node)
 	}
-	if _, ok := network.NodesMap[value]; !ok {
-		network.NodesMap[value] = &res
+	if _, ok := network.NodesMap[nodeId]; !ok {
+		network.NodesMap[nodeId] = &res
 		return &res
 	}
-	return network.NodesMap[value]
+	return network.NodesMap[nodeId]
 
 }
 
 func (network *Network) Generate(count int) []*Node {
 	nodeIds := generateIds(count, (1<<network.Bits)-1)
 	nodes := make([]*Node, 0)
-	for _, nodeId := range nodeIds {
-		node := network.node(nodeId)
+	for _, i := range nodeIds {
+		node := network.node(NodeId(i))
 		nodes = append(nodes, node)
 	}
 	pairs := make([][2]*Node, 0)
@@ -118,23 +130,26 @@ func (network *Network) Dump(path string) error {
 		Bits  int `json:"bits"`
 		Bin   int `json:"bin"`
 		Nodes []struct {
-			ID  int   `json:"id"`
+			Id  int   `json:"id"`
 			Adj []int `json:"adj"`
 		} `json:"nodes"`
 	}
 	data := NetworkData{network.Bits, network.Bin, make([]struct {
-		ID  int   `json:"id"`
+		Id  int   `json:"id"`
 		Adj []int `json:"adj"`
 	}, 0)}
 	for _, node := range network.NodesMap {
 		var result []int
 		for _, list := range node.AdjIds {
-			result = append(result, list...)
+			for _, ele := range list {
+				result = append(result, int(ele))
+			}
+			//result = append(result, list...)
 		}
 		data.Nodes = append(data.Nodes, struct {
-			ID  int   `json:"id"`
+			Id  int   `json:"id"`
 			Adj []int `json:"adj"`
-		}{node.Id, result})
+		}{Id: int(node.Id), Adj: result})
 	}
 	file, _ := json.Marshal(data)
 	err := os.WriteFile(path, file, 0644)
@@ -142,7 +157,17 @@ func (network *Network) Dump(path string) error {
 		return err
 	}
 	return nil
+}
 
+func Choice(nodes []NodeId, k int) []NodeId {
+	res := make([]NodeId, k)
+
+	var val int
+	for i := 0; i < k; i++ {
+		val = rand.Intn(len(nodes)) - 1
+		res[i] = nodes[val]
+	}
+	return res
 }
 
 func shufflePairs(pairs [][2]*Node) {
@@ -171,12 +196,12 @@ func (node *Node) add(other *Node) bool {
 		return false
 	}
 	if node.AdjIds == nil {
-		node.AdjIds = make([][]int, node.Network.Bits)
+		node.AdjIds = make([][]NodeId, node.Network.Bits)
 	}
 	if other.AdjIds == nil {
-		other.AdjIds = make([][]int, other.Network.Bits)
+		other.AdjIds = make([][]NodeId, other.Network.Bits)
 	}
-	bit := node.Network.Bits - general.BitLength(node.Id^other.Id)
+	bit := node.Network.Bits - general.BitLength(node.Id.ToInt32()^other.Id.ToInt32())
 	if bit < 0 || bit >= node.Network.Bits {
 		return false
 	}

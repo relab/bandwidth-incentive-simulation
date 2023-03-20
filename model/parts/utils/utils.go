@@ -7,34 +7,33 @@ import (
 	"sort"
 )
 
-func PrecomputeRespNodes(nodesId []int) [][4]int {
+func PrecomputeRespNodes(nodesId []types.NodeId) [][4]types.NodeId {
 	numPossibleChunks := constants.GetRangeAddress()
-	result := make([][4]int, numPossibleChunks)
+	result := make([][4]types.NodeId, numPossibleChunks)
 	numNodesSearch := constants.GetBits()
 
 	for chunkId := 0; chunkId < numPossibleChunks; chunkId++ {
-
-		closestNodes := general.BinarySearchClosest(nodesId, chunkId, numNodesSearch)
-		distances := make([]int, len(closestNodes))
+		chunkIdInt32 := int32(chunkId)
+		closestNodes := types.BinarySearchClosest(nodesId, int32(chunkId), numNodesSearch)
+		distances := make([]int32, len(closestNodes))
 
 		for j, nodeId := range closestNodes {
-			distances[j] = nodeId ^ chunkId
+			distances[j] = nodeId.ToInt32() ^ chunkIdInt32
 		}
 
 		sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
 
 		for k := 0; k < 4; k++ {
-			result[chunkId][k] = distances[k] ^ chunkId // this results in the nodeId again
+			result[chunkId][k] = types.NodeId(distances[k] ^ chunkIdInt32) // this results in the nodeId again
 		}
 	}
-
 	return result
 }
 
-func SortedKeys(m map[int]*types.Node) []int {
-	keys := make([]int, len(m))
+func SortedKeys(nodeMap map[types.NodeId]*types.Node) []types.NodeId {
+	keys := make([]types.NodeId, len(nodeMap))
 	i := 0
-	for k := range m {
+	for k := range nodeMap {
 		keys[i] = k
 		i++
 	}
@@ -46,8 +45,8 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 	//fmt.Println("Creating graph network...")
 	sortedNodeIds := SortedKeys(net.NodesMap)
 	numNodes := len(net.NodesMap)
-	Edges := make(map[int]map[int]*types.Edge)
-	respNodes := make([][4]int, constants.GetRangeAddress())
+	Edges := make(map[types.NodeId]map[types.NodeId]*types.Edge)
+	respNodes := make([][4]types.NodeId, constants.GetRangeAddress())
 	if constants.IsPrecomputeRespNodes() {
 		respNodes = PrecomputeRespNodes(sortedNodeIds)
 	}
@@ -61,7 +60,7 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 	}
 
 	for _, nodeId := range sortedNodeIds {
-		graph.Edges[nodeId] = make(map[int]*types.Edge)
+		graph.Edges[nodeId] = make(map[types.NodeId]*types.Edge)
 
 		node := net.NodesMap[nodeId]
 		err1 := graph.AddNode(node)
@@ -72,9 +71,9 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 		nodeAdj := node.AdjIds
 		for _, adjItems := range nodeAdj {
 			for _, item := range adjItems {
-				threshold := general.BitLength(nodeId ^ item)
-				epoke := constants.GetEpoch()
-				attrs := types.EdgeAttrs{A2B: 0, Last: 0, EpokeLastForgiven: epoke, Threshold: threshold}
+				threshold := general.BitLength(nodeId.ToInt32() ^ item.ToInt32())
+				epoch := constants.GetEpoch()
+				attrs := types.EdgeAttrs{A2B: 0, Last: 0, EpochLastForgiven: epoch, Threshold: threshold}
 				err := graph.AddEdge(node.Id, item, attrs)
 				if err != nil {
 					return nil, err
@@ -88,7 +87,7 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 	return graph, nil
 }
 
-func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, graph *types.Graph, request types.Request) bool {
+func isThresholdFailed(firstNodeId types.NodeId, secondNodeId types.NodeId, chunkId types.ChunkId, graph *types.Graph, request types.Request) bool {
 	if constants.GetThresholdEnabled() {
 		edgeDataFirst := graph.GetEdgeData(firstNodeId, secondNodeId)
 		p2pFirst := edgeDataFirst.A2B
@@ -105,10 +104,10 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, graph *ty
 		//fmt.Printf("price: %d = p2pFirst: %d - p2pSecond: %d + PeerPriceChunk: %d \n", price, p2pFirst, p2pSecond, peerPriceChunk)
 
 		if price > threshold {
-			if constants.IsForgivenessDuringRouting() && constants.IsForgivenessEnabled() {
-				newP2pFirst, forgivenFirst := CheckForgiveness(edgeDataFirst, firstNodeId, secondNodeId, graph, request)
+			if constants.IsForgivenessEnabled() {
+				newP2pFirst, forgiven := CheckForgiveness(edgeDataFirst, firstNodeId, secondNodeId, graph, request)
 				//_, _ = CheckForgiveness(edgeDataSecond, secondNodeId, firstNodeId, graph, request)
-				if forgivenFirst {
+				if forgiven {
 					price = newP2pFirst - p2pSecond + peerPriceChunk
 				}
 			}
@@ -118,14 +117,15 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, graph *ty
 	return false
 }
 
-func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId int, prevNodePaid bool, rerouteStruct types.RerouteStruct, request types.Request) (int, []types.Threshold, bool, bool, types.Payment, bool) {
-	var nextNodeId = 0
-	var payNextId = 0
-	var thresholdList []types.Threshold
+func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool, graph *types.Graph, rerouteStruct types.RerouteStruct) (types.NodeId, bool, bool, bool, types.Payment) {
+	var nextNodeId types.NodeId = 0
+	var payNextId types.NodeId = 0
+	var payment types.Payment
 	var thresholdFailed bool
 	var accessFailed bool
-	var payment types.Payment
-	lastDistance := firstNodeId ^ chunkId
+	mainOriginatorId := request.OriginatorId
+	chunkId := request.ChunkId
+	lastDistance := firstNodeId.ToInt32() ^ chunkId.ToInt32()
 	//fmt.Printf("\n last distance is : %d, chunk is: %d, first is: %d", lastDistance, chunkId, firstNodeId)
 	//fmt.Printf("\n which bucket: %d \n", 16-BitLength(chunkId^firstNodeId))
 
@@ -133,14 +133,12 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 	payDist := lastDistance
 
 	//var lockedEdges []int
-	//var unlockedEdges []int
 
-	//firstNode := graph.NodesMap[firstNodeId]
-	bin := constants.GetBits() - general.BitLength(firstNodeId^chunkId)
+	bin := constants.GetBits() - general.BitLength(firstNodeId.ToInt32()^chunkId.ToInt32())
 	firstNodeAdjIds := graph.GetNodeAdj(firstNodeId)
 
 	for _, nodeId := range firstNodeAdjIds[bin] {
-		dist := nodeId ^ chunkId
+		dist := nodeId.ToInt32() ^ chunkId.ToInt32()
 		if general.BitLength(dist) >= general.BitLength(lastDistance) {
 			continue
 		}
@@ -203,60 +201,36 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 		accessFailed = false
 	} else if !thresholdFailed {
 		accessFailed = true
-		nextNodeId = -2 // Access Failed
+		//nextNodeId = -2 // Access Failed
 	} else {
-		nextNodeId = -1 // Threshold Failed
+		//nextNodeId = -1 // Threshold Failed
 	}
 
 	if constants.GetPaymentEnabled() && payNextId != 0 {
 		accessFailed = false
 
+		if firstNodeId == mainOriginatorId {
+			payment.IsOriginator = true
+		}
+
+		payment.FirstNodeId = firstNodeId
+		payment.PayNextId = payNextId
+		payment.ChunkId = chunkId
+		nextNodeId = payNextId
+
 		if constants.IsOnlyOriginatorPays() {
-			if firstNodeId == mainOriginatorId {
-				payment.IsOriginator = true
-				payment.FirstNodeId = firstNodeId
-				payment.PayNextId = payNextId
-				payment.ChunkId = chunkId
-				nextNodeId = payNextId
+			if firstNodeId != mainOriginatorId {
+				nextNodeId = -1
+				payNextId = 0
 			}
-
 		} else if constants.IsPayIfOrigPays() {
-			if prevNodePaid {
-				thresholdFailed = false
-				if firstNodeId == mainOriginatorId {
-					payment.IsOriginator = true
-				} else {
-					payment.IsOriginator = false
-				}
-				payment.FirstNodeId = firstNodeId
-				payment.PayNextId = payNextId
-				payment.ChunkId = chunkId
-				nextNodeId = payNextId
-
-			} else if firstNodeId == mainOriginatorId {
-				payment.IsOriginator = true
-				payment.FirstNodeId = firstNodeId
-				payment.PayNextId = payNextId
-				payment.ChunkId = chunkId
-				nextNodeId = payNextId
-
-			} else {
+			if !prevNodePaid && firstNodeId != mainOriginatorId {
 				thresholdFailed = true
 				nextNodeId = -1
 				payNextId = 0
 			}
-
 		} else {
 			thresholdFailed = false
-			if firstNodeId == mainOriginatorId {
-				payment.IsOriginator = true
-			} else {
-				payment.IsOriginator = false
-			}
-			payment.FirstNodeId = firstNodeId
-			payment.PayNextId = payNextId
-			payment.ChunkId = chunkId
-			nextNodeId = payNextId
 		}
 	}
 
@@ -269,53 +243,53 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 	//	}
 	//}
 
-	if constants.GetPaymentEnabled() {
-	out:
-		for i, item := range thresholdList {
-			for _, nodeId := range item {
-				if nodeId == payNextId {
-					if constants.IsPayIfOrigPays() {
-						if firstNodeId == mainOriginatorId {
-							thresholdList = append(thresholdList[:i], thresholdList[i+1:]...)
-						}
-					} else {
-						thresholdList = append(thresholdList[:i], thresholdList[i+1:]...)
-					}
-					break out
-				}
-			}
-		}
-	}
+	// TODO: Not used anymore since forgiveness is done in the isThresholdFailed check
+	//if constants.GetPaymentEnabled() {
+	//out:
+	//	for i, item := range thresholdList {
+	//		for _, nodeId := range item {
+	//			if nodeId == payNextId {
+	//				if constants.IsPayIfOrigPays() {
+	//					if firstNodeId == mainOriginatorId {
+	//						thresholdList = append(thresholdList[:i], thresholdList[i+1:]...)
+	//					}
+	//				} else {
+	//					thresholdList = append(thresholdList[:i], thresholdList[i+1:]...)
+	//				}
+	//				break out
+	//			}
+	//		}
+	//	}
+	//}
 
 	if payment != (types.Payment{}) {
 		prevNodePaid = true
 	} else {
 		prevNodePaid = false
 	}
-	// RASMUS: nil reference error
+
 	if nextNodeId != 0 {
 		// fmt.Println("Next node is: ", nextNodeId)
 	}
-	//nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid
-	return nextNodeId, thresholdList, thresholdFailed, accessFailed, payment, prevNodePaid
+
+	return nextNodeId, thresholdFailed, accessFailed, prevNodePaid, payment
 }
 
 // ConsumeTask cacheDict is map of nodes containing an array of maps with key as a chunkAddr and a popularity counter
-func ConsumeTask(request types.Request, graph *types.Graph, rerouteStruct types.RerouteStruct, cacheStruct types.CacheStruct) (bool, types.Route, [][]types.Threshold, bool, []types.Payment) {
-	var thresholdFailedList [][]types.Threshold
-	var paymentList []types.Payment
-	originatorId := request.OriginatorId
+func ConsumeTask(request types.Request, graph *types.Graph, rerouteStruct types.RerouteStruct, cacheStruct types.CacheStruct) types.RequestResult {
 	chunkId := request.ChunkId
 	respNodes := request.RespNodes
-	mainOriginatorId := originatorId
+	mainOriginatorId := request.OriginatorId
+	curNextNodeId := request.OriginatorId
+	requestResult := types.RequestResult{
+		Route:       []types.NodeId{mainOriginatorId},
+		ChunkId:     chunkId,
+		PaymentList: []types.Payment{},
+	}
 	found := false
-	foundByCaching := false
-	route := types.Route{mainOriginatorId}
-	//var resultInt int
-	var nextNodeId int
-	var thresholdList []types.Threshold
-	// thresholdFailed := false
-	var accessFailed bool
+	accessFailed := false
+	thresholdFailed := false
+	var nextNodeId types.NodeId
 	var payment types.Payment
 	var prevNodePaid bool
 
@@ -323,16 +297,15 @@ func ConsumeTask(request types.Request, graph *types.Graph, rerouteStruct types.
 		prevNodePaid = true
 	}
 	if general.ArrContains(respNodes, mainOriginatorId) {
-		// originator has the chunk
-		found = true
+		// originator has the chunk --> chunk is found
 	} else {
 	out:
-		for !general.ArrContains(respNodes, originatorId) {
+		for !general.ArrContains(respNodes, curNextNodeId) {
 
 			//fmt.Printf("\n orig: %d, chunk_id: %d", mainOriginatorId, chunkId)
 			//nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originatorId, chunkId, graph, mainOriginatorId, prevNodePaid, rerouteMap)
 
-			nextNodeId, thresholdList, _, accessFailed, payment, prevNodePaid = getNext(originatorId, chunkId, graph, mainOriginatorId, prevNodePaid, rerouteStruct, request)
+			nextNodeId, thresholdFailed, accessFailed, prevNodePaid, payment = getNext(request, curNextNodeId, prevNodePaid, graph, rerouteStruct)
 
 			//if nextNodeId == -2 {
 			//	// Access Failed
@@ -340,17 +313,14 @@ func ConsumeTask(request types.Request, graph *types.Graph, rerouteStruct types.
 			//}
 
 			if payment != (types.Payment{}) {
-				paymentList = append(paymentList, payment)
+				requestResult.PaymentList = append(requestResult.PaymentList, payment)
 			}
-			if len(thresholdList) > 0 {
-				thresholdFailedList = append(thresholdFailedList, thresholdList)
-			}
-			// RASMUS: Nil reference error
+
 			if nextNodeId != 0 {
-				route = append(route, nextNodeId)
+				requestResult.Route = append(requestResult.Route, nextNodeId)
 			}
 			// if not isinstance(next_node, int), originale versjonen
-			if !(nextNodeId <= -1) {
+			if !thresholdFailed && !accessFailed {
 				if general.ArrContains(respNodes, nextNodeId) {
 					//fmt.Println("is not in cache")
 					found = true
@@ -366,34 +336,31 @@ func ConsumeTask(request types.Request, graph *types.Graph, rerouteStruct types.
 					node.Mutex.Lock()
 					if _, ok := node.CacheMap[chunkId]; ok {
 						//fmt.Println("is in cache")
+						requestResult.FoundByCaching = true
 						found = true
-						foundByCaching = true
 						node.Mutex.Unlock()
 						break out
 					}
 					node.Mutex.Unlock()
 				}
 				// NOTE !
-				originatorId = nextNodeId
+				curNextNodeId = nextNodeId
 			} else {
 				break out
 			}
 		}
 	}
 
-	route = append(route, chunkId)
-
 	if constants.IsForwarderPayForceOriginatorToPay() {
 		//if nextNodeId != -2 {
-		if !general.Contains(route, -2) {
-			// NOT accessFailed
-			if len(paymentList) > 0 {
-				firstPayment := paymentList[0]
+		if !accessFailed {
+			if len(requestResult.PaymentList) > 0 {
+				firstPayment := requestResult.PaymentList[0]
 				if !firstPayment.IsOriginator {
-					for i := range route[:len(route)-1] {
-						p := types.Payment{FirstNodeId: route[i], PayNextId: route[i+1], ChunkId: route[len(route)-1]}
+					for i := range requestResult.Route {
+						p := types.Payment{FirstNodeId: requestResult.Route[i], PayNextId: requestResult.Route[i+1], ChunkId: requestResult.ChunkId}
 
-						for _, tmp := range paymentList {
+						for _, tmp := range requestResult.PaymentList {
 							if p.PayNextId == tmp.PayNextId && p.FirstNodeId == tmp.FirstNodeId && p.ChunkId == tmp.ChunkId {
 								break
 							}
@@ -402,30 +369,30 @@ func ConsumeTask(request types.Request, graph *types.Graph, rerouteStruct types.
 						if i == 0 {
 							p.IsOriginator = true
 						}
-						if i != len(route)-2 {
-							if i != len(route)-3 {
-								paymentList = append(paymentList[:i+1], paymentList[i:]...)
+						if i != len(requestResult.Route)-1 {
+							if i != len(requestResult.Route)-2 {
+								requestResult.PaymentList = append(requestResult.PaymentList[:i+1], requestResult.PaymentList[i:]...)
 							}
-							paymentList[i] = p
+							requestResult.PaymentList[i] = p
 						} else {
 							continue
 						}
 
 					}
-				} else {
-					for i := range route[1 : len(route)-1] {
-						p := types.Payment{FirstNodeId: route[i], PayNextId: route[i+1], ChunkId: route[len(route)-1]}
-						for _, tmp := range paymentList {
+				} else { // firstPayment = originator
+					for i := range requestResult.Route[1:] {
+						p := types.Payment{FirstNodeId: requestResult.Route[i], PayNextId: requestResult.Route[i+1], ChunkId: requestResult.ChunkId}
+						for _, tmp := range requestResult.PaymentList {
 							if p.PayNextId == tmp.PayNextId && p.FirstNodeId == tmp.FirstNodeId && p.ChunkId == tmp.ChunkId {
 								break
 							}
 						}
 						// payment is now not in paymentList
-						if i != len(route)-2 {
-							if i != len(route)-3 {
-								paymentList = append(paymentList[:i+1], paymentList[i:]...)
+						if i != len(requestResult.Route)-1 {
+							if i != len(requestResult.Route)-2 {
+								requestResult.PaymentList = append(requestResult.PaymentList[:i+1], requestResult.PaymentList[i:]...)
 							}
-							paymentList[i] = p
+							requestResult.PaymentList[i] = p
 						} else {
 							continue
 						}
@@ -433,19 +400,18 @@ func ConsumeTask(request types.Request, graph *types.Graph, rerouteStruct types.
 				}
 			}
 		} else {
-			paymentList = []types.Payment{}
+			requestResult.PaymentList = []types.Payment{}
 		}
+	}
+	requestResult.Found = found
+	requestResult.AccessFailed = accessFailed
+	requestResult.ThresholdFailed = thresholdFailed
 
-	}
-	if foundByCaching {
-		// route = append(route, "C") // TYPE MISMATCH
-		route = append(route, -3) // TODO: midlertidig fix?
-	}
-	return found, route, thresholdFailedList, accessFailed, paymentList
+	return requestResult
 }
 
-func getProximityChunk(firstNodeId int, chunkId int) int {
-	retVal := constants.GetBits() - general.BitLength(firstNodeId^chunkId)
+func getProximityChunk(firstNodeId types.NodeId, chunkId types.ChunkId) int {
+	retVal := constants.GetBits() - general.BitLength(firstNodeId.ToInt32()^chunkId.ToInt32())
 	if retVal <= constants.GetMaxProximityOrder() {
 		return retVal
 	} else {
@@ -453,21 +419,21 @@ func getProximityChunk(firstNodeId int, chunkId int) int {
 	}
 }
 
-func PeerPriceChunk(firstNodeId int, chunkId int) int {
+func PeerPriceChunk(firstNodeId types.NodeId, chunkId types.ChunkId) int {
 	val := (constants.GetMaxProximityOrder() - getProximityChunk(firstNodeId, chunkId) + 1) * constants.GetPrice()
 	return val
 }
 
-func CreateDownloadersList(g *types.Graph) []int {
+func CreateDownloadersList(g *types.Graph) []types.NodeId {
 	//fmt.Println("Creating downloaders list...")
 
-	downloadersList := general.Choice(g.NodeIds, constants.GetOriginators())
+	downloadersList := types.Choice(g.NodeIds, constants.GetOriginators())
 
 	//fmt.Println("Downloaders list create...!")
 	return downloadersList
 }
 
-func CreateNodesList(g *types.Graph) []int {
+func CreateNodesList(g *types.Graph) []types.NodeId {
 	//fmt.Println("Creating nodes list...")
 	nodesValue := g.NodeIds
 	//fmt.Println("NodesMap list create...!")

@@ -6,7 +6,7 @@ import (
 )
 
 type ChunkStruct struct {
-	ChunkId   int
+	ChunkId   ChunkId
 	Counter   int
 	LastEpoch int
 }
@@ -16,7 +16,7 @@ type Pending struct {
 	CurrentIndex int // Which ChunkStruct in the ChunkQueue which will get looked after next.
 }
 
-type PendingMap map[int]Pending
+type PendingMap map[NodeId]Pending
 
 type PendingStruct struct {
 	PendingMap           PendingMap
@@ -24,7 +24,7 @@ type PendingStruct struct {
 	UniquePendingCounter int32
 }
 
-func (p *PendingStruct) GetPending(originator int) (Pending, bool) {
+func (p *PendingStruct) GetPending(originator NodeId) (Pending, bool) {
 	p.PendingMutex.Lock()
 	defer p.PendingMutex.Unlock()
 	pending, ok := p.PendingMap[originator]
@@ -34,7 +34,7 @@ func (p *PendingStruct) GetPending(originator int) (Pending, bool) {
 	return Pending{ChunkQueue: []ChunkStruct{}, CurrentIndex: 0}, false
 }
 
-func (p *PendingStruct) AddPendingChunkId(originator int, chunkId int, curEpoch int) {
+func (p *PendingStruct) AddPendingChunkId(originator NodeId, chunkId ChunkId, curEpoch int) {
 	pending, _ := p.GetPending(originator)
 	chunkStructIndex := p.GetChunkStructIndex(pending.ChunkQueue, chunkId)
 
@@ -65,7 +65,7 @@ func (p *PendingStruct) AddPendingChunkId(originator int, chunkId int, curEpoch 
 	}
 }
 
-func (p *PendingStruct) DeletePendingChunkId(originator int, chunkId int) {
+func (p *PendingStruct) DeletePendingChunkId(originator NodeId, chunkId ChunkId) {
 	pending, _ := p.GetPending(originator)
 
 	if len(pending.ChunkQueue) > 0 {
@@ -84,7 +84,7 @@ func (p *PendingStruct) DeletePendingChunkId(originator int, chunkId int) {
 	}
 }
 
-func (p *PendingStruct) GetChunkFromQueue(originator int) (ChunkStruct, bool) {
+func (p *PendingStruct) GetChunkFromQueue(originator NodeId) (ChunkStruct, bool) {
 	pending, ok := p.GetPending(originator)
 	if ok {
 		p.PendingMutex.Lock()
@@ -96,7 +96,7 @@ func (p *PendingStruct) GetChunkFromQueue(originator int) (ChunkStruct, bool) {
 	return ChunkStruct{}, false
 }
 
-func (p *PendingStruct) UpdateEpoch(originator int, chunkId int, curEpoch int) int {
+func (p *PendingStruct) UpdateEpoch(originator NodeId, chunkId ChunkId, curEpoch int) int {
 	p.PendingMutex.Lock()
 	defer p.PendingMutex.Unlock()
 	pending, ok := p.PendingMap[originator]
@@ -110,7 +110,7 @@ func (p *PendingStruct) UpdateEpoch(originator int, chunkId int, curEpoch int) i
 	return -1
 }
 
-func (p *PendingStruct) GetAndUpdateCurrentIndex(pending Pending, originator int) int {
+func (p *PendingStruct) GetAndUpdateCurrentIndex(pending Pending, originator NodeId) int {
 
 	pending.CurrentIndex--
 	if pending.CurrentIndex < 0 || pending.CurrentIndex >= len(pending.ChunkQueue) {
@@ -123,7 +123,7 @@ func (p *PendingStruct) GetAndUpdateCurrentIndex(pending Pending, originator int
 	return pending.CurrentIndex
 }
 
-func (p *PendingStruct) GetChunkStructIndex(chunkStructs []ChunkStruct, chunkId int) int {
+func (p *PendingStruct) GetChunkStructIndex(chunkStructs []ChunkStruct, chunkId ChunkId) int {
 
 	for i, v := range chunkStructs {
 		if v.ChunkId == chunkId {
