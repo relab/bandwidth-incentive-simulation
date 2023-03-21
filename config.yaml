@@ -1,14 +1,18 @@
 #### Experiments ####
 # omega: maxPoCheckEnabled
-#
-#
+# k20p20: bucket size 20 and 20% originators
+# k20p100: bucket size 20 and 100% originators
+# k16p20: bucket size 4 and 20% originators
+# k16p100: bucket size 4 and 100% originators
+# k8p20: bucket size 4 and 20% originators
+# k8p100: bucket size 4 and 100% originators
 #
 # empty or default for default
 # custom for custom
 
 
 Experiment :
-  ExperimentName: ""
+  ExperimentName: "k8p100"
 
 Custom:
   Runs:                             1

@@ -32,9 +32,28 @@ func SetExperiment(experiment Yml) {
 	case "omega":
 		fmt.Println("omega experiment chose")
 		OmegaExperiment()
+	case "k20p20":
+		fmt.Println("bucket size 20 and 20% originators experiment chose")
+		BucketSize20And20pOriginators()
+	case "k20p100":
+		fmt.Println("bucket size 20 and 100% originators experiment chose")
+		BucketSize20And100pOriginators()
+	case "k16p20":
+		fmt.Println("bucket size 16 and 20% originators experiment chose")
+		BucketSize16And20pOriginators()
+	case "k16p100":
+		fmt.Println("bucket size 16 and 100% originators experiment chose")
+		BucketSize16And100pOriginators()
+	case "k8p20":
+		fmt.Println("bucket size 16 and 20% originators experiment chose")
+		BucketSize8And20pOriginators()
+	case "k8p100":
+		fmt.Println("bucket size 16 and 100% originators experiment chose")
+		BucketSize8And100pOriginators()
 	case "custom":
 		fmt.Println("custom experiment chose")
 		CustomExperiment(experiment.Custom)
+
 	default:
 		fmt.Println("default experiment chose")
 	}

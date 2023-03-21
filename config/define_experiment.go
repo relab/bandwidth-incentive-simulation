@@ -7,7 +7,43 @@ func OmegaExperiment() {
 	Variable.MaxPOCheckEnabled = true
 }
 
-func WatingEnabled() {
+func BucketSize20And20pOriginators() {
+	Variable.BinSize = 20
+	Variable.Iterations = 10_000
+	Variable.Originators = 1000 * 0.2
+}
+
+func BucketSize20And100pOriginators() {
+	Variable.BinSize = 20
+	Variable.Iterations = 10_000
+	Variable.Originators = 1000
+}
+
+func BucketSize16And20pOriginators() {
+	Variable.BinSize = 16
+	Variable.Iterations = 10_000
+	Variable.Originators = 1000 * 0.2
+}
+
+func BucketSize16And100pOriginators() {
+	Variable.BinSize = 16
+	Variable.Iterations = 10_000
+	Variable.Originators = 1000
+}
+
+func BucketSize8And20pOriginators() {
+	Variable.BinSize = 8
+	Variable.Iterations = 10_000
+	Variable.Originators = 1000 * 0.2
+}
+
+func BucketSize8And100pOriginators() {
+	Variable.BinSize = 8
+	Variable.Iterations = 10_000
+	Variable.Originators = 1000
+}
+
+func WaitingEnabled() {
 	Variable.WaitingEnabled = true
 }
 
