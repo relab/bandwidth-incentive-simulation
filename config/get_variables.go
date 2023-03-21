@@ -168,3 +168,7 @@ func GetNumRoutingGoroutines() int {
 func GetEpoch() int {
 	return Variable.Epoch
 }
+
+func GetIterations() int {
+	return Variable.Iterations
+}

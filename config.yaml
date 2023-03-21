@@ -48,4 +48,4 @@ Custom:
   DebugInterval:                    1000000 # How many iterations between each debug print
   NumRoutingGoroutines:             25 # 25 seems to currently be the sweet spot
   Epoch:                            1 # Defined as timeStep / requestsPerSecond, updated by requestWorker
-
+  Iterations:                       10_000_000

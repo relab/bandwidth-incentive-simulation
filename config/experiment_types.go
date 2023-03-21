@@ -47,6 +47,7 @@ type YmlVariables struct {
 	DebugInterval                    int   `yaml:"DebugInterval"`
 	NumRoutingGoroutines             int   `yaml:"NumRoutingGoroutines"`
 	Epoch                            int   `yaml:"Epoch"`
+	Iterations                       int   `yaml:"Iterations"`
 }
 
 type Variables struct {
@@ -87,4 +88,5 @@ type Variables struct {
 	DebugInterval                    int
 	NumRoutingGoroutines             int
 	Epoch                            int
+	Iterations                       int
 }

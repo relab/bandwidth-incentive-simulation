@@ -38,4 +38,5 @@ var Variable = Variables{
 	DebugInterval:                    1000000,
 	NumRoutingGoroutines:             25,
 	Epoch:                            1,
+	Iterations:                       10_000_000,
 }

@@ -7,9 +7,21 @@ func OmegaExperiment() {
 	Variable.MaxPOCheckEnabled = true
 }
 
-func WaitingAndRetry() {
+func WatingEnabled() {
+	Variable.WaitingEnabled = true
+}
+
+func RetryEnabled() {
+	Variable.RetryWithAnotherPeer = true
+}
+
+func WaitingAndRetryEnabled() {
 	Variable.WaitingEnabled = true
 	Variable.RetryWithAnotherPeer = true
+}
+
+func DebugPrints() {
+	Variable.DebugPrints = true
 }
 
 func CustomExperiment(customExperiment YmlVariables) {
@@ -50,4 +62,5 @@ func CustomExperiment(customExperiment YmlVariables) {
 	Variable.DebugInterval = customExperiment.DebugInterval
 	Variable.NumRoutingGoroutines = customExperiment.NumRoutingGoroutines
 	Variable.Epoch = customExperiment.Epoch
+	Variable.Iterations = customExperiment.Iterations
 }
