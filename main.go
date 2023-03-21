@@ -11,23 +11,6 @@ import (
 	"time"
 )
 
-//func MakePolicyOutput(state *types.State, index int) types.RequestResult {
-//	//fmt.Println("start of make initial policy")
-//
-//	//found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state)
-//	found, route, thresholdFailed, accessFailed, paymentsList := policy.SendRequest(state, index)
-//
-
-//p := types.RequestResult{
-//	Found:                found,
-//		RequestResult:                route,
-//		ThresholdFailedLists: thresholdFailed,
-//		AccessFailed:         accessFailed,
-//		PaymentList:          paymentsList,
-//	}
-//	return p
-//}
-
 func main() {
 	start := time.Now()
 	network := fmt.Sprintf("./data/nodes_data_%d_10000.txt", constants.GetBinSize())

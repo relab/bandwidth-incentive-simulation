@@ -33,6 +33,14 @@ type Payment struct {
 	IsOriginator bool
 }
 
+func (p Payment) IsNil() bool {
+	if p.PayNextId == 0 && p.FirstNodeId == 0 && p.ChunkId == 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
 type Threshold [2]NodeId
 
 type StateSubset struct {

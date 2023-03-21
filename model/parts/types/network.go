@@ -22,10 +22,18 @@ func (n NodeId) ToInt32() int32 {
 	return int32(n)
 }
 
+func (n NodeId) IsNil() bool {
+	return n == 0
+}
+
 type ChunkId int32
 
 func (c ChunkId) ToInt32() int32 {
 	return int32(c)
+}
+
+func (c ChunkId) IsNil() bool {
+	return c == 0
 }
 
 type Node struct {

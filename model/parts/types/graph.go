@@ -28,13 +28,12 @@ type Edge struct {
 
 // EdgeAttrs Edge attributes structure,
 // "a2b" show how much this node asked from other node,
-// "last" is for the last forgiveness time,
+// "lastEpoch" is the epoch where it was last forgiven.
 // "threshold" is for the adjustable threshold limit.
 type EdgeAttrs struct {
-	A2B               int
-	Last              int
-	EpochLastForgiven int
-	Threshold         int
+	A2B       int
+	LastEpoch int
+	Threshold int
 }
 
 //func (g *Graph) FindResponsibleNodes(chunkId int) [4]int {

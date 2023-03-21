@@ -14,7 +14,7 @@ func CacheMap(state *types.State, requestResult types.RequestResult) types.Cache
 			state.CacheStruct.CacheHits++
 		}
 
-		if !requestResult.Found {
+		if requestResult.Found {
 			for _, nodeId := range route {
 				//state.CacheStruct.AddToCache(nodeId, chunkId)
 				node := state.Graph.GetNode(nodeId)

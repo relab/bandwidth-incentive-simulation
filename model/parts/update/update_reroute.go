@@ -12,7 +12,7 @@ func RerouteMap(state *types.State, requestResult types.RequestResult, curEpoch 
 		chunkId := requestResult.ChunkId
 		originator := route[0]
 
-		if !requestResult.ThresholdFailed && !requestResult.AccessFailed {
+		if requestResult.Found {
 			routeStruct := state.RerouteStruct.GetRerouteMap(originator) // reroute = rejected nodes + chunk
 			if routeStruct.Reroute != nil {
 				if routeStruct.ChunkId == chunkId { // If chunkId == chunkId
