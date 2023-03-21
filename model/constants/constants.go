@@ -13,7 +13,7 @@ func SetNumRoutingGoroutines(num int) int {
 	//	num--
 	//}
 	num-- // for the requestWorker
-	experiments.Constants.NumRoutingGoroutines = num
+	experiments.Constant.NumRoutingGoroutines = num
 	return num
 }
 
@@ -26,79 +26,79 @@ func SetNumRoutingGoroutines(num int) int {
 // }
 
 func IsAdjustableThreshold() bool {
-	return experiments.Constants.AdjustableThreshold
+	return experiments.Constant.AdjustableThreshold
 }
 
 func IsForgivenessEnabled() bool {
-	return experiments.Constants.ForgivenessEnabled
+	return experiments.Constant.ForgivenessEnabled
 }
 
 func IsForgivenessDuringRouting() bool {
-	return experiments.Constants.ForgivenessDuringRouting
+	return experiments.Constant.ForgivenessDuringRouting
 }
 
 func IsCacheEnabled() bool {
-	return experiments.Constants.CacheIsEnabled
+	return experiments.Constant.CacheIsEnabled
 }
 
 func IsPreferredChunksEnabled() bool {
-	return experiments.Constants.PreferredChunks
+	return experiments.Constant.PreferredChunks
 }
 
 func IsRetryWithAnotherPeer() bool {
-	return experiments.Constants.RetryWithAnotherPeer
+	return experiments.Constant.RetryWithAnotherPeer
 }
 
 func IsForwarderPayForceOriginatorToPay() bool {
-	return experiments.Constants.ForwarderPayForceOriginatorToPay
+	return experiments.Constant.ForwarderPayForceOriginatorToPay
 }
 
 func IsPayIfOrigPays() bool {
-	return experiments.Constants.PayIfOrigPays
+	return experiments.Constant.PayIfOrigPays
 }
 
 func IsPayOnlyForCurrentRequest() bool {
-	return experiments.Constants.PayOnlyForCurrentRequest
+	return experiments.Constant.PayOnlyForCurrentRequest
 }
 
 func IsOnlyOriginatorPays() bool {
-	return experiments.Constants.OnlyOriginatorPays
+	return experiments.Constant.OnlyOriginatorPays
 }
 
 func IsWaitingEnabled() bool {
-	return experiments.Constants.WaitingEnabled
+	return experiments.Constant.WaitingEnabled
 }
 
 func GetMaxPOCheckEnabled() bool {
-	return experiments.Constants.MaxPOCheckEnabled
+	return experiments.Constant.MaxPOCheckEnabled
 }
 
 func GetThresholdEnabled() bool {
-	return experiments.Constants.ThresholdEnabled
+	return experiments.Constant.ThresholdEnabled
 }
 
 func GetPaymentEnabled() bool {
-	return experiments.Constants.PaymentEnabled
+	return experiments.Constant.PaymentEnabled
 }
 
 func GetRequestsPerSecond() int {
-	return experiments.Constants.RequestsPerSecond
+	return experiments.Constant.RequestsPerSecond
 }
 
 func GetChunks() int {
-	return experiments.Constants.Chunks
+	return experiments.Constant.Chunks
 }
 
 func GetBits() int {
-	return experiments.Constants.Bits
+	return experiments.Constant.Bits
 }
 
 func GetNetworkSize() int {
-	return experiments.Constants.NetworkSize
+	return experiments.Constant.NetworkSize
 }
 
 func GetBinSize() int {
-	return experiments.Constants.BinSize
+	return experiments.Constant.BinSize
 }
 
 func GetSimulationRuns() int {
@@ -106,69 +106,69 @@ func GetSimulationRuns() int {
 }
 
 func GetRangeAddress() int {
-	return experiments.Constants.RangeAddress
+	return experiments.Constant.RangeAddress
 }
 
 func GetOriginators() int {
-	return experiments.Constants.Originators
+	return experiments.Constant.Originators
 }
 
 func GetRefreshRate() int {
-	return experiments.Constants.RefreshRate
+	return experiments.Constant.RefreshRate
 }
 
 func GetThreshold() int {
-	return experiments.Constants.Threshold
+	return experiments.Constant.Threshold
 }
 
 func GetRandomSeed() int64 {
-	return experiments.Constants.RandomSeed
+	return experiments.Constant.RandomSeed
 }
 
 func GetMaxProximityOrder() int {
-	return experiments.Constants.MaxProximityOrder
+	return experiments.Constant.MaxProximityOrder
 }
 
 func GetPrice() int {
-	return experiments.Constants.Price
+	return experiments.Constant.Price
 }
 
 func GetSameOriginator() bool {
-	return experiments.Constants.SameOriginator
+	return experiments.Constant.SameOriginator
 }
 
 func GetEdgeLock() bool {
-	return experiments.Constants.EdgeLock
+	return experiments.Constant.EdgeLock
 }
 
 func IsPrecomputeRespNodes() bool {
-	return experiments.Constants.PrecomputeRespNodes
+	return experiments.Constant.PrecomputeRespNodes
 }
 
 func IsWriteRoutesToFile() bool {
-	return experiments.Constants.WriteRoutesToFile
+	return experiments.Constant.WriteRoutesToFile
 }
 
 func IsWriteStatesToFile() bool {
-	return experiments.Constants.WriteStatesToFile
+	return experiments.Constant.WriteStatesToFile
 }
 
 func IsIterationMeansUniqueChunk() bool {
-	return experiments.Constants.IterationMeansUniqueChunk
+	return experiments.Constant.IterationMeansUniqueChunk
 }
 
 func IsDebugPrints() bool {
-	return experiments.Constants.DebugPrints
+	return experiments.Constant.DebugPrints
 }
 
 func GetDebugInterval() int {
-	return experiments.Constants.DebugInterval
+	return experiments.Constant.DebugInterval
 }
 
 func GetNumRoutingGoroutines() int {
-	return experiments.Constants.NumRoutingGoroutines
+	return experiments.Constant.NumRoutingGoroutines
 }
 
 func GetEpoch() int {
-	return experiments.Constants.Epoch
+	return experiments.Constant.Epoch
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/model/experiments"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/workers"
 	"go-incentive-simulation/model/state"
@@ -30,6 +31,7 @@ import (
 
 func main() {
 	start := time.Now()
+	experiments.ChooseExperiment()
 	network := fmt.Sprintf("./data/nodes_data_%d_10000.txt", constants.GetBinSize())
 	globalState := state.MakeInitialState(network)
 

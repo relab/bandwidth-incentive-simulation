@@ -2,13 +2,12 @@ package experiments
 
 import (
 	"fmt"
-	"go-incentive-simulation/model/parts/types"
 	"gopkg.in/yaml.v2"
 	"log"
 	"os"
 )
 
-var Constants types.Constants
+var Constant Constants
 
 func ChooseExperiment() {
 	yamlFile, err := os.ReadFile("run_experiments.yml")
@@ -18,7 +17,7 @@ func ChooseExperiment() {
 	if err != nil {
 		log.Printf("yamlFile.Get err   #%v ", err)
 	}
-	err = yaml.Unmarshal(yamlFile, experimentName)
+	err = yaml.Unmarshal(yamlFile, &experimentName)
 	if err != nil {
 		log.Fatalf("Unmarshal: %v", err)
 	}
@@ -26,9 +25,9 @@ func ChooseExperiment() {
 	switch experimentName {
 	case "noe":
 		fmt.Println("noe")
-		Constants = Experiments[1]
+		Constant = Experiment[1]
 	default:
 		fmt.Println("default")
-		Constants = Experiments[2]
+		Constant = Experiment[2]
 	}
 }

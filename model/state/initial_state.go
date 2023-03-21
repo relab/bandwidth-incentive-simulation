@@ -3,7 +3,6 @@ package state
 import (
 	"fmt"
 	"go-incentive-simulation/model/constants"
-	"go-incentive-simulation/model/experiments"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/utils"
 	"math/rand"
@@ -13,7 +12,6 @@ import (
 func MakeInitialState(path string) types.State {
 	// Initialize the state
 	fmt.Println("start of make initial state")
-	experiments.ChooseExperiment()
 	rand.Seed(constants.GetRandomSeed())
 	network := types.Network{}
 	network.Load(path)
