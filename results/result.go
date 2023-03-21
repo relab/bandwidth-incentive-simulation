@@ -3,6 +3,7 @@ package results
 import (
 	"bufio"
 	"encoding/json"
+	"math"
 	"os"
 )
 
@@ -63,6 +64,7 @@ func ReadOutput(filename string) [][]Transaction {
 	return transactions
 }
 
+// thresholdEnabled: true,    forgivenessEnabled: true,   forgivenessDuringRouting: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
 func AvgRewardPerEachForwardingAction() float64 {
 	transactions := ReadOutput("output.txt")
 	var rewards []int
@@ -86,6 +88,7 @@ func sum(numbers []int) int {
 	return sum
 }
 
+// thresholdEnabled: true,    forgivenessEnabled: true,   forgivenessDuringRouting: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
 func AvgNumberOfHops() float64 {
 	transactions := ReadOutput("output.txt")
 	var totalHops int
@@ -108,6 +111,7 @@ type FractionOfRewardsK8 struct {
 	hop4 float64
 }
 
+// thresholdEnabled: true,    forgivenessEnabled: true,   forgivenessDuringRouting: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
 func AvgFractionOfTotalRewards(filename string) (FractionOfRewardsK16, FractionOfRewardsK8) {
 	transactions := ReadOutput(filename)
 	fractoionRewardsK16 := FractionOfRewardsK16Calc(transactions)
@@ -115,6 +119,7 @@ func AvgFractionOfTotalRewards(filename string) (FractionOfRewardsK16, FractionO
 	return fractoionRewardsK16, fractoionRewardsK8
 }
 
+// thresholdEnabled: true,    forgivenessEnabled: true,   forgivenessDuringRouting: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
 func FractionOfRewardsK16Calc(transactions [][]Transaction) FractionOfRewardsK16 {
 	threeHopRoutes := make([]FractionOfRewardsK16, 0)
 	for _, transactionList := range transactions {
@@ -170,6 +175,7 @@ func FractionOfRewardsK16Calc(transactions [][]Transaction) FractionOfRewardsK16
 	}
 }
 
+// thresholdEnabled: true,    forgivenessEnabled: true,   forgivenessDuringRouting: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
 func FractionOfRewardsK8Calc(transactions [][]Transaction) FractionOfRewardsK8 {
 	twoHopRoutes := make([]FractionOfRewardsK8, 0)
 	for _, transactionList := range transactions {
@@ -244,4 +250,72 @@ func FractionOfRewardsK8Calc(transactions [][]Transaction) FractionOfRewardsK8 {
 		hop3: sumHop3 / float64(len(twoHopRoutes)),
 		hop4: sumHop4 / float64(len(twoHopRoutes)),
 	}
+}
+
+// thresholdEnabled: true,    forgivenessEnabled: true,   forgivenessDuringRouting: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
+func RewardFairnessForForwardingActions(filename string) float64 {
+	transactions := ReadOutput(filename)
+	var rewards []int
+	for _, transactionList := range transactions {
+		for i, transaction := range transactionList {
+			if i == len(transactionList)-1 {
+				break
+			}
+			reward := transaction.Price - transactionList[i+1].Price
+			rewards = append(rewards, reward)
+		}
+	}
+	return gini(rewards)
+}
+
+// thresholdEnabled: true,    forgivenessEnabled: true,   forgivenessDuringRouting: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
+func RewardFairnessForStoringActions(filename string) float64 {
+	transactions := ReadOutput(filename)
+	var rewards []int
+	for _, transactionList := range transactions {
+		if transactionList == nil {
+			continue
+		}
+		reward := transactionList[len(transactionList)-1].Price
+		rewards = append(rewards, reward)
+	}
+	return gini(rewards)
+}
+
+// thresholdEnabled: true,    forgivenessEnabled: true,   forgivenessDuringRouting: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
+func RewardFarinessForAllActions(filename string) float64 {
+	transactions := ReadOutput(filename)
+	var rewards []int
+	for _, transactionList := range transactions {
+		if transactionList == nil {
+			continue
+		}
+		for i, transaction := range transactionList {
+			if i == len(transactionList)-1 {
+				rewards = append(rewards, transaction.Price)
+				break
+			}
+			reward := transaction.Price - transactionList[i+1].Price
+			rewards = append(rewards, reward)
+		}
+	}
+	return gini(rewards)
+}
+
+func gini(x []int) float64 {
+	total := 0.0
+	for i, xi := range x[:len(x)-1] {
+		for _, xj := range x[i+1:] {
+			total += math.Abs(float64(xi) - float64(xj))
+		}
+	}
+	return total / (math.Pow(float64(len(x)), 2) * mean(x))
+}
+
+func mean(x []int) float64 {
+	total := 0.0
+	for _, xi := range x {
+		total += float64(xi)
+	}
+	return total / float64(len(x))
 }

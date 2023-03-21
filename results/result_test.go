@@ -65,3 +65,19 @@ func TestTest(t *testing.T) {
 	t.Log("Number of 6 hop routes: ", num6Length)
 	t.Log("Total number of routes: ", num1Length+num2Length+num3Length+num4Length+num5Lenght+num6Length)
 }
+
+// func TestRewardFairness(t *testing.T) {
+// 	fairness := RewardFairnessForForwardingActions("output.txt")
+// 	t.Log("Reward fairness for forwarding action: ", fairness)
+// }
+
+// func TestRewardFairnessStoringAction(t *testing.T) {
+// 	fairness := RewardFairnessForStoringActions("output.txt")
+// 	t.Log("Reward fairness for storing action: ", fairness)
+// }
+
+// func TestRewardFairnessForAllActions(t *testing.T) {
+
+// 	fairness := RewardFarinessForAllActions("output.txt")
+// 	t.Log("Reward fairness for all actions: ", fairness)
+// }
