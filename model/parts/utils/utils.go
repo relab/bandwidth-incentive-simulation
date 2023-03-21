@@ -1,16 +1,16 @@
 package utils
 
 import (
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
 	"sort"
 )
 
 func PrecomputeRespNodes(nodesId []int) [][4]int {
-	numPossibleChunks := constants.GetRangeAddress()
+	numPossibleChunks := config.GetRangeAddress()
 	result := make([][4]int, numPossibleChunks)
-	numNodesSearch := constants.GetBits()
+	numNodesSearch := config.GetBits()
 
 	for chunkId := 0; chunkId < numPossibleChunks; chunkId++ {
 
@@ -47,8 +47,8 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 	sortedNodeIds := SortedKeys(net.NodesMap)
 	numNodes := len(net.NodesMap)
 	Edges := make(map[int]map[int]*types.Edge)
-	respNodes := make([][4]int, constants.GetRangeAddress())
-	if constants.IsPrecomputeRespNodes() {
+	respNodes := make([][4]int, config.GetRangeAddress())
+	if config.IsPrecomputeRespNodes() {
 		respNodes = PrecomputeRespNodes(sortedNodeIds)
 	}
 
@@ -73,7 +73,7 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 		for _, adjItems := range nodeAdj {
 			for _, item := range adjItems {
 				threshold := general.BitLength(nodeId ^ item)
-				epoke := constants.GetEpoch()
+				epoke := config.GetEpoch()
 				attrs := types.EdgeAttrs{A2B: 0, Last: 0, EpokeLastForgiven: epoke, Threshold: threshold}
 				err := graph.AddEdge(node.Id, item, attrs)
 				if err != nil {
@@ -89,14 +89,14 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 }
 
 func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, graph *types.Graph, request types.Request) bool {
-	if constants.GetThresholdEnabled() {
+	if config.GetThresholdEnabled() {
 		edgeDataFirst := graph.GetEdgeData(firstNodeId, secondNodeId)
 		p2pFirst := edgeDataFirst.A2B
 		edgeDataSecond := graph.GetEdgeData(secondNodeId, firstNodeId)
 		p2pSecond := edgeDataSecond.A2B
 
-		threshold := constants.GetThreshold()
-		if constants.IsAdjustableThreshold() {
+		threshold := config.GetThreshold()
+		if config.IsAdjustableThreshold() {
 			threshold = edgeDataFirst.Threshold
 		}
 
@@ -105,7 +105,7 @@ func isThresholdFailed(firstNodeId int, secondNodeId int, chunkId int, graph *ty
 		//fmt.Printf("price: %d = p2pFirst: %d - p2pSecond: %d + PeerPriceChunk: %d \n", price, p2pFirst, p2pSecond, peerPriceChunk)
 
 		if price > threshold {
-			if constants.IsForgivenessDuringRouting() && constants.IsForgivenessEnabled() {
+			if config.IsForgivenessDuringRouting() && config.IsForgivenessEnabled() {
 				newP2pFirst, forgivenFirst := CheckForgiveness(edgeDataFirst, firstNodeId, secondNodeId, graph, request)
 				//_, _ = CheckForgiveness(edgeDataSecond, secondNodeId, firstNodeId, graph, request)
 				if forgivenFirst {
@@ -136,7 +136,7 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 	//var unlockedEdges []int
 
 	//firstNode := graph.NodesMap[firstNodeId]
-	bin := constants.GetBits() - general.BitLength(firstNodeId^chunkId)
+	bin := config.GetBits() - general.BitLength(firstNodeId^chunkId)
 	firstNodeAdjIds := graph.GetNodeAdj(firstNodeId)
 
 	for _, nodeId := range firstNodeAdjIds[bin] {
@@ -148,15 +148,15 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 			continue
 		}
 		// This means the node is now actively trying to communicate with the other node
-		if constants.GetEdgeLock() {
+		if config.GetEdgeLock() {
 			graph.LockEdge(firstNodeId, nodeId)
 		}
 		if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph, request) {
 			thresholdFailed = false
-			if constants.IsRetryWithAnotherPeer() {
+			if config.IsRetryWithAnotherPeer() {
 				if reroute := rerouteStruct.GetRerouteMap(mainOriginatorId).Reroute; reroute != nil {
 					if general.Contains(reroute, nodeId) {
-						if constants.GetEdgeLock() {
+						if config.GetEdgeLock() {
 							graph.UnlockEdge(firstNodeId, nodeId)
 						}
 						continue // skips node that's been part of a failed route before
@@ -164,7 +164,7 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 				}
 			}
 
-			if constants.GetEdgeLock() {
+			if config.GetEdgeLock() {
 				if nextNodeId != 0 {
 					graph.UnlockEdge(firstNodeId, nextNodeId)
 				}
@@ -178,20 +178,20 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 
 		} else {
 			thresholdFailed = true
-			if constants.GetPaymentEnabled() {
+			if config.GetPaymentEnabled() {
 				if dist < payDist && nextNodeId == 0 {
-					if constants.GetEdgeLock() && payNextId != 0 {
+					if config.GetEdgeLock() && payNextId != 0 {
 						graph.UnlockEdge(firstNodeId, payNextId)
 					}
 					payDist = dist
 					payNextId = nodeId
 				} else {
-					if constants.GetEdgeLock() {
+					if config.GetEdgeLock() {
 						graph.UnlockEdge(firstNodeId, nodeId)
 					}
 				}
 			} else {
-				if constants.GetEdgeLock() {
+				if config.GetEdgeLock() {
 					graph.UnlockEdge(firstNodeId, nodeId)
 				}
 			}
@@ -208,10 +208,10 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 		nextNodeId = -1 // Threshold Failed
 	}
 
-	if constants.GetPaymentEnabled() && payNextId != 0 {
+	if config.GetPaymentEnabled() && payNextId != 0 {
 		accessFailed = false
 
-		if constants.IsOnlyOriginatorPays() {
+		if config.IsOnlyOriginatorPays() {
 			if firstNodeId == mainOriginatorId {
 				payment.IsOriginator = true
 				payment.FirstNodeId = firstNodeId
@@ -220,7 +220,7 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 				nextNodeId = payNextId
 			}
 
-		} else if constants.IsPayIfOrigPays() {
+		} else if config.IsPayIfOrigPays() {
 			if prevNodePaid {
 				thresholdFailed = false
 				if firstNodeId == mainOriginatorId {
@@ -269,12 +269,12 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 	//	}
 	//}
 
-	if constants.GetPaymentEnabled() {
+	if config.GetPaymentEnabled() {
 	out:
 		for i, item := range thresholdList {
 			for _, nodeId := range item {
 				if nodeId == payNextId {
-					if constants.IsPayIfOrigPays() {
+					if config.IsPayIfOrigPays() {
 						if firstNodeId == mainOriginatorId {
 							thresholdList = append(thresholdList[:i], thresholdList[i+1:]...)
 						}
@@ -319,7 +319,7 @@ func ConsumeTask(request types.Request, graph *types.Graph, rerouteStruct types.
 	var payment types.Payment
 	var prevNodePaid bool
 
-	if constants.IsPayIfOrigPays() {
+	if config.IsPayIfOrigPays() {
 		prevNodePaid = true
 	}
 	if general.ArrContains(respNodes, mainOriginatorId) {
@@ -356,7 +356,7 @@ func ConsumeTask(request types.Request, graph *types.Graph, rerouteStruct types.
 					found = true
 					break out
 				}
-				if constants.IsCacheEnabled() {
+				if config.IsCacheEnabled() {
 					//if ok := cacheStruct.Contains(nextNodeId, chunkId); ok {
 					//	found = true
 					//	foundByCaching = true
@@ -383,7 +383,7 @@ func ConsumeTask(request types.Request, graph *types.Graph, rerouteStruct types.
 
 	route = append(route, chunkId)
 
-	if constants.IsForwarderPayForceOriginatorToPay() {
+	if config.IsForwarderPayForceOriginatorToPay() {
 		//if nextNodeId != -2 {
 		if !general.Contains(route, -2) {
 			// NOT accessFailed
@@ -445,23 +445,23 @@ func ConsumeTask(request types.Request, graph *types.Graph, rerouteStruct types.
 }
 
 func getProximityChunk(firstNodeId int, chunkId int) int {
-	retVal := constants.GetBits() - general.BitLength(firstNodeId^chunkId)
-	if retVal <= constants.GetMaxProximityOrder() {
+	retVal := config.GetBits() - general.BitLength(firstNodeId^chunkId)
+	if retVal <= config.GetMaxProximityOrder() {
 		return retVal
 	} else {
-		return constants.GetMaxProximityOrder()
+		return config.GetMaxProximityOrder()
 	}
 }
 
 func PeerPriceChunk(firstNodeId int, chunkId int) int {
-	val := (constants.GetMaxProximityOrder() - getProximityChunk(firstNodeId, chunkId) + 1) * constants.GetPrice()
+	val := (config.GetMaxProximityOrder() - getProximityChunk(firstNodeId, chunkId) + 1) * config.GetPrice()
 	return val
 }
 
 func CreateDownloadersList(g *types.Graph) []int {
 	//fmt.Println("Creating downloaders list...")
 
-	downloadersList := general.Choice(g.NodeIds, constants.GetOriginators())
+	downloadersList := general.Choice(g.NodeIds, config.GetOriginators())
 
 	//fmt.Println("Downloaders list create...!")
 	return downloadersList

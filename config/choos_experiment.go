@@ -1,4 +1,4 @@
-package experiments
+package config
 
 import (
 	"fmt"
@@ -7,13 +7,13 @@ import (
 	"os"
 )
 
-func Experiment() {
+func ChooseExperiment() {
 	ymlData := ReadYamlFile()
 	SetExperiment(ymlData)
 }
 
 func ReadYamlFile() Yml {
-	yamlFile, err := os.ReadFile("run_experiments.yaml")
+	yamlFile, err := os.ReadFile("config.yaml")
 
 	var yamlData Yml
 
@@ -36,6 +36,6 @@ func SetExperiment(experiment Yml) {
 		fmt.Println("custom experiment chose")
 		CustomExperiment(experiment.Custom)
 	default:
-		fmt.Println("default")
+		fmt.Println("default experiment chose")
 	}
 }

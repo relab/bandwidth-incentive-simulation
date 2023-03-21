@@ -4,11 +4,11 @@
 #
 #
 # empty or default for default
-# Custom for Custom
+# custom for custom
 
 
 Experiment :
-  ExperimentName: "omega"
+  ExperimentName: ""
 
 Custom:
   Runs:                             1

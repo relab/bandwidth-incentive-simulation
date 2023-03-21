@@ -2,7 +2,7 @@ package state
 
 import (
 	"fmt"
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/utils"
 	"math/rand"
@@ -12,7 +12,7 @@ import (
 func MakeInitialState(path string) types.State {
 	// Initialize the state
 	fmt.Println("start of make initial state")
-	rand.Seed(constants.GetRandomSeed())
+	rand.Seed(config.GetRandomSeed())
 	network := types.Network{}
 	network.Load(path)
 	graph, err := utils.CreateGraphNetwork(&network)
@@ -36,7 +36,7 @@ func MakeInitialState(path string) types.State {
 		FailedRequestsThreshold: 0,
 		FailedRequestsAccess:    0,
 		TimeStep:                0,
-		Epoch:                   constants.GetEpoch(),
+		Epoch:                   config.GetEpoch(),
 	}
 	return initialState
 }

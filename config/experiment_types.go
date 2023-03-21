@@ -1,15 +1,15 @@
-package experiments
+package config
 
 type Yml struct {
-	Experiment Experiments  `yaml:"Experiment"`
-	Custom     YmlConstants `yaml:"Costume"`
+	Experiment Experiment   `yaml:"Experiment"`
+	Custom     YmlVariables `yaml:"Custom"`
 }
 
-type Experiments struct {
+type Experiment struct {
 	ExperimentName string `yaml:"ExperimentName"`
 }
 
-type YmlConstants struct {
+type YmlVariables struct {
 	Runs                             int   `yaml:"Runs"`
 	Bits                             int   `yaml:"Bits"`
 	NetworkSize                      int   `yaml:"NetworkSize"`
@@ -49,7 +49,7 @@ type YmlConstants struct {
 	Epoch                            int   `yaml:"Epoch"`
 }
 
-type Constants struct {
+type Variables struct {
 	Runs                             int
 	Bits                             int
 	NetworkSize                      int
