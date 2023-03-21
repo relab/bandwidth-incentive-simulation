@@ -1,0 +1,51 @@
+#### Experiments ####
+# omega: maxPoCheckEnabled
+#
+#
+#
+# empty or default for default
+# Custom for Custom
+
+
+Experiment :
+  ExperimentName: "omega"
+
+Custom:
+  Runs:                             1
+  Bits:                             16 #2 * *Bits
+  NetworkSize:                      10000 #(0.001 * NetworkSize)
+  BinSize:                          16
+  RangeAddress:                     65536
+  Originators:                      1000
+  RefreshRate:                      8
+  Threshold:                        16
+  RandomSeed:                       123456789
+  MaxProximityOrder:                16
+  Price:                            1
+  Chunks:                           10000
+  RequestsPerSecond:                12500 # 12500
+  ThresholdEnabled:                 true # The maximum limit of debt an edge can have in one direction
+  ForgivenessEnabled:               true # Edge debt gets forgiven some amount on an interval (amortized)
+  ForgivenessDuringRouting:         true # If the forgiveness should happen before threshold is checked or after in updateGraph
+  PaymentEnabled:                   false # Nodes pay if they Threshold fail
+  MaxPOCheckEnabled:                false # Used to find the proper variable called "omega" in the python paper
+  OnlyOriginatorPays:               false # Only the originator will pay, others will threshold fail or wait
+  PayOnlyForCurrentRequest:         false # Only pay for current request or the full debt on the edge
+  PayIfOrigPays:                    false # Only pay if the originator pays -- NOT NEEDED
+  ForwarderPayForceOriginatorToPay: false # If Threshold fails, forces all the nodes in the route to pay for the current request
+  WaitingEnabled:                   true # When Threshold fails, will wait before trying to traverse same route
+  RetryWithAnotherPeer:             true # The Route to the chunk will try to take many paths to find the chunk
+  CacheIsEnabled:                   false # Cache, which stores previously looked after chunks on the nodes
+  PreferredChunks:                  false # Fits well with cache, where some chunkIds are chosen more often
+  AdjustableThreshold:              false # The Threshold limit of an edge is determined based on the XOR distance
+  EdgeLock:                         true # Should always be true when using concurrency
+  SameOriginator:                   false # For testing the usefulness of locking the edges
+  PrecomputeRespNodes:              true # Precompute the responsible nodes for every possible chunkId
+  WriteRoutesToFile:                false # Write the routes to file during run
+  WriteStatesToFile:                false # Write a subset of the states to file during the run
+  IterationMeansUniqueChunk:        false # If a single iteration means all unique chunks or include chunks we look for again relating to waiting/retry
+  DebugPrints:                      true # Prints out many useful debug prints during the run
+  DebugInterval:                    1000000 # How many iterations between each debug print
+  NumRoutingGoroutines:             25 # 25 seems to currently be the sweet spot
+  Epoch:                            1 # Defined as timeStep / requestsPerSecond, updated by requestWorker
+
