@@ -45,11 +45,17 @@ func SetExperiment(experiment Yml) {
 		fmt.Println("bucket size 16 and 100% originators experiment chose")
 		BucketSize16And100pOriginators()
 	case "k8p20":
-		fmt.Println("bucket size 16 and 20% originators experiment chose")
+		fmt.Println("bucket size 8 and 20% originators experiment chose")
 		BucketSize8And20pOriginators()
 	case "k8p100":
-		fmt.Println("bucket size 16 and 100% originators experiment chose")
+		fmt.Println("bucket size 8 and 100% originators experiment chose")
 		BucketSize8And100pOriginators()
+	case "k4p20":
+		fmt.Println("bucket size 4 and 20% originators experiment chose")
+		BucketSize4And20pOriginators()
+	case "k4p100":
+		fmt.Println("bucket size 4 and 100% originators experiment chose")
+		BucketSize4And100pOriginators()
 	case "custom":
 		fmt.Println("custom experiment chose")
 		CustomExperiment(experiment.Custom)
