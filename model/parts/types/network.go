@@ -128,8 +128,6 @@ func (network *Network) Generate(count int) []*Node {
 	nodes := make([]*Node, 0)
 	for _, i := range nodeIds {
 		node := network.node(NodeId(i))
-		node.RerouteStruct.Node = node
-
 		nodes = append(nodes, node)
 	}
 	pairs := make([][2]*Node, 0)

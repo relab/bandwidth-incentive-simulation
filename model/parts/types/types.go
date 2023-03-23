@@ -69,7 +69,7 @@ type State struct {
 	RouteLists              []RequestResult
 	UniqueWaitingCounter    int32
 	UniqueRetryCounter      int32
-	CacheCounter            int32
+	CacheHits               int32
 	OriginatorIndex         int32
 	SuccessfulFound         int32
 	FailedRequestsThreshold int32

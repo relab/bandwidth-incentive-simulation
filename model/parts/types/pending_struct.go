@@ -73,11 +73,10 @@ func (p *PendingStruct) GetChunkFromQueue(curEpoch int) (QueuedChunk, bool) {
 	return QueuedChunk{}, false
 }
 
-// GetAndUpdateCurrentIndex TODO: clean up this one to remove all the unnecessary checks
 func (p *PendingStruct) GetAndUpdateCurrentIndex() int {
 
 	p.CurrentIndex--
-	if p.CurrentIndex < 0 || p.CurrentIndex >= len(p.PendingQueue) {
+	if p.CurrentIndex < 0 {
 		p.CurrentIndex = len(p.PendingQueue) - 1
 	}
 	return p.CurrentIndex

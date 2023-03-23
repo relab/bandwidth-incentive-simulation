@@ -45,15 +45,6 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 				}
 			}
 
-			//if constants.IsDebugPrints() && timeStep%(iterations/2) == 0 {
-			//	if constants.IsWaitingEnabled() {
-			//		fmt.Println("PendingMap is currently:", globalState.PendingStruct.PendingMap)
-			//	}
-			//	if constants.IsRetryWithAnotherPeer() {
-			//		fmt.Println("RerouteMap is currently:", globalState.RerouteStruct.RerouteMap)
-			//	}
-			//}
-
 			originatorIndex = update.OriginatorIndex(globalState, timeStep)
 			originatorId := globalState.GetOriginatorId(originatorIndex)
 			originator := globalState.Graph.GetNode(originatorId)
@@ -62,15 +53,12 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 
 			if constants.IsRetryWithAnotherPeer() {
 				rerouteStruct := originator.RerouteStruct
-				//if routeStruct.LastEpoch < curEpoch {
 
 				if len(rerouteStruct.Reroute.CheckedNodes) > 0 {
-					//fmt.Println(len(rerouteStruct.Reroute.CheckedNodes))
 					chunkId = rerouteStruct.Reroute.ChunkId
 					responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 					pickedFromRetry++
 				}
-				//globalState.RerouteStruct.UpdateEpoch(originatorId, curEpoch)
 			}
 
 			if constants.IsWaitingEnabled() && chunkId == -1 { // No valid chunkId in reroute
@@ -85,32 +73,6 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 					}
 				}
 			}
-
-			//if constants.IsRetryWithAnotherPeer() {
-			//
-			//	routeStruct := globalState.RerouteStruct.GetRerouteMap(originatorId)
-			//	//if routeStruct.LastEpoch < curEpoch {
-			//	if routeStruct.CheckedNodes != nil {
-			//		newChunkSet = true
-			//		chunkId = routeStruct.ChunkId
-			//		responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
-			//	}
-			//	//globalState.RerouteStruct.UpdateEpoch(originatorId, curEpoch)
-			//}
-			//
-			//if constants.IsWaitingEnabled() && !newChunkSet { // No valid chunkId in reroute
-			//	pending, ok := globalState.PendingStruct.GetPending(originatorId)
-			//
-			//	if ok && len(pending.ChunkQueue) > 0 {
-			//		chunkStruct, _ := globalState.PendingStruct.GetChunkFromQueue(originatorId)
-			//		if chunkStruct.LastEpoch < curEpoch {
-			//			newChunkSet = true
-			//			chunkId = chunkStruct.ChunkId
-			//			responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkStruct.ChunkId)
-			//			globalState.PendingStruct.UpdateEpoch(originatorId, chunkId, curEpoch)
-			//		}
-			//	}
-			//}
 
 			if constants.IsIterationMeansUniqueChunk() {
 				if chunkId == -1 {
@@ -138,11 +100,10 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 					ChunkId:         chunkId,
 					RespNodes:       responsibleNodes,
 				}
-				//fmt.Println(request)
 				requestChan <- request
 			}
 		}
 	}
-	fmt.Println("Number of requests chunks picked from Pending: ", pickedFromWaiting)
-	fmt.Println("Number of requests chunks picked from Retry: ", pickedFromRetry)
+	fmt.Println("chunks picked from Pending: ", pickedFromWaiting)
+	fmt.Println("chunks picked from Retry: ", pickedFromRetry)
 }

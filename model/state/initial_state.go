@@ -27,7 +27,7 @@ func MakeInitialState(path string) types.State {
 		Originators:             utils.CreateDownloadersList(graph),
 		NodesId:                 utils.CreateNodesList(graph),
 		RouteLists:              make([]types.RequestResult, 10000),
-		CacheCounter:            0,
+		CacheHits:               0,
 		UniqueWaitingCounter:    0,
 		UniqueRetryCounter:      0,
 		OriginatorIndex:         0,

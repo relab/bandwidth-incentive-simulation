@@ -13,15 +13,12 @@ type CacheStruct struct {
 func (c *CacheStruct) AddToCache(chunkId ChunkId) CacheMap {
 	c.CacheMutex.Lock()
 	defer c.CacheMutex.Unlock()
-	//cacheMap := c.CacheMap
 
 	if _, ok := c.CacheMap[chunkId]; ok {
 		c.CacheMap[chunkId]++
 	} else {
 		c.CacheMap[chunkId] = 1
 	}
-
-	//c.Node.CacheStruct.CacheMap = cacheMap
 
 	return c.CacheMap
 }

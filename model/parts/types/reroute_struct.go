@@ -13,7 +13,6 @@ type Reroute struct {
 //type RerouteMap map[NodeId]Reroute
 
 type RerouteStruct struct {
-	Node         *Node
 	Reroute      Reroute
 	RerouteMutex *sync.Mutex
 }

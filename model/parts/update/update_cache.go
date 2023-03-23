@@ -13,9 +13,9 @@ func CacheMap(state *types.State, requestResult types.RequestResult) int32 {
 		chunkId := requestResult.ChunkId
 
 		if requestResult.FoundByCaching {
-			cacheCounter = atomic.AddInt32(&state.CacheCounter, 1)
+			cacheCounter = atomic.AddInt32(&state.CacheHits, 1)
 		} else {
-			cacheCounter = atomic.LoadInt32(&state.CacheCounter)
+			cacheCounter = atomic.LoadInt32(&state.CacheHits)
 		}
 
 		if requestResult.Found {

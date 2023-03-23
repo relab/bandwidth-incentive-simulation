@@ -27,20 +27,6 @@ func Pending(state *types.State, requestResult types.RequestResult, curEpoch int
 			}
 		}
 
-		//// -1 Threshold Fail, -2 Access Fail
-		//if constants.IsRetryWithAnotherPeer() {
-		//	if requestResult.ThresholdFailed || requestResult.AccessFailed {
-		//		state.PendingStruct.AddPendingChunkId(originator, chunkId, curEpoch)
-		//	} else {
-		//		state.PendingStruct.DeletePendingChunkId(originator, chunkId)
-		//	}
-		//} else {
-		//	if requestResult.ThresholdFailed {
-		//		state.PendingStruct.AddPendingChunkId(originator, chunkId, curEpoch)
-		//	} else {
-		//		state.PendingStruct.DeletePendingChunkId(originator, chunkId)
-		//	}
-		//}
 	}
 	return pendingCounter
 }

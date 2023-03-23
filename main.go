@@ -16,8 +16,8 @@ func main() {
 	network := fmt.Sprintf("./data/nodes_data_%d_10000.txt", constants.GetBinSize())
 	globalState := state.MakeInitialState(network)
 
-	const iterations = 10_000_000
-	numTotalGoRoutines := runtime.NumCPU()
+	const iterations = 100_000_000
+	numTotalGoRoutines := runtime.NumCPU() + 10
 	//numTotalGoRoutines := 5
 	numRoutingGoroutines := constants.SetNumRoutingGoroutines(numTotalGoRoutines)
 	//numLoops := iterations / numGoroutines
@@ -133,9 +133,9 @@ func PrintState(state types.State) {
 	fmt.Println("FailedRequestsAccess: ", state.FailedRequestsAccess)
 	fmt.Println("TimeStep: ", state.TimeStep)
 	fmt.Println("OriginatorIndex: ", state.OriginatorIndex)
-	fmt.Println("CacheCounter:", state.CacheCounter)
+	fmt.Println("CacheHits:", state.CacheHits)
 	fmt.Println("UniqueRetryCounter: ", state.UniqueRetryCounter)
-	fmt.Println("WaitingCounter: ", state.UniqueWaitingCounter)
+	fmt.Println("UniqueWaitingCounter: ", state.UniqueWaitingCounter)
 	//fmt.Println("PendingMap: ", state.PendingStruct.PendingMap, state.PendingStruct.Counter)
 	//fmt.Println("RerouteMap: ", state.RerouteStruct.RerouteMap)
 	//fmt.Println("RouteLists: ", state.RouteLists)
