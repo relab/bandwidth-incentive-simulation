@@ -3,28 +3,21 @@ package types
 type Request struct {
 	TimeStep        int
 	Epoch           int
-	OriginatorIndex int
+	OriginatorIndex int32
 	OriginatorId    NodeId
 	ChunkId         ChunkId
 	RespNodes       [4]NodeId
 }
 
-type Route []NodeId
-
 type RequestResult struct {
-	Route           Route
+	Route           []NodeId
+	PaymentList     []Payment
 	ChunkId         ChunkId
 	Found           bool
 	AccessFailed    bool
 	ThresholdFailed bool
 	FoundByCaching  bool
-	PaymentList     []Payment
 }
-
-//type RequestResult struct {
-//	Route       RequestResult
-//	PaymentList []Payment
-//}
 
 type Payment struct {
 	FirstNodeId  NodeId
@@ -52,13 +45,16 @@ type StateSubset struct {
 	FailedRequestsThreshold int32
 	FailedRequestsAccess    int32
 	TimeStep                int32
+	Epoch                   int32
 }
 
 type RouteData struct {
-	TimeStep        int32 `json:"t"`
-	Route           Route `json:"r"`
-	ThresholdFailed bool
-	AccessFailed    bool
+	Epoch           int32    `json:"e"`
+	Route           []NodeId `json:"r"`
+	ChunkId         ChunkId  `json:"c"`
+	Found           bool     `json:"f"`
+	ThresholdFailed bool     `json:"t"`
+	AccessFailed    bool     `json:"a"`
 }
 
 //type StateData struct {
@@ -71,9 +67,9 @@ type State struct {
 	Originators             []NodeId
 	NodesId                 []NodeId
 	RouteLists              []RequestResult
-	PendingStruct           PendingStruct
-	RerouteStruct           RerouteStruct
-	CacheStruct             CacheStruct
+	UniqueWaitingCounter    int32
+	UniqueRetryCounter      int32
+	CacheCounter            int32
 	OriginatorIndex         int32
 	SuccessfulFound         int32
 	FailedRequestsThreshold int32
@@ -82,7 +78,11 @@ type State struct {
 	Epoch                   int
 }
 
-type RouteWithPrice struct {
+func (s *State) GetOriginatorId(originatorIndex int32) NodeId {
+	return s.Originators[originatorIndex]
+}
+
+type NodePairWithPrice struct {
 	RequesterNode NodeId
 	ProviderNode  NodeId
 	Price         int
@@ -94,8 +94,8 @@ type PaymentWithPrice struct {
 }
 
 type Output struct {
-	RoutesWithPrice   []RouteWithPrice
-	PaymentsWithPrice []PaymentWithPrice
+	RouteWithPrices    []NodePairWithPrice
+	PaymentsWithPrices []PaymentWithPrice
 }
 
 type Outputs struct {

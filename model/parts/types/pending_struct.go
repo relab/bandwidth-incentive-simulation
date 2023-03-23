@@ -3,135 +3,215 @@ package types
 import (
 	"go-incentive-simulation/model/constants"
 	"sync"
+	"sync/atomic"
 )
 
-type ChunkStruct struct {
+type QueuedChunk struct {
 	ChunkId   ChunkId
 	Counter   int
 	LastEpoch int
 }
 
-type Pending struct {
-	ChunkQueue   []ChunkStruct
-	CurrentIndex int // Which ChunkStruct in the ChunkQueue which will get looked after next.
-}
-
-type PendingMap map[NodeId]Pending
-
 type PendingStruct struct {
-	PendingMap           PendingMap
-	PendingMutex         *sync.Mutex
-	UniquePendingCounter int32
+	PendingQueue []QueuedChunk
+	CurrentIndex int
+	PendingMutex *sync.Mutex
 }
 
-func (p *PendingStruct) GetPending(originator NodeId) (Pending, bool) {
+func (p *PendingStruct) AddPendingChunkId(state *State, chunkId ChunkId, curEpoch int) int32 {
 	p.PendingMutex.Lock()
 	defer p.PendingMutex.Unlock()
-	pending, ok := p.PendingMap[originator]
-	if ok {
-		return pending, true
-	}
-	return Pending{ChunkQueue: []ChunkStruct{}, CurrentIndex: 0}, false
-}
-
-func (p *PendingStruct) AddPendingChunkId(originator NodeId, chunkId ChunkId, curEpoch int) {
-	pending, _ := p.GetPending(originator)
-	chunkStructIndex := p.GetChunkStructIndex(pending.ChunkQueue, chunkId)
-
-	p.PendingMutex.Lock()
-	defer p.PendingMutex.Unlock()
-
-	if chunkStructIndex == -1 { // new chunk
-		newChunkStruct := ChunkStruct{
+	var waitingCounter int32
+	chunkIdIndex := p.GetQueuedChunkIndex(chunkId)
+	if chunkIdIndex == -1 { // new chunk
+		newChunkStruct := QueuedChunk{
 			ChunkId:   chunkId,
 			Counter:   0,
 			LastEpoch: curEpoch,
 		}
-		pending.ChunkQueue = append([]ChunkStruct{newChunkStruct}, pending.ChunkQueue...)
-		p.PendingMap[originator] = pending
-		p.UniquePendingCounter++
+		p.PendingQueue = append([]QueuedChunk{newChunkStruct}, p.PendingQueue...)
+		waitingCounter = atomic.AddInt32(&state.UniqueWaitingCounter, 1)
 
 	} else { // chunk seen before
-		if pending.ChunkQueue[chunkStructIndex].Counter < constants.GetBinSize() {
-			pending.ChunkQueue[chunkStructIndex].Counter++
-			p.PendingMap[originator] = pending
+		if p.PendingQueue[chunkIdIndex].Counter < constants.GetBinSize() {
+			p.PendingQueue[chunkIdIndex].Counter++
 
-		} else { // remove chunkStruct
-			pending.ChunkQueue = append(pending.ChunkQueue[:chunkStructIndex], pending.ChunkQueue[chunkStructIndex+1:]...)
-			if len(pending.ChunkQueue) == 0 {
-				delete(p.PendingMap, originator)
-			}
+		} else { // remove queued chunk
+			p.PendingQueue = append(p.PendingQueue[:chunkIdIndex], p.PendingQueue[chunkIdIndex+1:]...)
 		}
+		waitingCounter = atomic.LoadInt32(&state.UniqueWaitingCounter)
 	}
+	return waitingCounter
 }
 
-func (p *PendingStruct) DeletePendingChunkId(originator NodeId, chunkId ChunkId) {
-	pending, _ := p.GetPending(originator)
-
-	if len(pending.ChunkQueue) > 0 {
-		chunkIdIndex := p.GetChunkStructIndex(pending.ChunkQueue, chunkId)
-		if chunkIdIndex != -1 {
-			p.PendingMutex.Lock()
-			defer p.PendingMutex.Unlock()
-			pending.ChunkQueue = append(pending.ChunkQueue[:chunkIdIndex]) // Delete chunk front of queue
-			if len(pending.ChunkQueue) == 0 {
-				delete(p.PendingMap, originator)
-				return
-			} else {
-				p.PendingMap[originator] = pending
-			}
-		}
-	}
-}
-
-func (p *PendingStruct) GetChunkFromQueue(originator NodeId) (ChunkStruct, bool) {
-	pending, ok := p.GetPending(originator)
-	if ok {
-		p.PendingMutex.Lock()
-		defer p.PendingMutex.Unlock()
-		currentIndex := p.GetAndUpdateCurrentIndex(pending, originator)
-		chunkFrontOfQueue := pending.ChunkQueue[currentIndex]
-		return chunkFrontOfQueue, true
-	}
-	return ChunkStruct{}, false
-}
-
-func (p *PendingStruct) UpdateEpoch(originator NodeId, chunkId ChunkId, curEpoch int) int {
+func (p *PendingStruct) DeletePendingChunkId(chunkId ChunkId) {
 	p.PendingMutex.Lock()
 	defer p.PendingMutex.Unlock()
-	pending, ok := p.PendingMap[originator]
-	if ok {
-		chunkStructIndex := p.GetChunkStructIndex(pending.ChunkQueue, chunkId)
-		if chunkStructIndex != -1 {
-			p.PendingMap[originator].ChunkQueue[chunkStructIndex].LastEpoch = curEpoch
-			return p.PendingMap[originator].ChunkQueue[chunkStructIndex].LastEpoch
+	if len(p.PendingQueue) > 0 {
+		chunkIdIndex := p.GetQueuedChunkIndex(chunkId)
+		if chunkIdIndex != -1 {
+			p.PendingQueue = append(p.PendingQueue[:chunkIdIndex], p.PendingQueue[chunkIdIndex+1:]...)
 		}
 	}
-	return -1
 }
 
-func (p *PendingStruct) GetAndUpdateCurrentIndex(pending Pending, originator NodeId) int {
+func (p *PendingStruct) GetChunkFromQueue(curEpoch int) (QueuedChunk, bool) {
+	p.PendingMutex.Lock()
+	defer p.PendingMutex.Unlock()
 
-	pending.CurrentIndex--
-	if pending.CurrentIndex < 0 || pending.CurrentIndex >= len(pending.ChunkQueue) {
-		pending.CurrentIndex = len(pending.ChunkQueue) - 1
-		if pending.CurrentIndex < 0 {
-			pending.CurrentIndex = 0
+	for i := 0; i < len(p.PendingQueue); i++ {
+		currentIndex := p.GetAndUpdateCurrentIndex()
+		chunkFrontOfQueue := p.PendingQueue[currentIndex]
+
+		if chunkFrontOfQueue.LastEpoch < curEpoch {
+			p.PendingQueue[currentIndex].LastEpoch = curEpoch
+
+			return chunkFrontOfQueue, true
 		}
 	}
-	p.PendingMap[originator] = pending
-	return pending.CurrentIndex
+
+	return QueuedChunk{}, false
 }
 
-func (p *PendingStruct) GetChunkStructIndex(chunkStructs []ChunkStruct, chunkId ChunkId) int {
+// GetAndUpdateCurrentIndex TODO: clean up this one to remove all the unnecessary checks
+func (p *PendingStruct) GetAndUpdateCurrentIndex() int {
 
-	for i, v := range chunkStructs {
+	p.CurrentIndex--
+	if p.CurrentIndex < 0 || p.CurrentIndex >= len(p.PendingQueue) {
+		p.CurrentIndex = len(p.PendingQueue) - 1
+	}
+	return p.CurrentIndex
+}
+
+func (p *PendingStruct) GetQueuedChunkIndex(chunkId ChunkId) int {
+
+	for i, v := range p.PendingQueue {
 		if v.ChunkId == chunkId {
 			return i
 		}
 	}
 	return -1
 }
+
+//func (p *PendingStruct) UpdateEpoch(chunkId ChunkId, curEpoch int) int {
+//	p.PendingMutex.Lock()
+//	defer p.PendingMutex.Unlock()
+//
+//	chunkStructIndex := p.GetQueuedChunkIndex(chunkId)
+//	if chunkStructIndex != -1 {
+//		p.PendingQueue[chunkStructIndex].LastEpoch = curEpoch
+//		return p.PendingQueue[chunkStructIndex].LastEpoch
+//	}
+//
+//	return -1
+//}
+
+//type PendingMap map[NodeId]PendingQueue
+
+//type PendingStruct struct {
+//	PendingMap           PendingMap
+//	PendingMutex         *sync.Mutex
+//	UniquePendingCounter int32
+//}
+
+//func (p *PendingStruct) GetPending(originator NodeId) (PendingQueue, bool) {
+//	p.PendingMutex.Lock()
+//	defer p.PendingMutex.Unlock()
+//	pending, ok := p.PendingMap[originator]
+//	if ok {
+//		return pending, true
+//	}
+//	return PendingQueue{ChunkQueue: []QueuedChunk{}, CurrentIndex: 0}, false
+//}
+
+//func (p *PendingStruct) AddPendingChunkId(originator NodeId, chunkId ChunkId, curEpoch int) {
+//	pending, _ := p.GetPending(originator)
+//	chunkStructIndex := p.GetChunkStructIndex(pending.ChunkQueue, chunkId)
+//
+//	p.PendingMutex.Lock()
+//	defer p.PendingMutex.Unlock()
+//
+//	if chunkStructIndex == -1 { // new chunk
+//		newChunkStruct := QueuedChunk{
+//			ChunkId:   chunkId,
+//			Counter:   0,
+//			LastEpoch: curEpoch,
+//		}
+//		pending.ChunkQueue = append([]QueuedChunk{newChunkStruct}, pending.ChunkQueue...)
+//		p.PendingMap[originator] = pending
+//		p.UniquePendingCounter++
+//
+//	} else { // chunk seen before
+//		if pending.ChunkQueue[chunkStructIndex].Counter < constants.GetBinSize() {
+//			pending.ChunkQueue[chunkStructIndex].Counter++
+//			p.PendingMap[originator] = pending
+//
+//		} else { // remove chunkStruct
+//			pending.ChunkQueue = append(pending.ChunkQueue[:chunkStructIndex], pending.ChunkQueue[chunkStructIndex+1:]...)
+//			if len(pending.ChunkQueue) == 0 {
+//				delete(p.PendingMap, originator)
+//			}
+//		}
+//	}
+//}
+
+//func (p *PendingStruct) DeletePendingChunkId(originator NodeId, chunkId ChunkId) {
+//	pending, _ := p.GetPending(originator)
+//
+//	if len(pending.ChunkQueue) > 0 {
+//		chunkIdIndex := p.GetChunkStructIndex(pending.ChunkQueue, chunkId)
+//		if chunkIdIndex != -1 {
+//			p.PendingMutex.Lock()
+//			defer p.PendingMutex.Unlock()
+//			pending.ChunkQueue = append(pending.ChunkQueue[:chunkIdIndex]) // Delete chunk front of queue
+//			if len(pending.ChunkQueue) == 0 {
+//				delete(p.PendingMap, originator)
+//				return
+//			} else {
+//				p.PendingMap[originator] = pending
+//			}
+//		}
+//	}
+//}
+
+//func (p *PendingStruct) GetChunkFromQueue(originator NodeId) (QueuedChunk, bool) {
+//	pending, ok := p.GetPending(originator)
+//	if ok {
+//		p.PendingMutex.Lock()
+//		defer p.PendingMutex.Unlock()
+//		currentIndex := p.GetAndUpdateCurrentIndex(pending, originator)
+//		chunkFrontOfQueue := pending.ChunkQueue[currentIndex]
+//		return chunkFrontOfQueue, true
+//	}
+//	return QueuedChunk{}, false
+//}
+
+//func (p *PendingStruct) UpdateEpoch(originator NodeId, chunkId ChunkId, curEpoch int) int {
+//	p.PendingMutex.Lock()
+//	defer p.PendingMutex.Unlock()
+//	pending, ok := p.PendingMap[originator]
+//	if ok {
+//		chunkStructIndex := p.GetChunkStructIndex(pending.ChunkQueue, chunkId)
+//		if chunkStructIndex != -1 {
+//			p.PendingMap[originator].ChunkQueue[chunkStructIndex].LastEpoch = curEpoch
+//			return p.PendingMap[originator].ChunkQueue[chunkStructIndex].LastEpoch
+//		}
+//	}
+//	return -1
+//}
+
+//func (p *PendingStruct) GetAndUpdateCurrentIndex(pending PendingQueue, originator NodeId) int {
+//
+//	pending.CurrentIndex--
+//	if pending.CurrentIndex < 0 || pending.CurrentIndex >= len(pending.ChunkQueue) {
+//		pending.CurrentIndex = len(pending.ChunkQueue) - 1
+//		if pending.CurrentIndex < 0 {
+//			pending.CurrentIndex = 0
+//		}
+//	}
+//	p.PendingMap[originator] = pending
+//	return pending.CurrentIndex
+//}
 
 //func (p *PendingStruct) SetEpochDecrement(originator int) int32 {
 //	p.PendingMutex.Lock()

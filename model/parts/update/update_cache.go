@@ -3,36 +3,29 @@ package update
 import (
 	"go-incentive-simulation/model/constants"
 	"go-incentive-simulation/model/parts/types"
+	"sync/atomic"
 )
 
-func CacheMap(state *types.State, requestResult types.RequestResult) types.CacheStruct {
+func CacheMap(state *types.State, requestResult types.RequestResult) int32 {
+	var cacheCounter int32
 	if constants.IsCacheEnabled() {
 		route := requestResult.Route
 		chunkId := requestResult.ChunkId
 
 		if requestResult.FoundByCaching {
-			state.CacheStruct.CacheHits++
+			cacheCounter = atomic.AddInt32(&state.CacheCounter, 1)
+		} else {
+			cacheCounter = atomic.LoadInt32(&state.CacheCounter)
 		}
 
 		if requestResult.Found {
 			for _, nodeId := range route {
 				//state.CacheStruct.AddToCache(nodeId, chunkId)
 				node := state.Graph.GetNode(nodeId)
-				node.Mutex.Lock()
-				cacheMap := node.CacheMap
-				if cacheMap != nil {
-					if _, ok := cacheMap[chunkId]; ok {
-						cacheMap[chunkId]++
-					} else {
-						cacheMap[chunkId] = 1
-					}
-				} else {
-					node.CacheMap = map[types.ChunkId]int{chunkId: 1}
-				}
-				node.Mutex.Unlock()
+				node.CacheStruct.AddToCache(chunkId)
 			}
 		}
 	}
 	//state.CacheStruct = cacheStruct
-	return state.CacheStruct
+	return cacheCounter
 }

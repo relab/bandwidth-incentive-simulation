@@ -18,13 +18,13 @@ type constant struct {
 	forgivenessEnabled                bool
 	paymentEnabled                    bool
 	maxPOCheckEnabled                 bool
-	waitingEnabled                    bool
 	onlyOriginatorPays                bool
 	payOnlyForCurrentRequest          bool
 	payIfOrigPays                     bool
 	forwardersPayForceOriginatorToPay bool
-	retryWithAnotherPeer              bool
 	cacheIsEnabled                    bool
+	waitingEnabled                    bool
+	retryWithAnotherPeer              bool
 	preferredChunks                   bool
 	adjustableThreshold               bool
 	edgeLock                          bool
@@ -55,15 +55,15 @@ var constants = constant{
 	requestsPerSecond:                 12500,   // 12500
 	thresholdEnabled:                  true,    // The maximum limit of debt an edge can have in one direction
 	forgivenessEnabled:                true,    // Edge debt gets forgiven some amount on an interval (amortized)
-	paymentEnabled:                    true,    // Nodes pay if they Threshold fail
+	paymentEnabled:                    false,   // Nodes pay if they Threshold fail
 	maxPOCheckEnabled:                 false,   // Used to find the proper variable called "omega" in the python paper
 	onlyOriginatorPays:                false,   // Only the originator will pay, others will threshold fail or wait
 	payOnlyForCurrentRequest:          false,   // Only pay for current request or the full debt on the edge
 	payIfOrigPays:                     false,   // Only pay if the originator pays -- NOT NEEDED
-	forwardersPayForceOriginatorToPay: true,    // If Threshold fails, forces all the nodes in the route to pay for the current request
-	waitingEnabled:                    false,   // When Threshold fails, will wait before trying to traverse same route
-	retryWithAnotherPeer:              false,   // The Route to the chunk will try to take many paths to find the chunk
+	forwardersPayForceOriginatorToPay: false,   // If Threshold fails, forces all the nodes in the route to pay for the current request
 	cacheIsEnabled:                    false,   // Cache, which stores previously looked after chunks on the nodes
+	waitingEnabled:                    true,    // When Threshold fails, will wait before trying to traverse same route
+	retryWithAnotherPeer:              true,    // The Route to the chunk will try to take many paths to find the chunk
 	preferredChunks:                   false,   // Fits well with cache, where some chunkIds are chosen more often
 	adjustableThreshold:               false,   // The Threshold limit of an edge is determined based on the XOR distance
 	edgeLock:                          true,    // Should always be true when using concurrency
@@ -235,6 +235,13 @@ func IsDebugPrints() bool {
 	return constants.debugPrints
 }
 
+func TimeForDebugPrints(timeStep int) bool {
+	if constants.debugPrints {
+		return timeStep%GetDebugInterval() == 0
+	}
+	return false
+}
+
 func GetDebugInterval() int {
 	return constants.debugInterval
 }
@@ -245,4 +252,8 @@ func GetNumRoutingGoroutines() int {
 
 func GetEpoch() int {
 	return constants.epoch
+}
+
+func TimeForNewEpoch(timeStep int) bool {
+	return timeStep%GetRequestsPerSecond() == 0
 }

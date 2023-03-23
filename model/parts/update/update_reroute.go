@@ -4,40 +4,44 @@ import (
 	"go-incentive-simulation/model/constants"
 	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
+	"sync/atomic"
 )
 
-func RerouteMap(state *types.State, requestResult types.RequestResult, curEpoch int) types.RerouteStruct {
+func Reroute(state *types.State, requestResult types.RequestResult, curEpoch int) int32 {
+	var retryCounter int32
 	if constants.IsRetryWithAnotherPeer() {
 		route := requestResult.Route
 		chunkId := requestResult.ChunkId
-		originator := route[0]
+		originatorId := route[0]
+		originator := state.Graph.GetNode(originatorId)
+		rerouteStruct := originator.RerouteStruct // reroute = rejected nodes + chunk
 
 		if requestResult.Found {
-			routeStruct := state.RerouteStruct.GetRerouteMap(originator) // reroute = rejected nodes + chunk
-			if routeStruct.Reroute != nil {
-				if routeStruct.ChunkId == chunkId { // If chunkId == chunkId
-					state.RerouteStruct.DeleteReroute(originator)
+			if rerouteStruct.Reroute.CheckedNodes != nil {
+				if rerouteStruct.Reroute.ChunkId == chunkId { // If chunkId == chunkId --> reset reroute
+					originator.RerouteStruct.Reroute = types.Reroute{}
 				}
 			}
 
 		} else if len(route) > 1 { // Rejection in second hop --> route have at least an originator and a firstHopeNode
-			routeStruct := state.RerouteStruct.GetRerouteMap(originator)
 			firstHopNode := route[1]
-			if routeStruct.Reroute != nil {
-				if !general.Contains(routeStruct.Reroute, firstHopNode) { // if the first hop in new route have not been searched before
-					state.RerouteStruct.AddNodeToReroute(originator, firstHopNode)
+			if rerouteStruct.Reroute.CheckedNodes != nil {
+				if !general.Contains(rerouteStruct.Reroute.CheckedNodes, firstHopNode) { // if the first hop in new route have not been searched before
+					originator.RerouteStruct.AddNodeToCheckedNodes(originator, firstHopNode)
 				}
 			} else {
-				state.RerouteStruct.AddNewReroute(originator, firstHopNode, chunkId, curEpoch)
+				originator.RerouteStruct.AddNewReroute(originator, firstHopNode, chunkId, curEpoch)
+				retryCounter = atomic.AddInt32(&state.UniqueRetryCounter, 1)
 			}
+
+		} else {
+			retryCounter = atomic.LoadInt32(&state.UniqueRetryCounter)
 		}
 
-		routeStruct := state.RerouteStruct.GetRerouteMap(originator)
-		if routeStruct.Reroute != nil {
-			if len(routeStruct.Reroute) > constants.GetBinSize() {
-				state.RerouteStruct.DeleteReroute(originator)
-			}
+		if len(rerouteStruct.Reroute.CheckedNodes) > constants.GetBinSize() {
+			originator.RerouteStruct.Reroute = types.Reroute{}
 		}
+
 	}
-	return state.RerouteStruct
+	return retryCounter
 }

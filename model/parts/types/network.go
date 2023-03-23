@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+	"go-incentive-simulation/model/constants"
 	"go-incentive-simulation/model/general"
 	"math/rand"
 	"os"
@@ -23,7 +24,7 @@ func (n NodeId) ToInt32() int32 {
 }
 
 func (n NodeId) IsNil() bool {
-	return n == 0
+	return n.ToInt32() == 0
 }
 
 type ChunkId int32
@@ -33,18 +34,16 @@ func (c ChunkId) ToInt32() int32 {
 }
 
 func (c ChunkId) IsNil() bool {
-	return c == 0
+	return c.ToInt32() == 0
 }
 
 type Node struct {
-	Network    *Network
-	Id         NodeId
-	AdjIds     [][]NodeId
-	CacheMap   map[ChunkId]int // int = counter
-	Mutex      *sync.Mutex
-	storageSet []int
-	cacheSet   []int
-	canPay     bool
+	Network       *Network
+	Id            NodeId
+	AdjIds        [][]NodeId
+	CacheStruct   CacheStruct
+	PendingStruct PendingStruct
+	RerouteStruct RerouteStruct
 }
 
 type jsonFormat struct {
@@ -92,14 +91,26 @@ func (network *Network) node(nodeId NodeId) *Node {
 		panic("address out of range")
 	}
 	res := Node{
-		Network:    network,
-		Id:         nodeId,
-		AdjIds:     make([][]NodeId, network.Bits),
-		CacheMap:   make(map[ChunkId]int),
-		Mutex:      &sync.Mutex{},
-		storageSet: []int{0},
-		cacheSet:   []int{0},
-		canPay:     true,
+		Network: network,
+		Id:      nodeId,
+		AdjIds:  make([][]NodeId, network.Bits),
+		CacheStruct: CacheStruct{
+			CacheMap:   make(CacheMap),
+			CacheMutex: &sync.Mutex{},
+		},
+		PendingStruct: PendingStruct{
+			PendingQueue: nil,
+			CurrentIndex: 0,
+			PendingMutex: &sync.Mutex{},
+		},
+		RerouteStruct: RerouteStruct{
+			Reroute: Reroute{
+				CheckedNodes: nil,
+				ChunkId:      0,
+				LastEpoch:    constants.GetEpoch(),
+			},
+			RerouteMutex: &sync.Mutex{},
+		},
 	}
 	if len(network.NodesMap) == 0 {
 		network.NodesMap = make(map[NodeId]*Node)
@@ -117,6 +128,8 @@ func (network *Network) Generate(count int) []*Node {
 	nodes := make([]*Node, 0)
 	for _, i := range nodeIds {
 		node := network.node(NodeId(i))
+		node.RerouteStruct.Node = node
+
 		nodes = append(nodes, node)
 	}
 	pairs := make([][2]*Node, 0)

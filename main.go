@@ -18,6 +18,7 @@ func main() {
 
 	const iterations = 10_000_000
 	numTotalGoRoutines := runtime.NumCPU()
+	//numTotalGoRoutines := 5
 	numRoutingGoroutines := constants.SetNumRoutingGoroutines(numTotalGoRoutines)
 	//numLoops := iterations / numGoroutines
 
@@ -130,11 +131,11 @@ func PrintState(state types.State) {
 	fmt.Println("SuccessfulFound: ", state.SuccessfulFound)
 	fmt.Println("FailedRequestsThreshold: ", state.FailedRequestsThreshold)
 	fmt.Println("FailedRequestsAccess: ", state.FailedRequestsAccess)
-	fmt.Println("CacheHits:", state.CacheStruct.CacheHits)
 	fmt.Println("TimeStep: ", state.TimeStep)
 	fmt.Println("OriginatorIndex: ", state.OriginatorIndex)
-	fmt.Println("UniqueRerouteCounter: ", state.RerouteStruct.UniqueRerouteCounter)
-	fmt.Println("UniquePendingCounter: ", state.PendingStruct.UniquePendingCounter)
+	fmt.Println("CacheCounter:", state.CacheCounter)
+	fmt.Println("UniqueRetryCounter: ", state.UniqueRetryCounter)
+	fmt.Println("WaitingCounter: ", state.UniqueWaitingCounter)
 	//fmt.Println("PendingMap: ", state.PendingStruct.PendingMap, state.PendingStruct.Counter)
 	//fmt.Println("RerouteMap: ", state.RerouteStruct.RerouteMap)
 	//fmt.Println("RouteLists: ", state.RouteLists)

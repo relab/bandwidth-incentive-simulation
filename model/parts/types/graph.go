@@ -184,9 +184,9 @@ func (g *Graph) GetNode(nodeId NodeId) *Node {
 	return nil
 }
 
-func ContainsNode(v []*Node, node *Node) bool {
-	for _, v := range v {
-		if v.Id == node.Id {
+func ContainsNode(Nodes []*Node, node *Node) bool {
+	for _, curNode := range Nodes {
+		if curNode.Id == node.Id {
 			return true
 		}
 	}

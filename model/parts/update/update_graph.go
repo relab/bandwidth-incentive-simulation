@@ -10,13 +10,13 @@ func Graph(state *types.State, requestResult types.RequestResult, curTimeStep in
 	chunkId := requestResult.ChunkId
 	route := requestResult.Route
 	paymentsList := requestResult.PaymentList
-	var routeWithPrice types.RouteWithPrice
+	var nodePairWithPrice types.NodePairWithPrice
 	var paymentWithPrice types.PaymentWithPrice
 	var output types.Output
 
 	if constants.GetPaymentEnabled() {
 		for _, payment := range paymentsList {
-			if payment != (types.Payment{}) {
+			if !payment.IsNil() {
 				edgeData1 := state.Graph.GetEdgeData(payment.FirstNodeId, payment.PayNextId)
 				edgeData2 := state.Graph.GetEdgeData(payment.PayNextId, payment.FirstNodeId)
 				price := utils.PeerPriceChunk(payment.PayNextId, payment.ChunkId)
@@ -39,7 +39,7 @@ func Graph(state *types.State, requestResult types.RequestResult, curTimeStep in
 				}
 				// fmt.Println("Payment from ", payment.FirstNodeId, " to ", payment.PayNextId, " for chunk ", payment.ChunkId, " with price ", actualPrice)
 				paymentWithPrice = types.PaymentWithPrice{Payment: payment, Price: actualPrice}
-				output.PaymentsWithPrice = append(output.PaymentsWithPrice, paymentWithPrice)
+				output.PaymentsWithPrices = append(output.PaymentsWithPrices, paymentWithPrice)
 			}
 		}
 	}
@@ -56,11 +56,8 @@ func Graph(state *types.State, requestResult types.RequestResult, curTimeStep in
 			state.Graph.SetEdgeData(requesterNode, providerNode, newEdgeData)
 
 			if constants.GetMaxPOCheckEnabled() {
-				//routeWithPrice = append(routeWithPrice, requesterNode)
-				//routeWithPrice = append(routeWithPrice, price)
-				//routeWithPrice = append(routeWithPrice, providerNode)
-				routeWithPrice = types.RouteWithPrice{RequesterNode: requesterNode, ProviderNode: providerNode, Price: price}
-				output.RoutesWithPrice = append(output.RoutesWithPrice, routeWithPrice)
+				nodePairWithPrice = types.NodePairWithPrice{RequesterNode: requesterNode, ProviderNode: providerNode, Price: price}
+				output.RouteWithPrices = append(output.RouteWithPrices, nodePairWithPrice)
 			}
 		}
 		if constants.GetMaxPOCheckEnabled() {
@@ -69,6 +66,7 @@ func Graph(state *types.State, requestResult types.RequestResult, curTimeStep in
 	}
 
 	// Unlocks all the edges between the nodes in the route
+
 	if constants.GetEdgeLock() {
 		for i := 0; i < len(route)-1; i++ {
 			state.Graph.UnlockEdge(route[i], route[i+1])

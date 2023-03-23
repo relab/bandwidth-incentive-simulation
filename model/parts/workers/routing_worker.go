@@ -13,19 +13,29 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 
 	defer wg.Done()
 	//var request types.Request
+
 	var stateSubset types.StateSubset
-	var requestResult types.RequestResult
 	for {
 		select {
 		case <-pauseChan:
 			continueChan <- true
 
-		case request, open := <-requestChan:
-			if !open {
+		case request, openChannel := <-requestChan:
+			if !openChannel {
 				return
 			}
 
-			requestResult = utils.ConsumeTask(request, globalState.Graph, globalState.RerouteStruct, globalState.CacheStruct)
+			route, paymentList, found, accessFailed, thresholdFailed, foundByCaching := utils.FindRoute(request, globalState.Graph)
+
+			requestResult := types.RequestResult{
+				Route:           route,
+				PaymentList:     paymentList,
+				ChunkId:         request.ChunkId,
+				Found:           found,
+				AccessFailed:    accessFailed,
+				ThresholdFailed: thresholdFailed,
+				FoundByCaching:  foundByCaching,
+			}
 
 			// TODO: decide on where we should update the timestep. At request creation or request fulfillment
 			//curTimeStep := update.Timestep(globalState)
@@ -33,9 +43,9 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			curTimeStep := request.TimeStep
 			output := update.Graph(globalState, requestResult, curTimeStep)
 
-			pendingStruct := update.PendingMap(globalState, requestResult, request.Epoch)
-			rerouteStruct := update.RerouteMap(globalState, requestResult, request.Epoch)
-			cacheStruct := update.CacheMap(globalState, requestResult)
+			waitingCounter := update.Pending(globalState, requestResult, request.Epoch)
+			retryCounter := update.Reroute(globalState, requestResult, request.Epoch)
+			cacheCounter := update.CacheMap(globalState, requestResult)
 
 			// TODO: originatorIndex is now updated by the requestWorker
 			//originatorIndex := UpdateOriginatorIndex(globalState)
@@ -47,23 +57,20 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 
 			// sending the "output" to the outputWorker
 			if constants.GetMaxPOCheckEnabled() {
-				if constants.IsDebugPrints() {
-					if curTimeStep%constants.GetDebugInterval() == 0 {
-						fmt.Println("outputChan length: ", len(outputChan))
-					}
+				if constants.IsDebugPrints() && constants.TimeForNewEpoch(curTimeStep) {
+					fmt.Println("outputChan length: ", len(outputChan))
 				}
 				outputChan <- output
 			}
 
 			if constants.IsWriteRoutesToFile() {
-				if constants.IsDebugPrints() {
-					if curTimeStep%constants.GetDebugInterval() == 0 {
-						fmt.Println("routeChan length: ", len(routeChan))
-					}
+				if constants.IsDebugPrints() && constants.TimeForNewEpoch(curTimeStep) {
+					fmt.Println("routeChan length: ", len(routeChan))
 				}
 				routeChan <- types.RouteData{
-					TimeStep:        int32(curTimeStep),
+					Epoch:           int32(request.Epoch),
 					Route:           requestResult.Route,
+					ChunkId:         requestResult.ChunkId,
 					AccessFailed:    requestResult.AccessFailed,
 					ThresholdFailed: requestResult.ThresholdFailed}
 			}
@@ -71,19 +78,18 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			if constants.IsWriteStatesToFile() {
 				// TODO: Decide on what subset of values we actually would like to store
 				stateSubset = types.StateSubset{
-					OriginatorIndex:         int32(request.OriginatorIndex),
-					PendingMap:              int32(len(pendingStruct.PendingMap)),
-					RerouteMap:              int32(len(rerouteStruct.RerouteMap)),
-					CacheStruct:             int32(len(cacheStruct.CacheMap)),
+					OriginatorIndex:         request.OriginatorIndex,
+					PendingMap:              waitingCounter,
+					RerouteMap:              retryCounter,
+					CacheStruct:             cacheCounter,
 					SuccessfulFound:         successfulFound,
 					FailedRequestsThreshold: failedRequestThreshold,
 					FailedRequestsAccess:    failedRequestAccess,
 					TimeStep:                int32(curTimeStep),
+					Epoch:                   int32(request.Epoch),
 				}
-				if constants.IsDebugPrints() {
-					if curTimeStep%constants.GetDebugInterval() == 0 {
-						fmt.Println("stateChan length: ", len(stateChan))
-					}
+				if constants.IsDebugPrints() && constants.TimeForNewEpoch(curTimeStep) {
+					fmt.Println("stateChan length: ", len(stateChan))
 				}
 				stateChan <- stateSubset
 			}

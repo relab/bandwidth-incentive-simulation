@@ -42,9 +42,9 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 
 	for output = range outputChan {
 		//counter++
-		//fmt.Println("Nr:", counter, "- Routes with price: ", output.RoutesWithPrice)
-		//fmt.Println("Nr:", counter, "- Payments with price: ", output.PaymentsWithPrice)
-		jsonData, err := json.Marshal(output.RoutesWithPrice)
+		//fmt.Println("Nr:", counter, "- Routes with price: ", output.NodePairWithPrice)
+		//fmt.Println("Nr:", counter, "- Payments with price: ", output.PaymentsWithPrices)
+		jsonData, err := json.Marshal(output.RouteWithPrices)
 		if err != nil {
 			fmt.Println("Couldn't marshal routes with price")
 		}
