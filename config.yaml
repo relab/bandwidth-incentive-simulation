@@ -1,4 +1,30 @@
 #### Experiments ####
+
+ConfOptions:
+  Bits: 16
+  NetworkSize: 10000
+  BinSize: 16
+  RangeAddress: 65536
+  Originators: 1000
+  RefreshRate: 8
+  Threshold: 16
+  RandomSeed: 123456789
+  MaxProximityOrder: 16
+  Price: 1
+  Chunks: 10000
+  RequestsPerSecond: 12500
+  EdgeLock: true
+  SameOriginator: false
+  PrecomputeRespNodes: true
+  WriteRoutesToFile: false
+  WriteStatesToFile: false
+  IterationMeansUniqueChunk: false
+  DebugPrints: false
+  DebugInterval: 1000000
+  NumRoutingGoroutines: 25
+  Epoch: 1
+  Iterations: 1_000_000
+
 # omega: maxPoCheckEnabled
 # k20p20: bucket size 20 and 20% originators
 # k20p100: bucket size 20 and 100% originators
@@ -12,47 +38,10 @@
 # empty or default for default
 # custom for custom
 
-
-Experiment :
-  ExperimentName: "k4p100"
-  ExperimentSubOptions:
-    ThresholdEnabled: true
-    ForgivenessEnabled: true
-    ForgivenessDuringRouting: true
-    PaymentEnabled: false
-    MaxPOCheckEnabled: false
-    OnlyOriginatorPays: false
-    PayOnlyForCurrentRequest: false
-    PayIfOrigPays: false
-    ForwarderPayForceOriginatorToPay: false
-    WaitingEnabled: true
-    RetryWithAnotherPeer: true
-    CacheIsEnabled: false
-    PreferredChunks: false
-    AdjustableThreshold: false
-    SameOriginator: false
-    PrecomputeRespNodes: true
-    WriteRoutesToFile: false
-    WriteStatesToFile: false
-    IterationMeansUniqueChunk: false
-    DebugInterval: 1000000
-    DebugPrints: true
-    Iterations: 10_000_000
+Experiment:
+  ExperimentName: "k20p100"
 
 Custom:
-  Runs:                             1
-  Bits:                             16 #2 * *Bits
-  NetworkSize:                      10000 #(0.001 * NetworkSize)
-  BinSize:                          16
-  RangeAddress:                     65536
-  Originators:                      1000
-  RefreshRate:                      8
-  Threshold:                        16
-  RandomSeed:                       123456789
-  MaxProximityOrder:                16
-  Price:                            1
-  Chunks:                           10000
-  RequestsPerSecond:                12500 # 12500
   ThresholdEnabled:                 true # The maximum limit of debt an edge can have in one direction
   ForgivenessEnabled:               true # Edge debt gets forgiven some amount on an interval (amortized)
   ForgivenessDuringRouting:         true # If the forgiveness should happen before threshold is checked or after in updateGraph
@@ -67,14 +56,4 @@ Custom:
   CacheIsEnabled:                   false # Cache, which stores previously looked after chunks on the nodes
   PreferredChunks:                  false # Fits well with cache, where some chunkIds are chosen more often
   AdjustableThreshold:              false # The Threshold limit of an edge is determined based on the XOR distance
-  EdgeLock:                         true # Should always be true when using concurrency
-  SameOriginator:                   false # For testing the usefulness of locking the edges
-  PrecomputeRespNodes:              true # Precompute the responsible nodes for every possible chunkId
-  WriteRoutesToFile:                false # Write the routes to file during run
-  WriteStatesToFile:                false # Write a subset of the states to file during the run
-  IterationMeansUniqueChunk:        false # If a single iteration means all unique chunks or include chunks we look for again relating to waiting/retry
-  DebugPrints:                      true # Prints out many useful debug prints during the run
-  DebugInterval:                    1000000 # How many iterations between each debug print
-  NumRoutingGoroutines:             25 # 25 seems to currently be the sweet spot
-  Epoch:                            1 # Defined as timeStep / requestsPerSecond, updated by requestWorker
-  Iterations:                       10_000_000
+

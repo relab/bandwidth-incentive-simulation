@@ -46,62 +46,34 @@ func BucketSize4And100pOriginators() {
 	Variable.BinSize = 4
 	Variable.Originators = 10_000
 }
-func WaitingEnabled() {
-	Variable.WaitingEnabled = true
+
+func ConfOptions(configOptions ConfVariables) {
+	Variable.Bits = configOptions.Bits
+	Variable.NetworkSize = configOptions.NetworkSize
+	Variable.BinSize = configOptions.BinSize
+	Variable.RangeAddress = configOptions.RangeAddress
+	Variable.Originators = configOptions.Originators
+	Variable.RefreshRate = configOptions.RefreshRate
+	Variable.Threshold = configOptions.Threshold
+	Variable.RandomSeed = configOptions.RandomSeed
+	Variable.MaxProximityOrder = configOptions.MaxProximityOrder
+	Variable.Price = configOptions.Price
+	Variable.Chunks = configOptions.Chunks
+	Variable.RequestsPerSecond = configOptions.RequestsPerSecond
+	Variable.EdgeLock = configOptions.EdgeLock
+	Variable.SameOriginator = configOptions.SameOriginator
+	Variable.PrecomputeRespNodes = configOptions.PrecomputeRespNodes
+	Variable.WriteRoutesToFile = configOptions.WriteRoutesToFile
+	Variable.WriteStatesToFile = configOptions.WriteStatesToFile
+	Variable.IterationMeansUniqueChunk = configOptions.IterationMeansUniqueChunk
+	Variable.DebugPrints = configOptions.DebugPrints
+	Variable.DebugInterval = configOptions.DebugInterval
+	Variable.NumRoutingGoroutines = configOptions.NumRoutingGoroutines
+	Variable.Epoch = configOptions.Epoch
+	Variable.Iterations = configOptions.Iterations
 }
 
-func RetryEnabled() {
-	Variable.RetryWithAnotherPeer = true
-}
-
-func WaitingAndRetryEnabled() {
-	Variable.WaitingEnabled = true
-	Variable.RetryWithAnotherPeer = true
-}
-
-func DebugPrints() {
-	Variable.DebugPrints = true
-}
-
-func SubOptionsExperiment(subOptions YmlVariables) {
-	Variable.ThresholdEnabled = subOptions.ThresholdEnabled
-	Variable.ForgivenessEnabled = subOptions.ForgivenessEnabled
-	Variable.ForgivenessDuringRouting = subOptions.ForgivenessDuringRouting
-	Variable.PaymentEnabled = subOptions.PaymentEnabled
-	Variable.MaxPOCheckEnabled = subOptions.MaxPOCheckEnabled
-	Variable.OnlyOriginatorPays = subOptions.OnlyOriginatorPays
-	Variable.PayOnlyForCurrentRequest = subOptions.PayOnlyForCurrentRequest
-	Variable.PayIfOrigPays = subOptions.PayIfOrigPays
-	Variable.ForwarderPayForceOriginatorToPay = subOptions.ForwarderPayForceOriginatorToPay
-	Variable.WaitingEnabled = subOptions.WaitingEnabled
-	Variable.RetryWithAnotherPeer = subOptions.RetryWithAnotherPeer
-	Variable.CacheIsEnabled = subOptions.CacheIsEnabled
-	Variable.PreferredChunks = subOptions.PreferredChunks
-	Variable.AdjustableThreshold = subOptions.AdjustableThreshold
-	Variable.SameOriginator = subOptions.SameOriginator
-	Variable.WriteRoutesToFile = subOptions.WriteRoutesToFile
-	Variable.WriteStatesToFile = subOptions.WriteStatesToFile
-	Variable.IterationMeansUniqueChunk = subOptions.IterationMeansUniqueChunk
-	Variable.DebugPrints = subOptions.DebugPrints
-	Variable.DebugInterval = subOptions.DebugInterval
-	Variable.DebugPrints = subOptions.DebugPrints
-	Variable.Iterations = subOptions.Iterations
-}
-
-func CustomExperiment(customExperiment YmlVariables) {
-	Variable.Runs = customExperiment.Runs
-	Variable.Bits = customExperiment.Bits
-	Variable.NetworkSize = customExperiment.NetworkSize
-	Variable.BinSize = customExperiment.BinSize
-	Variable.RangeAddress = customExperiment.RangeAddress
-	Variable.Originators = customExperiment.Originators
-	Variable.RefreshRate = customExperiment.RefreshRate
-	Variable.Threshold = customExperiment.Threshold
-	Variable.RandomSeed = customExperiment.RandomSeed
-	Variable.MaxProximityOrder = customExperiment.MaxProximityOrder
-	Variable.Price = customExperiment.Price
-	Variable.Chunks = customExperiment.Chunks
-	Variable.RequestsPerSecond = customExperiment.RequestsPerSecond
+func CustomExperiment(customExperiment CustomVariables) {
 	Variable.ThresholdEnabled = customExperiment.ThresholdEnabled
 	Variable.ForgivenessEnabled = customExperiment.ForgivenessEnabled
 	Variable.ForgivenessDuringRouting = customExperiment.ForgivenessDuringRouting
@@ -116,15 +88,4 @@ func CustomExperiment(customExperiment YmlVariables) {
 	Variable.CacheIsEnabled = customExperiment.CacheIsEnabled
 	Variable.PreferredChunks = customExperiment.PreferredChunks
 	Variable.AdjustableThreshold = customExperiment.AdjustableThreshold
-	Variable.EdgeLock = customExperiment.EdgeLock
-	Variable.SameOriginator = customExperiment.SameOriginator
-	Variable.PrecomputeRespNodes = customExperiment.PrecomputeRespNodes
-	Variable.WriteRoutesToFile = customExperiment.WriteRoutesToFile
-	Variable.WriteStatesToFile = customExperiment.WriteStatesToFile
-	Variable.IterationMeansUniqueChunk = customExperiment.IterationMeansUniqueChunk
-	Variable.DebugPrints = customExperiment.DebugPrints
-	Variable.DebugInterval = customExperiment.DebugInterval
-	Variable.NumRoutingGoroutines = customExperiment.NumRoutingGoroutines
-	Variable.Epoch = customExperiment.Epoch
-	Variable.Iterations = customExperiment.Iterations
 }
