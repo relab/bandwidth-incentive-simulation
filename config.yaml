@@ -14,7 +14,30 @@
 
 
 Experiment :
-  ExperimentName: "k20p100"
+  ExperimentName: "k4p100"
+  ExperimentSubOptions:
+    ThresholdEnabled: true
+    ForgivenessEnabled: true
+    ForgivenessDuringRouting: true
+    PaymentEnabled: false
+    MaxPOCheckEnabled: false
+    OnlyOriginatorPays: false
+    PayOnlyForCurrentRequest: false
+    PayIfOrigPays: false
+    ForwarderPayForceOriginatorToPay: false
+    WaitingEnabled: true
+    RetryWithAnotherPeer: true
+    CacheIsEnabled: false
+    PreferredChunks: false
+    AdjustableThreshold: false
+    SameOriginator: false
+    PrecomputeRespNodes: true
+    WriteRoutesToFile: false
+    WriteStatesToFile: false
+    IterationMeansUniqueChunk: false
+    DebugInterval: 1000000
+    DebugPrints: true
+    Iterations: 10_000_000
 
 Custom:
   Runs:                             1

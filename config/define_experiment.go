@@ -71,6 +71,31 @@ func DebugPrints() {
 	Variable.DebugPrints = true
 }
 
+func SubOptionsExperiment(subOptions YmlVariables) {
+	Variable.ThresholdEnabled = subOptions.ThresholdEnabled
+	Variable.ForgivenessEnabled = subOptions.ForgivenessEnabled
+	Variable.ForgivenessDuringRouting = subOptions.ForgivenessDuringRouting
+	Variable.PaymentEnabled = subOptions.PaymentEnabled
+	Variable.MaxPOCheckEnabled = subOptions.MaxPOCheckEnabled
+	Variable.OnlyOriginatorPays = subOptions.OnlyOriginatorPays
+	Variable.PayOnlyForCurrentRequest = subOptions.PayOnlyForCurrentRequest
+	Variable.PayIfOrigPays = subOptions.PayIfOrigPays
+	Variable.ForwarderPayForceOriginatorToPay = subOptions.ForwarderPayForceOriginatorToPay
+	Variable.WaitingEnabled = subOptions.WaitingEnabled
+	Variable.RetryWithAnotherPeer = subOptions.RetryWithAnotherPeer
+	Variable.CacheIsEnabled = subOptions.CacheIsEnabled
+	Variable.PreferredChunks = subOptions.PreferredChunks
+	Variable.AdjustableThreshold = subOptions.AdjustableThreshold
+	Variable.SameOriginator = subOptions.SameOriginator
+	Variable.WriteRoutesToFile = subOptions.WriteRoutesToFile
+	Variable.WriteStatesToFile = subOptions.WriteStatesToFile
+	Variable.IterationMeansUniqueChunk = subOptions.IterationMeansUniqueChunk
+	Variable.DebugPrints = subOptions.DebugPrints
+	Variable.DebugInterval = subOptions.DebugInterval
+	Variable.DebugPrints = subOptions.DebugPrints
+	Variable.Iterations = subOptions.Iterations
+}
+
 func CustomExperiment(customExperiment YmlVariables) {
 	Variable.Runs = customExperiment.Runs
 	Variable.Bits = customExperiment.Bits

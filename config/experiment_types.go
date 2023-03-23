@@ -6,7 +6,8 @@ type Yml struct {
 }
 
 type Experiment struct {
-	ExperimentName string `yaml:"ExperimentName"`
+	ExperimentName       string       `yaml:"ExperimentName"`
+	ExperimentSubOptions YmlVariables `yaml:"ExperimentSubOptions"`
 }
 
 type YmlVariables struct {
