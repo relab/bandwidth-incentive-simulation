@@ -9,49 +9,41 @@ func OmegaExperiment() {
 
 func BucketSize20And20pOriginators() {
 	Variable.BinSize = 20
-	Variable.Iterations = 10_000_000
 	Variable.Originators = 10_000 * 0.2
 }
 
 func BucketSize20And100pOriginators() {
 	Variable.BinSize = 20
-	Variable.Iterations = 10_000_000
 	Variable.Originators = 10_000
 }
 
 func BucketSize16And20pOriginators() {
 	Variable.BinSize = 16
-	Variable.Iterations = 10_000_000
 	Variable.Originators = 10_000 * 0.2
 }
 
 func BucketSize16And100pOriginators() {
 	Variable.BinSize = 16
-	Variable.Iterations = 10_000_000
 	Variable.Originators = 10_000
 }
 
 func BucketSize8And20pOriginators() {
 	Variable.BinSize = 8
-	Variable.Iterations = 10_000_000
 	Variable.Originators = 10_000 * 0.2
 }
 
 func BucketSize8And100pOriginators() {
 	Variable.BinSize = 8
-	Variable.Iterations = 10_000_000
 	Variable.Originators = 10_000
 }
 
 func BucketSize4And20pOriginators() {
 	Variable.BinSize = 4
-	Variable.Iterations = 10_000_000
 	Variable.Originators = 10_000 * 0.2
 }
 
 func BucketSize4And100pOriginators() {
 	Variable.BinSize = 4
-	Variable.Iterations = 10_000_000
 	Variable.Originators = 10_000
 }
 func WaitingEnabled() {
