@@ -37,10 +37,11 @@ func (p Payment) IsNil() bool {
 type Threshold [2]NodeId
 
 type StateSubset struct {
+	WaitingCounter          int32
+	RetryCounter            int32
+	CacheHits               int32
+	ChunkId                 int32
 	OriginatorIndex         int32
-	PendingMap              int32
-	RerouteMap              int32
-	CacheStruct             int32
 	SuccessfulFound         int32
 	FailedRequestsThreshold int32
 	FailedRequestsAccess    int32

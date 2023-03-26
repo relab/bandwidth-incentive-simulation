@@ -48,15 +48,17 @@ func StateFlushWorker(stateChan chan types.StateSubset, wg *sync.WaitGroup) {
 			Subset: make([]*protoGenerated.StateSubset, 0),
 		}
 
-		message.Subset = append(message.Subset, &protoGenerated.StateSubset{
-			OriginatorIndex:         stateSubset.OriginatorIndex,
-			PendingMap:              stateSubset.PendingMap,
-			RerouteMap:              stateSubset.RerouteMap,
-			SuccessfulFound:         stateSubset.SuccessfulFound,
-			FailedRequestsThreshold: stateSubset.FailedRequestsThreshold,
-			FailedRequestsAccess:    stateSubset.FailedRequestsAccess,
-			TimeStep:                stateSubset.TimeStep,
-		})
+		// TODO: Update the proto generation based on new stateSubset
+		//message.Subset = append(message.Subset, &protoGenerated.StateSubset{
+		//	OriginatorIndex:         stateSubset.OriginatorIndex,
+		//	PendingMap:              stateSubset.PendingMap,
+		//	RerouteMap:              stateSubset.RerouteMap,
+		//	SuccessfulFound:         stateSubset.SuccessfulFound,
+		//	FailedRequestsThreshold: stateSubset.FailedRequestsThreshold,
+		//	FailedRequestsAccess:    stateSubset.FailedRequestsAccess,
+		//	TimeStep:                stateSubset.TimeStep,
+		//})
+		fmt.Println(stateSubset)
 
 		bytes, err = proto.Marshal(message)
 		if err != nil {

@@ -50,7 +50,7 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 
 			waitingCounter := update.Pending(globalState, requestResult, request.Epoch)
 			retryCounter := update.Reroute(globalState, requestResult, request.Epoch)
-			cacheCounter := update.Cache(globalState, requestResult)
+			cacheHits := update.Cache(globalState, requestResult)
 
 			successfulFound := update.SuccessfulFound(globalState, requestResult)
 			failedRequestThreshold := update.FailedRequestsThreshold(globalState, requestResult)
@@ -70,19 +70,23 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 				}
 				routeChan <- types.RouteData{
 					Epoch:           int32(request.Epoch),
-					Route:           requestResult.Route,
-					ChunkId:         requestResult.ChunkId,
-					AccessFailed:    requestResult.AccessFailed,
-					ThresholdFailed: requestResult.ThresholdFailed}
+					Route:           route,
+					ChunkId:         request.ChunkId,
+					Found:           found,
+					ThresholdFailed: thresholdFailed,
+					AccessFailed:    accessFailed,
+				}
+
 			}
 
 			if constants.IsWriteStatesToFile() {
 				// TODO: Decide on what subset of values we actually would like to store
 				stateSubset = types.StateSubset{
+					WaitingCounter:          waitingCounter,
+					RetryCounter:            retryCounter,
+					CacheHits:               cacheHits,
+					ChunkId:                 int32(request.ChunkId),
 					OriginatorIndex:         request.OriginatorIndex,
-					PendingMap:              waitingCounter,
-					RerouteMap:              retryCounter,
-					CacheStruct:             cacheCounter,
 					SuccessfulFound:         successfulFound,
 					FailedRequestsThreshold: failedRequestThreshold,
 					FailedRequestsAccess:    failedRequestAccess,
