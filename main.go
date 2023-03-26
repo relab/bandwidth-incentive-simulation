@@ -16,9 +16,8 @@ func main() {
 	network := fmt.Sprintf("./data/nodes_data_%d_10000.txt", constants.GetBinSize())
 	globalState := state.MakeInitialState(network)
 
-	const iterations = 100_000_000
-	numTotalGoRoutines := runtime.NumCPU() + 10
-	//numTotalGoRoutines := 5
+	const iterations = 10_000_000
+	numTotalGoRoutines := runtime.NumCPU()
 	numRoutingGoroutines := constants.SetNumRoutingGoroutines(numTotalGoRoutines)
 	//numLoops := iterations / numGoroutines
 

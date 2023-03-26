@@ -3,7 +3,6 @@ package types
 import (
 	"go-incentive-simulation/model/constants"
 	"sync"
-	"sync/atomic"
 )
 
 type QueuedChunk struct {
@@ -18,11 +17,11 @@ type PendingStruct struct {
 	PendingMutex *sync.Mutex
 }
 
-func (p *PendingStruct) AddPendingChunkId(state *State, chunkId ChunkId, curEpoch int) int32 {
+func (p *PendingStruct) AddPendingChunkId(state *State, chunkId ChunkId, curEpoch int) bool {
 	p.PendingMutex.Lock()
 	defer p.PendingMutex.Unlock()
-	var waitingCounter int32
 	chunkIdIndex := p.GetQueuedChunkIndex(chunkId)
+	isNewChunk := false
 	if chunkIdIndex == -1 { // new chunk
 		newChunkStruct := QueuedChunk{
 			ChunkId:   chunkId,
@@ -30,7 +29,7 @@ func (p *PendingStruct) AddPendingChunkId(state *State, chunkId ChunkId, curEpoc
 			LastEpoch: curEpoch,
 		}
 		p.PendingQueue = append([]QueuedChunk{newChunkStruct}, p.PendingQueue...)
-		waitingCounter = atomic.AddInt32(&state.UniqueWaitingCounter, 1)
+		isNewChunk = true
 
 	} else { // chunk seen before
 		if p.PendingQueue[chunkIdIndex].Counter < constants.GetBinSize() {
@@ -39,9 +38,8 @@ func (p *PendingStruct) AddPendingChunkId(state *State, chunkId ChunkId, curEpoc
 		} else { // remove queued chunk
 			p.PendingQueue = append(p.PendingQueue[:chunkIdIndex], p.PendingQueue[chunkIdIndex+1:]...)
 		}
-		waitingCounter = atomic.LoadInt32(&state.UniqueWaitingCounter)
 	}
-	return waitingCounter
+	return isNewChunk
 }
 
 func (p *PendingStruct) DeletePendingChunkId(chunkId ChunkId) {

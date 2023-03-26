@@ -49,12 +49,6 @@ func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []typ
 					break out
 				}
 				if constants.IsCacheEnabled() {
-					// TODO: if we use the global cacheStruct instead of on the nodes
-					//if ok := cacheStruct.Contains(nextNodeId, chunkId); ok {
-					//	found = true
-					//	foundByCaching = true
-					//	break out
-					//}
 					node := graph.GetNode(nextNodeId)
 					if node.CacheStruct.Contains(chunkId) {
 						foundByCaching = true

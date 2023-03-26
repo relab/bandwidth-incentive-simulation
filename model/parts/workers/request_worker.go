@@ -13,12 +13,10 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 
 	defer wg.Done()
 	var requestQueueSize = 10
-	var originatorIndex int32 = 0
-	var timeStep = 0
 	var counter = 0
-	var responsibleNodes [4]types.NodeId
 	var curEpoch = constants.GetEpoch()
 	var chunkId types.ChunkId
+	var respNodes [4]types.NodeId
 	var pickedFromWaiting = 0
 	var pickedFromRetry = 0
 
@@ -27,25 +25,15 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 	for counter < iterations {
 		if len(requestChan) <= requestQueueSize {
 
-			// TODO: decide on where we should update the timestep. At request creation or request fulfillment
-			timeStep = update.Timestep(globalState)
-			//timeStep = atomic.LoadInt32(&globalState.TimeStep)
-			if constants.TimeForDebugPrints(timeStep) {
-				fmt.Println("TimeStep is currently:", timeStep)
-			}
+			timeStep := update.Timestep(globalState)
 
 			if constants.TimeForNewEpoch(timeStep) {
 				curEpoch = update.Epoch(globalState)
 
-				for i := 0; i < constants.GetNumRoutingGoroutines(); i++ {
-					pauseChan <- true
-				}
-				for i := 0; i < constants.GetNumRoutingGoroutines(); i++ {
-					<-continueChan
-				}
+				waitForRoutingWorkers(pauseChan, continueChan)
 			}
 
-			originatorIndex = update.OriginatorIndex(globalState, timeStep)
+			originatorIndex := update.OriginatorIndex(globalState, timeStep)
 			originatorId := globalState.GetOriginatorId(originatorIndex)
 			originator := globalState.Graph.GetNode(originatorId)
 
@@ -56,7 +44,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 
 				if len(rerouteStruct.Reroute.CheckedNodes) > 0 {
 					chunkId = rerouteStruct.Reroute.ChunkId
-					responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+					respNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 					pickedFromRetry++
 				}
 			}
@@ -68,7 +56,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 					queuedChunk, ok := pendingStruct.GetChunkFromQueue(curEpoch)
 					if ok {
 						chunkId = queuedChunk.ChunkId
-						responsibleNodes = globalState.Graph.FindResponsibleNodes(queuedChunk.ChunkId)
+						respNodes = globalState.Graph.FindResponsibleNodes(queuedChunk.ChunkId)
 						pickedFromWaiting++
 					}
 				}
@@ -88,7 +76,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 				if constants.IsPreferredChunksEnabled() {
 					chunkId = utils.GetPreferredChunkId()
 				}
-				responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+				respNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 			}
 
 			if chunkId != -1 {
@@ -98,9 +86,13 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 					OriginatorIndex: originatorIndex,
 					OriginatorId:    originatorId,
 					ChunkId:         chunkId,
-					RespNodes:       responsibleNodes,
+					RespNodes:       respNodes,
 				}
 				requestChan <- request
+			}
+
+			if constants.TimeForDebugPrints(timeStep) {
+				fmt.Println("TimeStep is currently:", timeStep)
 			}
 		}
 	}

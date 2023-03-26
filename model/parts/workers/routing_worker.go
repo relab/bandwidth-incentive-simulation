@@ -12,7 +12,15 @@ import (
 func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan types.Request, outputChan chan types.Output, routeChan chan types.RouteData, stateChan chan types.StateSubset, globalState *types.State, wg *sync.WaitGroup) {
 
 	defer wg.Done()
-	//var request types.Request
+	openChannel := true
+	var request types.Request
+	var requestResult types.RequestResult
+	var route []types.NodeId
+	var paymentList []types.Payment
+	var found bool
+	var accessFailed bool
+	var thresholdFailed bool
+	var foundByCaching bool
 
 	var stateSubset types.StateSubset
 	for {
@@ -20,14 +28,14 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 		case <-pauseChan:
 			continueChan <- true
 
-		case request, openChannel := <-requestChan:
+		case request, openChannel = <-requestChan:
 			if !openChannel {
 				return
 			}
 
-			route, paymentList, found, accessFailed, thresholdFailed, foundByCaching := utils.FindRoute(request, globalState.Graph)
+			route, paymentList, found, accessFailed, thresholdFailed, foundByCaching = utils.FindRoute(request, globalState.Graph)
 
-			requestResult := types.RequestResult{
+			requestResult = types.RequestResult{
 				Route:           route,
 				PaymentList:     paymentList,
 				ChunkId:         request.ChunkId,
@@ -36,9 +44,6 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 				ThresholdFailed: thresholdFailed,
 				FoundByCaching:  foundByCaching,
 			}
-
-			// TODO: decide on where we should update the timestep. At request creation or request fulfillment
-			//curTimeStep := update.Timestep(globalState)
 
 			curTimeStep := request.TimeStep
 			output := update.Graph(globalState, requestResult, curTimeStep)
