@@ -21,7 +21,7 @@ func Cache(state *types.State, requestResult types.RequestResult) int32 {
 			if requestResult.FoundByCaching {
 				cacheCounter = atomic.AddInt32(&state.CacheHits, 1)
 			}
-			
+
 		} else {
 			cacheCounter = atomic.LoadInt32(&state.CacheHits)
 		}

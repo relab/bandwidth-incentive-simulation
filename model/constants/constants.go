@@ -107,10 +107,6 @@ func IsForgivenessEnabled() bool {
 	return constants.forgivenessEnabled
 }
 
-//func IsForgivenessDuringRouting() bool {
-//	return constants.forgivenessDuringRouting
-//}
-
 func IsCacheEnabled() bool {
 	return constants.cacheIsEnabled
 }

@@ -50,15 +50,11 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 
 			waitingCounter := update.Pending(globalState, requestResult, request.Epoch)
 			retryCounter := update.Reroute(globalState, requestResult, request.Epoch)
-			cacheCounter := update.CacheMap(globalState, requestResult)
-
-			// TODO: originatorIndex is now updated by the requestWorker
-			//originatorIndex := UpdateOriginatorIndex(globalState)
+			cacheCounter := update.Cache(globalState, requestResult)
 
 			successfulFound := update.SuccessfulFound(globalState, requestResult)
 			failedRequestThreshold := update.FailedRequestsThreshold(globalState, requestResult)
 			failedRequestAccess := update.FailedRequestsAccess(globalState, requestResult)
-			//routeLists := update.RouteListAndFlush(globalState, requestResult, curTimeStep)
 
 			// sending the "output" to the outputWorker
 			if constants.GetMaxPOCheckEnabled() {
