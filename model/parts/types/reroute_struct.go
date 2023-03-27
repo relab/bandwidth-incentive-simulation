@@ -10,22 +10,43 @@ type Reroute struct {
 	LastEpoch    int
 }
 
-//type RerouteMap map[NodeId]Reroute
-
 type RerouteStruct struct {
 	Reroute      Reroute
 	RerouteMutex *sync.Mutex
 }
+
+func (r *RerouteStruct) GetReroute() Reroute {
+	return r.Reroute
+}
+
+func (r *RerouteStruct) AddNewReroute(node *Node, nodeId NodeId, chunkId ChunkId, curEpoch int) RerouteStruct {
+	r.RerouteMutex.Lock()
+	defer r.RerouteMutex.Unlock()
+
+	newReroute := Reroute{
+		CheckedNodes: []NodeId{nodeId},
+		ChunkId:      chunkId,
+		LastEpoch:    curEpoch,
+	}
+	node.RerouteStruct.Reroute = newReroute
+	return node.RerouteStruct
+}
+
+func (r *RerouteStruct) AddNodeToCheckedNodes(node *Node, nodeId NodeId) {
+	r.RerouteMutex.Lock()
+	defer r.RerouteMutex.Unlock()
+	newCheckedNodes := append(r.Reroute.CheckedNodes, nodeId)
+
+	node.RerouteStruct.Reroute.CheckedNodes = newCheckedNodes
+}
+
+//type RerouteMap map[NodeId]Reroute
 
 //type RerouteStruct struct {
 //	RerouteMap           RerouteMap
 //	RerouteMutex         *sync.Mutex
 //	UniqueRerouteCounter int
 //}
-
-func (r *RerouteStruct) GetReroute() Reroute {
-	return r.Reroute
-}
 
 //func (r *RerouteStruct) GetRerouteMap() Reroute {
 //	r.RerouteMutex.Lock()
@@ -43,18 +64,6 @@ func (r *RerouteStruct) GetReroute() Reroute {
 //	delete(r.RerouteMap, originator)
 //}
 
-func (r *RerouteStruct) AddNewReroute(node *Node, nodeId NodeId, chunkId ChunkId, curEpoch int) {
-	r.RerouteMutex.Lock()
-	defer r.RerouteMutex.Unlock()
-
-	newReroute := Reroute{
-		CheckedNodes: []NodeId{nodeId},
-		ChunkId:      chunkId,
-		LastEpoch:    curEpoch,
-	}
-	node.RerouteStruct.Reroute = newReroute
-}
-
 //func (r *RerouteStruct) AddNewReroute(originator NodeId, nodeId NodeId, chunkId ChunkId, curEpoch int) bool {
 //	r.RerouteMutex.Lock()
 //	defer r.RerouteMutex.Unlock()
@@ -69,14 +78,6 @@ func (r *RerouteStruct) AddNewReroute(node *Node, nodeId NodeId, chunkId ChunkId
 //	}
 //	return false
 //}
-
-func (r *RerouteStruct) AddNodeToCheckedNodes(node *Node, nodeId NodeId) {
-	r.RerouteMutex.Lock()
-	defer r.RerouteMutex.Unlock()
-	newCheckedNodes := append(r.Reroute.CheckedNodes, nodeId)
-
-	node.RerouteStruct.Reroute.CheckedNodes = newCheckedNodes
-}
 
 //func (r *RerouteStruct) AddNodeToReroute(originator NodeId, nodeId NodeId) bool {
 //	r.RerouteMutex.Lock()

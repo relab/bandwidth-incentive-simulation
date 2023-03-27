@@ -7,7 +7,7 @@ import (
 )
 
 func Cache(state *types.State, requestResult types.RequestResult) int32 {
-	var cacheCounter int32
+	var cacheHits int32
 	if constants.IsCacheEnabled() {
 		route := requestResult.Route
 		chunkId := requestResult.ChunkId
@@ -19,13 +19,13 @@ func Cache(state *types.State, requestResult types.RequestResult) int32 {
 			}
 
 			if requestResult.FoundByCaching {
-				cacheCounter = atomic.AddInt32(&state.CacheHits, 1)
+				cacheHits = atomic.AddInt32(&state.CacheHits, 1)
 			}
 
 		} else {
-			cacheCounter = atomic.LoadInt32(&state.CacheHits)
+			cacheHits = atomic.LoadInt32(&state.CacheHits)
 		}
 
 	}
-	return cacheCounter
+	return cacheHits
 }

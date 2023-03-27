@@ -24,15 +24,21 @@ func Reroute(state *types.State, requestResult types.RequestResult, curEpoch int
 			}
 
 		} else if len(route) > 1 { // Rejection in second hop --> route have at least an originator and a firstHopeNode
-			firstHopNode := route[1]
-			if rerouteStruct.Reroute.CheckedNodes != nil {
-				if !general.Contains(rerouteStruct.Reroute.CheckedNodes, firstHopNode) { // if the first hop in new route have not been searched before
-					originator.RerouteStruct.AddNodeToCheckedNodes(originator, firstHopNode)
-				}
-			} else {
-				originator.RerouteStruct.AddNewReroute(originator, firstHopNode, chunkId, curEpoch)
+			lastNode := route[len(route)-1]
+			if rerouteStruct.Reroute.CheckedNodes == nil {
+				//firstHopNode := route[1]
+				rerouteStruct = originator.RerouteStruct.AddNewReroute(originator, lastNode, chunkId, curEpoch)
 				retryCounter = atomic.AddInt32(&state.UniqueRetryCounter, 1)
+			} else {
+				if !general.Contains(rerouteStruct.Reroute.CheckedNodes, lastNode) { // if the first hop in new route have not been searched before
+					originator.RerouteStruct.AddNodeToCheckedNodes(originator, lastNode)
+				}
 			}
+			//for _, node := range route[1:] { // skipping the originatorId
+			//	if !general.Contains(rerouteStruct.Reroute.CheckedNodes, node) { // if the first hop in new route have not been searched before
+			//		originator.RerouteStruct.AddNodeToCheckedNodes(originator, node)
+			//	}
+			//}
 
 		} else {
 			retryCounter = atomic.LoadInt32(&state.UniqueRetryCounter)

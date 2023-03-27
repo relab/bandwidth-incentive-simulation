@@ -62,7 +62,7 @@ var constants = constant{
 	payIfOrigPays:                     false,   // Only pay if the originator pays -- NOT NEEDED
 	forwardersPayForceOriginatorToPay: false,   // If Threshold fails, forces all the nodes in the route to pay for the current request
 	cacheIsEnabled:                    false,   // Cache, which stores previously looked after chunks on the nodes
-	waitingEnabled:                    true,    // When Threshold fails, will wait before trying to traverse same route
+	waitingEnabled:                    false,   // When Threshold fails, will wait before trying to traverse same route
 	retryWithAnotherPeer:              false,   // The Route to the chunk will try to take many paths to find the chunk
 	preferredChunks:                   false,   // Fits well with cache, where some chunkIds are chosen more often
 	adjustableThreshold:               false,   // The Threshold limit of an edge is determined based on the XOR distance

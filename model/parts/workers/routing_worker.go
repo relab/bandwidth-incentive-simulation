@@ -76,7 +76,6 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 					ThresholdFailed: thresholdFailed,
 					AccessFailed:    accessFailed,
 				}
-
 			}
 
 			if constants.IsWriteStatesToFile() {
