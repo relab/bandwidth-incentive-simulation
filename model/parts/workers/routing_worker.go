@@ -46,7 +46,7 @@ func RoutingWorker(requestChan chan types.Request, outputChan chan types.Output,
 		//routeLists := update.RouteListAndFlush(globalState, requestResult, curTimeStep)
 
 		// sending the "output" to the outputWorker
-		if constants.GetMaxPOCheckEnabled() {
+		if constants.GetMeanRewardPerForward() || constants.GetAverageNumberOfHops() || constants.GetAverageFractionOfTotalRewardsK8() || constants.GetAverageFractionOfTotalRewardsK16() || constants.GetRewardFairnessForForwardingAction() || constants.GetRewardFairnessForStoringAction() || constants.GetRewardFairnessForAllActions() || constants.GetNegativeIncome() {
 			outputChan <- output
 		}
 

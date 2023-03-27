@@ -138,16 +138,32 @@ func (o *RewardFairnessForForwardingActions) CalculateRewardFairnessForForwardin
 	return total / (math.Pow(float64(len(x)), 2) * (float64(o.SumAllForwardingRewards) / float64(len(x))))
 }
 
+type NegativeIncome struct {
+	IncomeDict map[int]int
+}
+
+func (o *NegativeIncome) CalculateNegativeIncome() float64 {
+	totalNegativeIncomeCounter := 0
+	for _, value := range o.IncomeDict {
+		if value < 0 {
+			totalNegativeIncomeCounter += 1
+		}
+	}
+	return float64(totalNegativeIncomeCounter) / float64(10000)
+}
+
 func OutputWorker(outputChan chan types.Output) {
 	var output types.Output
 	counter := 0
-	filePath := "./results/output.txt"
+	filePath := "./results/output4.txt"
 	var meanRewardPerForward MeanRewardPerForward
 	var avgNumberOfHops AvgNumberOfHops
 	var fractions Fractions
 	var rewardFairnessForStoringAction RewardFairnessForStoringAction
 	var rewardFairnessForAllActions RewardFairnessForAllActions
 	var rewardFairnessForForwardingAction RewardFairnessForForwardingActions
+	var negativeIncome NegativeIncome
+	negativeIncome.IncomeDict = make(map[int]int)
 	err := os.Remove(filePath)
 	if err != nil {
 		fmt.Println("Could not remove the file", filePath)
@@ -264,6 +280,35 @@ func OutputWorker(outputChan chan types.Output) {
 					fairness := rewardFairnessForForwardingAction.CalculateRewardFairnessForForwardingAction()
 					file.WriteString(fmt.Sprintf("Reward fairness for forwarding action: %f \n", fairness))
 				}
+			}
+		}
+		// payment enabled, forgivness enabled, threshold enabled, k = 8
+		if constants.GetNegativeIncome() { //Payment enabled can use outout.Payment
+			payments := output.PaymentsWithPrice
+			if payments != nil {
+				for i, payment := range payments {
+					if i == len(payments)-1 {
+						break
+					}
+					payer := payment.Payment.FirstNodeId
+					payee := payment.Payment.PayNextId
+					value := payment.Price
+					valPayer, ok := negativeIncome.IncomeDict[payer]
+					if !ok {
+						negativeIncome.IncomeDict[payer] = 0
+					}
+					valPayee, ok := negativeIncome.IncomeDict[payee]
+					if !ok {
+						negativeIncome.IncomeDict[payee] = 0
+					}
+					negativeIncome.IncomeDict[payer] = valPayer - value
+					negativeIncome.IncomeDict[payee] = valPayee + value
+				}
+			}
+			// if counter%500_000==0 or counter==100_000 {
+			if counter%500_000 == 0 || counter == 100_000 {
+				negativeIncome := negativeIncome.CalculateNegativeIncome()
+				file.WriteString(fmt.Sprintf("Negative income: %f %% \n", negativeIncome*100))
 			}
 		}
 	}

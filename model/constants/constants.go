@@ -45,13 +45,14 @@ type constant struct {
 	rewardFairnessForForwardingAction bool
 	rewardFairnessForStoringAction    bool
 	rewardFairnessForAllActions       bool
+	negativeIncome                    bool
 }
 
 var constants = constant{
 	runs:                              1,
 	bits:                              16,
 	networkSize:                       10000,
-	binSize:                           16,
+	binSize:                           8,
 	rangeAddress:                      65536, // 2 * *Bits
 	originators:                       1000,  // int(0.001 * NetworkSize)
 	refreshRate:                       8,
@@ -60,12 +61,12 @@ var constants = constant{
 	maxProximityOrder:                 16,
 	price:                             1,
 	chunks:                            10000,
-	requestsPerSecond:                 12500,   // 12500
+	requestsPerSecond:                 100000,  // 12500
 	thresholdEnabled:                  true,    // The maximum limit of debt an edge can have in one direction
 	forgivenessEnabled:                true,    // Edge debt gets forgiven some amount on an interval (amortized)
 	forgivenessDuringRouting:          true,    // If the forgiveness should happen before threshold is checked or after in updateGraph
-	paymentEnabled:                    false,   // Nodes pay if they Threshold fail
-	maxPOCheckEnabled:                 true,    // Used to find the proper variable called "omega" in the python paper
+	paymentEnabled:                    true,    // Nodes pay if they Threshold fail
+	maxPOCheckEnabled:                 false,   // Used to find the proper variable called "omega" in the python paper
 	onlyOriginatorPays:                false,   // Only the originator will pay, others will threshold fail or wait
 	payOnlyForCurrentRequest:          false,   // Only pay for current request or the full debt on the edge
 	payIfOrigPays:                     false,   // Only pay if the originator pays -- NOT NEEDED
@@ -92,6 +93,7 @@ var constants = constant{
 	rewardFairnessForForwardingAction: false,   // If the reward fairness should be calculated for the forwarding action
 	rewardFairnessForStoringAction:    false,   // If the reward fairness should be calculated for the storing action
 	rewardFairnessForAllActions:       false,   // If the reward fairness should be calculated for all actions
+	negativeIncome:                    false,   // If the income should be negative
 }
 
 // func CreateRangeAddress(c *constant){
@@ -128,6 +130,10 @@ func GetRewardFairnessForStoringAction() bool {
 
 func GetRewardFairnessForAllActions() bool {
 	return constants.rewardFairnessForAllActions
+}
+
+func GetNegativeIncome() bool {
+	return constants.negativeIncome
 }
 
 func SetProximityOrder(po int) {
