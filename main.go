@@ -6,6 +6,7 @@ import (
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/workers"
 	"go-incentive-simulation/model/state"
+	"math"
 	"runtime"
 	"sync"
 	"time"
@@ -73,9 +74,10 @@ func main() {
 }
 
 func PrintState(state types.State) {
-	fmt.Println("SuccessfulFound: ", state.SuccessfulFound)
-	fmt.Println("FailedRequestsThreshold: ", state.FailedRequestsThreshold)
-	fmt.Println("FailedRequestsAccess: ", state.FailedRequestsAccess)
+	total := float64(state.SuccessfulFound + state.FailedRequestsThreshold + state.FailedRequestsAccess)
+	fmt.Println("SuccessfulFound: ", state.SuccessfulFound, "-->", math.Round(float64(state.SuccessfulFound)/total*100000)/1000, "%")
+	fmt.Println("ThresholdFail: ", state.FailedRequestsThreshold, "-->", math.Round(float64(state.FailedRequestsThreshold)/total*100000)/1000, "%")
+	fmt.Println("AccessFail: ", state.FailedRequestsAccess, "-->", math.Round(float64(state.FailedRequestsAccess)/total*100000)/1000, "%")
 	fmt.Println("TimeStep: ", state.TimeStep)
 	fmt.Println("OriginatorIndex: ", state.OriginatorIndex)
 	fmt.Println("CacheHits:", state.CacheHits)

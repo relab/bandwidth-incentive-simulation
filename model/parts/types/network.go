@@ -105,10 +105,11 @@ func (network *Network) node(nodeId NodeId) *Node {
 		},
 		RerouteStruct: RerouteStruct{
 			Reroute: Reroute{
-				CheckedNodes: nil,
-				ChunkId:      0,
-				LastEpoch:    constants.GetEpoch(),
+				RejectedNodes: nil,
+				ChunkId:       0,
+				LastEpoch:     constants.GetEpoch(),
 			},
+			History:      make(map[ChunkId][]NodeId),
 			RerouteMutex: &sync.Mutex{},
 		},
 	}

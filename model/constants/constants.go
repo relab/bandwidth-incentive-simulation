@@ -62,8 +62,8 @@ var constants = constant{
 	payIfOrigPays:                     false,   // Only pay if the originator pays -- NOT NEEDED
 	forwardersPayForceOriginatorToPay: false,   // If Threshold fails, forces all the nodes in the route to pay for the current request
 	cacheIsEnabled:                    false,   // Cache, which stores previously looked after chunks on the nodes
-	waitingEnabled:                    false,   // When Threshold fails, will wait before trying to traverse same route
-	retryWithAnotherPeer:              false,   // The Route to the chunk will try to take many paths to find the chunk
+	waitingEnabled:                    true,    // When Threshold fails, will wait before trying to traverse same route
+	retryWithAnotherPeer:              true,    // The Route to the chunk will try to take many paths to find the chunk
 	preferredChunks:                   false,   // Fits well with cache, where some chunkIds are chosen more often
 	adjustableThreshold:               false,   // The Threshold limit of an edge is determined based on the XOR distance
 	edgeLock:                          true,    // Should always be true when using concurrency
@@ -71,7 +71,7 @@ var constants = constant{
 	precomputeRespNodes:               true,    // Precompute the responsible nodes for every possible chunkId
 	writeRoutesToFile:                 false,   // Write the routes to file during run
 	writeStatesToFile:                 false,   // Write a subset of the states to file during the run
-	iterationMeansUniqueChunk:         false,   // If a single iteration means all unique chunks or include chunks we look for again relating to waiting/retry
+	iterationMeansUniqueChunk:         true,    // If a single iteration means all unique chunks or include chunks we look for again relating to waiting/retry
 	debugPrints:                       true,    // Prints out many useful debug prints during the run
 	debugInterval:                     1000000, // How many iterations between each debug print
 	numRoutingGoroutines:              25,      // 25 seems to currently be the sweet spot

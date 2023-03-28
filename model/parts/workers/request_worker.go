@@ -42,7 +42,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			if constants.IsRetryWithAnotherPeer() {
 				rerouteStruct := originator.RerouteStruct
 
-				if len(rerouteStruct.Reroute.CheckedNodes) > 0 {
+				if len(rerouteStruct.Reroute.RejectedNodes) > 0 {
 					chunkId = rerouteStruct.Reroute.ChunkId
 					respNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 					pickedFromRetry++
@@ -70,7 +70,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 				counter++
 			}
 
-			if chunkId == -1 && timeStep <= iterations { // No waiting and no retry, and qualify for unique chunk
+			if chunkId == -1 { // No waiting and no retry, and qualify for unique chunk
 				chunkId = utils.GetChunkId()
 
 				if constants.IsPreferredChunksEnabled() {

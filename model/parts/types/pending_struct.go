@@ -17,7 +17,7 @@ type PendingStruct struct {
 	PendingMutex *sync.Mutex
 }
 
-func (p *PendingStruct) AddPendingChunkId(state *State, chunkId ChunkId, curEpoch int) bool {
+func (p *PendingStruct) AddPendingChunkId(chunkId ChunkId, curEpoch int) bool {
 	p.PendingMutex.Lock()
 	defer p.PendingMutex.Unlock()
 	chunkIdIndex := p.GetQueuedChunkIndex(chunkId)
@@ -45,12 +45,12 @@ func (p *PendingStruct) AddPendingChunkId(state *State, chunkId ChunkId, curEpoc
 func (p *PendingStruct) DeletePendingChunkId(chunkId ChunkId) {
 	p.PendingMutex.Lock()
 	defer p.PendingMutex.Unlock()
-	if len(p.PendingQueue) > 0 {
-		chunkIdIndex := p.GetQueuedChunkIndex(chunkId)
-		if chunkIdIndex != -1 {
-			p.PendingQueue = append(p.PendingQueue[:chunkIdIndex], p.PendingQueue[chunkIdIndex+1:]...)
-		}
+
+	chunkIdIndex := p.GetQueuedChunkIndex(chunkId)
+	if chunkIdIndex != -1 {
+		p.PendingQueue = append(p.PendingQueue[:chunkIdIndex], p.PendingQueue[chunkIdIndex+1:]...)
 	}
+
 }
 
 func (p *PendingStruct) GetChunkFromQueue(curEpoch int) (QueuedChunk, bool) {
@@ -71,15 +71,6 @@ func (p *PendingStruct) GetChunkFromQueue(curEpoch int) (QueuedChunk, bool) {
 	return QueuedChunk{}, false
 }
 
-func (p *PendingStruct) GetAndUpdateCurrentIndex() int {
-
-	p.CurrentIndex--
-	if p.CurrentIndex < 0 {
-		p.CurrentIndex = len(p.PendingQueue) - 1
-	}
-	return p.CurrentIndex
-}
-
 func (p *PendingStruct) GetQueuedChunkIndex(chunkId ChunkId) int {
 
 	for i, v := range p.PendingQueue {
@@ -88,6 +79,15 @@ func (p *PendingStruct) GetQueuedChunkIndex(chunkId ChunkId) int {
 		}
 	}
 	return -1
+}
+
+func (p *PendingStruct) GetAndUpdateCurrentIndex() int {
+
+	p.CurrentIndex--
+	if p.CurrentIndex < 0 {
+		p.CurrentIndex = len(p.PendingQueue) - 1
+	}
+	return p.CurrentIndex
 }
 
 //func (p *PendingStruct) UpdateEpoch(chunkId ChunkId, curEpoch int) int {

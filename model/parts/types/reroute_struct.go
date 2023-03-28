@@ -1,17 +1,19 @@
 package types
 
 import (
+	"go-incentive-simulation/model/general"
 	"sync"
 )
 
 type Reroute struct {
-	CheckedNodes []NodeId
-	ChunkId      ChunkId
-	LastEpoch    int
+	RejectedNodes []NodeId
+	ChunkId       ChunkId
+	LastEpoch     int
 }
 
 type RerouteStruct struct {
 	Reroute      Reroute
+	History      map[ChunkId][]NodeId // History of rejected nodes related to a specific chunk
 	RerouteMutex *sync.Mutex
 }
 
@@ -19,25 +21,49 @@ func (r *RerouteStruct) GetReroute() Reroute {
 	return r.Reroute
 }
 
-func (r *RerouteStruct) AddNewReroute(node *Node, nodeId NodeId, chunkId ChunkId, curEpoch int) RerouteStruct {
+func (r *RerouteStruct) AddNewReroute(accessFail bool, nodeId NodeId, chunkId ChunkId, curEpoch int) Reroute {
 	r.RerouteMutex.Lock()
 	defer r.RerouteMutex.Unlock()
+
+	var rejectedNodes []NodeId
+
+	if previouslyRejectedNodes := r.History[chunkId]; previouslyRejectedNodes != nil {
+		rejectedNodes = previouslyRejectedNodes
+	}
+
+	if accessFail && !general.Contains(rejectedNodes, nodeId) {
+		rejectedNodes = append(rejectedNodes, nodeId)
+	}
 
 	newReroute := Reroute{
-		CheckedNodes: []NodeId{nodeId},
-		ChunkId:      chunkId,
-		LastEpoch:    curEpoch,
+		RejectedNodes: rejectedNodes,
+		ChunkId:       chunkId,
+		//LastEpoch:     curEpoch,
 	}
-	node.RerouteStruct.Reroute = newReroute
-	return node.RerouteStruct
+
+	r.Reroute = newReroute
+	return r.Reroute
 }
 
-func (r *RerouteStruct) AddNodeToCheckedNodes(node *Node, nodeId NodeId) {
+func (r *RerouteStruct) AddNodeToRejectedNodes(accessFail bool, nodeId NodeId, curEpoch int) {
 	r.RerouteMutex.Lock()
 	defer r.RerouteMutex.Unlock()
-	newCheckedNodes := append(r.Reroute.CheckedNodes, nodeId)
 
-	node.RerouteStruct.Reroute.CheckedNodes = newCheckedNodes
+	//r.Reroute.LastEpoch = curEpoch
+	if accessFail {
+		newRejectedNodes := append(r.Reroute.RejectedNodes, nodeId)
+
+		r.Reroute.RejectedNodes = newRejectedNodes
+	}
+
+}
+
+func (r *RerouteStruct) ResetRerouteAndSaveToHistory(chunkId ChunkId, curEpoch int) {
+	r.RerouteMutex.Lock()
+	defer r.RerouteMutex.Unlock()
+
+	r.History[chunkId] = r.Reroute.RejectedNodes
+	r.Reroute = Reroute{}
 }
 
 //type RerouteMap map[NodeId]Reroute

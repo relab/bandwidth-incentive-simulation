@@ -150,9 +150,7 @@ func PeerPriceChunk(firstNodeId types.NodeId, chunkId types.ChunkId) int {
 
 func CreateDownloadersList(g *types.Graph) []types.NodeId {
 	//fmt.Println("Creating downloaders list...")
-
 	downloadersList := types.Choice(g.NodeIds, constants.GetOriginators())
-
 	//fmt.Println("Downloaders list create...!")
 	return downloadersList
 }

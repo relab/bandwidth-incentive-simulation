@@ -43,8 +43,8 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 			thresholdFailed = false
 			if constants.IsRetryWithAnotherPeer() {
 				rerouteStruct := graph.GetNode(mainOriginatorId).RerouteStruct
-				if rerouteStruct.Reroute.CheckedNodes != nil {
-					if general.Contains(rerouteStruct.Reroute.CheckedNodes, nodeId) {
+				if rerouteStruct.Reroute.RejectedNodes != nil {
+					if general.Contains(rerouteStruct.Reroute.RejectedNodes, nodeId) {
 						if constants.GetEdgeLock() {
 							graph.UnlockEdge(firstNodeId, nodeId)
 						}
