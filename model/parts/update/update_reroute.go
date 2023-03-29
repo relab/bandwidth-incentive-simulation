@@ -7,8 +7,8 @@ import (
 	"sync/atomic"
 )
 
-func Reroute(state *types.State, requestResult types.RequestResult, curEpoch int) int32 {
-	var retryCounter int32
+func Reroute(state *types.State, requestResult types.RequestResult, curEpoch int) int64 {
+	var retryCounter int64
 	if constants.IsRetryWithAnotherPeer() {
 		route := requestResult.Route
 		chunkId := requestResult.ChunkId
@@ -27,7 +27,7 @@ func Reroute(state *types.State, requestResult types.RequestResult, curEpoch int
 			lastHopNode := route[len(route)-1]
 			if reroute.RejectedNodes == nil {
 				reroute = originator.RerouteStruct.AddNewReroute(requestResult.AccessFailed, lastHopNode, chunkId, curEpoch)
-				retryCounter = atomic.AddInt32(&state.UniqueRetryCounter, 1)
+				retryCounter = atomic.AddInt64(&state.UniqueRetryCounter, 1)
 			} else {
 				if !general.Contains(reroute.RejectedNodes, lastHopNode) { // if the last hop in new route have not been searched before
 					originator.RerouteStruct.AddNodeToRejectedNodes(requestResult.AccessFailed, lastHopNode, curEpoch)
@@ -36,7 +36,7 @@ func Reroute(state *types.State, requestResult types.RequestResult, curEpoch int
 		}
 
 		if retryCounter == 0 {
-			retryCounter = atomic.LoadInt32(&state.UniqueRetryCounter)
+			retryCounter = atomic.LoadInt64(&state.UniqueRetryCounter)
 		}
 
 		if len(reroute.RejectedNodes) > constants.GetBinSize() {

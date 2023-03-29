@@ -17,24 +17,24 @@ type Network struct {
 	NodesMap map[NodeId]*Node
 }
 
-type NodeId int32
+type NodeId int
 
-func (n NodeId) ToInt32() int32 {
-	return int32(n)
+func (n NodeId) ToInt() int {
+	return int(n)
 }
 
 func (n NodeId) IsNil() bool {
-	return n.ToInt32() == 0
+	return n.ToInt() == 0
 }
 
-type ChunkId int32
+type ChunkId int
 
-func (c ChunkId) ToInt32() int32 {
-	return int32(c)
+func (c ChunkId) ToInt() int {
+	return int(c)
 }
 
 func (c ChunkId) IsNil() bool {
-	return c.ToInt32() == 0
+	return c.ToInt() == 0
 }
 
 type Node struct {
@@ -221,7 +221,7 @@ func (node *Node) add(other *Node) bool {
 	if other.AdjIds == nil {
 		other.AdjIds = make([][]NodeId, other.Network.Bits)
 	}
-	bit := node.Network.Bits - general.BitLength(node.Id.ToInt32()^other.Id.ToInt32())
+	bit := node.Network.Bits - general.BitLength(node.Id.ToInt()^other.Id.ToInt())
 	if bit < 0 || bit >= node.Network.Bits {
 		return false
 	}

@@ -69,7 +69,7 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 					fmt.Println("routeChan length: ", len(routeChan))
 				}
 				routeChan <- types.RouteData{
-					Epoch:           int32(request.Epoch),
+					Epoch:           request.Epoch,
 					Route:           route,
 					ChunkId:         request.ChunkId,
 					Found:           found,
@@ -84,13 +84,13 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 					WaitingCounter:          waitingCounter,
 					RetryCounter:            retryCounter,
 					CacheHits:               cacheHits,
-					ChunkId:                 int32(request.ChunkId),
-					OriginatorIndex:         request.OriginatorIndex,
+					ChunkId:                 int(request.ChunkId),
+					OriginatorIndex:         int64(request.OriginatorIndex),
 					SuccessfulFound:         successfulFound,
 					FailedRequestsThreshold: failedRequestThreshold,
 					FailedRequestsAccess:    failedRequestAccess,
-					TimeStep:                int32(curTimeStep),
-					Epoch:                   int32(request.Epoch),
+					TimeStep:                int64(curTimeStep),
+					Epoch:                   request.Epoch,
 				}
 				if constants.IsDebugPrints() && constants.TimeForNewEpoch(curTimeStep) {
 					fmt.Println("stateChan length: ", len(stateChan))

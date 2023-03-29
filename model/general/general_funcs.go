@@ -4,7 +4,7 @@ import (
 	"math/bits"
 )
 
-func BitLength(num int32) int {
+func BitLength(num int) int {
 	return bits.Len(uint(num))
 }
 

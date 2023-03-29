@@ -6,8 +6,8 @@ import (
 	"sync/atomic"
 )
 
-func Pending(state *types.State, requestResult types.RequestResult, curEpoch int) int32 {
-	var waitingCounter int32
+func Pending(state *types.State, requestResult types.RequestResult, curEpoch int) int64 {
+	var waitingCounter int64
 	if constants.IsWaitingEnabled() {
 		route := requestResult.Route
 		chunkId := requestResult.ChunkId
@@ -35,9 +35,9 @@ func Pending(state *types.State, requestResult types.RequestResult, curEpoch int
 		}
 
 		if isNewChunk {
-			waitingCounter = atomic.AddInt32(&state.UniqueWaitingCounter, 1)
+			waitingCounter = atomic.AddInt64(&state.UniqueWaitingCounter, 1)
 		} else {
-			waitingCounter = atomic.LoadInt32(&state.UniqueWaitingCounter)
+			waitingCounter = atomic.LoadInt64(&state.UniqueWaitingCounter)
 		}
 	}
 

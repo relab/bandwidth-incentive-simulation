@@ -7,29 +7,29 @@ import (
 )
 
 // OriginatorIndex Used by the requestWorker
-func OriginatorIndex(state *types.State, timeStep int) int32 {
+func OriginatorIndex(state *types.State, timeStep int) int64 {
 
-	curOriginatorIndex := atomic.LoadInt32(&state.OriginatorIndex)
+	curOriginatorIndex := atomic.LoadInt64(&state.OriginatorIndex)
 	if constants.GetSameOriginator() {
 		if (timeStep)%100 == 0 {
 			if int(curOriginatorIndex+1) >= constants.GetOriginators() {
-				atomic.StoreInt32(&state.OriginatorIndex, 0)
+				atomic.StoreInt64(&state.OriginatorIndex, 0)
 				return 0
 			} else {
-				return atomic.AddInt32(&state.OriginatorIndex, 1)
+				return atomic.AddInt64(&state.OriginatorIndex, 1)
 			}
 		}
 	} else {
 		if int(curOriginatorIndex+1) >= constants.GetOriginators() {
-			atomic.StoreInt32(&state.OriginatorIndex, 0)
+			atomic.StoreInt64(&state.OriginatorIndex, 0)
 			return 0
 		} else {
 			if constants.GetSameOriginator() {
-				if atomic.LoadInt32(&state.TimeStep)%100 == 0 {
-					return atomic.AddInt32(&state.OriginatorIndex, 1)
+				if atomic.LoadInt64(&state.TimeStep)%100 == 0 {
+					return atomic.AddInt64(&state.OriginatorIndex, 1)
 				}
 			} else {
-				return atomic.AddInt32(&state.OriginatorIndex, 1)
+				return atomic.AddInt64(&state.OriginatorIndex, 1)
 			}
 		}
 	}

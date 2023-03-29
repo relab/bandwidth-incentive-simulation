@@ -13,13 +13,12 @@ func PrecomputeRespNodes(nodesId []types.NodeId) [][4]types.NodeId {
 	result := make([][4]types.NodeId, numPossibleChunks)
 	numNodesSearch := constants.GetBits()
 
-	for i := 0; i < numPossibleChunks; i++ {
-		chunkId := int32(i)
+	for chunkId := 0; chunkId < numPossibleChunks; chunkId++ {
 		closestNodes := types.BinarySearchClosest(nodesId, chunkId, numNodesSearch)
-		distances := make([]int32, len(closestNodes))
+		distances := make([]int, len(closestNodes))
 
 		for j, nodeId := range closestNodes {
-			distances[j] = nodeId.ToInt32() ^ chunkId
+			distances[j] = nodeId.ToInt() ^ chunkId
 		}
 
 		sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
@@ -72,7 +71,7 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 		nodeAdj := node.AdjIds
 		for _, adjItems := range nodeAdj {
 			for _, otherNodeId := range adjItems {
-				threshold := general.BitLength(nodeId.ToInt32() ^ otherNodeId.ToInt32())
+				threshold := general.BitLength(nodeId.ToInt() ^ otherNodeId.ToInt())
 				epoch := constants.GetEpoch()
 				attrs := types.EdgeAttrs{A2B: 0, LastEpoch: epoch, Threshold: threshold}
 				err := graph.AddEdge(node.Id, otherNodeId, attrs)
@@ -135,7 +134,7 @@ func isThresholdFailed(firstNodeId types.NodeId, secondNodeId types.NodeId, grap
 }
 
 func getProximityChunk(firstNodeId types.NodeId, chunkId types.ChunkId) int {
-	retVal := constants.GetBits() - general.BitLength(firstNodeId.ToInt32()^chunkId.ToInt32())
+	retVal := constants.GetBits() - general.BitLength(firstNodeId.ToInt()^chunkId.ToInt())
 	if retVal <= constants.GetMaxProximityOrder() {
 		return retVal
 	} else {

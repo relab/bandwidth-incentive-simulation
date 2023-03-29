@@ -25,7 +25,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 	for counter < iterations {
 		if len(requestChan) <= requestQueueSize {
 
-			timeStep := update.Timestep(globalState)
+			timeStep := update.TimeStep(globalState)
 
 			if constants.TimeForNewEpoch(timeStep) {
 				curEpoch = update.Epoch(globalState)
@@ -33,7 +33,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 				waitForRoutingWorkers(pauseChan, continueChan)
 			}
 
-			originatorIndex := update.OriginatorIndex(globalState, timeStep)
+			originatorIndex := int(update.OriginatorIndex(globalState, timeStep))
 			originatorId := globalState.GetOriginatorId(originatorIndex)
 			originator := globalState.Graph.GetNode(originatorId)
 

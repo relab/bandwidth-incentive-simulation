@@ -6,8 +6,8 @@ import (
 	"sync/atomic"
 )
 
-func Cache(state *types.State, requestResult types.RequestResult) int32 {
-	var cacheHits int32
+func Cache(state *types.State, requestResult types.RequestResult) int64 {
+	var cacheHits int64
 	if constants.IsCacheEnabled() {
 		route := requestResult.Route
 		chunkId := requestResult.ChunkId
@@ -19,11 +19,11 @@ func Cache(state *types.State, requestResult types.RequestResult) int32 {
 			}
 
 			if requestResult.FoundByCaching {
-				cacheHits = atomic.AddInt32(&state.CacheHits, 1)
+				cacheHits = atomic.AddInt64(&state.CacheHits, 1)
 			}
 
 		} else {
-			cacheHits = atomic.LoadInt32(&state.CacheHits)
+			cacheHits = atomic.LoadInt64(&state.CacheHits)
 		}
 
 	}

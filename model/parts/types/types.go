@@ -3,7 +3,7 @@ package types
 type Request struct {
 	TimeStep        int
 	Epoch           int
-	OriginatorIndex int32
+	OriginatorIndex int
 	OriginatorId    NodeId
 	ChunkId         ChunkId
 	RespNodes       [4]NodeId
@@ -37,20 +37,20 @@ func (p Payment) IsNil() bool {
 type Threshold [2]NodeId
 
 type StateSubset struct {
-	WaitingCounter          int32
-	RetryCounter            int32
-	CacheHits               int32
-	ChunkId                 int32
-	OriginatorIndex         int32
-	SuccessfulFound         int32
-	FailedRequestsThreshold int32
-	FailedRequestsAccess    int32
-	TimeStep                int32
-	Epoch                   int32
+	WaitingCounter          int64
+	RetryCounter            int64
+	CacheHits               int64
+	ChunkId                 int
+	OriginatorIndex         int64
+	SuccessfulFound         int64
+	FailedRequestsThreshold int64
+	FailedRequestsAccess    int64
+	TimeStep                int64
+	Epoch                   int
 }
 
 type RouteData struct {
-	Epoch           int32    `json:"e"`
+	Epoch           int      `json:"e"`
 	Route           []NodeId `json:"r"`
 	ChunkId         ChunkId  `json:"c"`
 	Found           bool     `json:"f"`
@@ -68,18 +68,18 @@ type State struct {
 	Originators             []NodeId
 	NodesId                 []NodeId
 	RouteLists              []RequestResult
-	UniqueWaitingCounter    int32
-	UniqueRetryCounter      int32
-	CacheHits               int32
-	OriginatorIndex         int32
-	SuccessfulFound         int32
-	FailedRequestsThreshold int32
-	FailedRequestsAccess    int32
-	TimeStep                int32
+	UniqueWaitingCounter    int64
+	UniqueRetryCounter      int64
+	CacheHits               int64
+	OriginatorIndex         int64
+	SuccessfulFound         int64
+	FailedRequestsThreshold int64
+	FailedRequestsAccess    int64
+	TimeStep                int64
 	Epoch                   int
 }
 
-func (s *State) GetOriginatorId(originatorIndex int32) NodeId {
+func (s *State) GetOriginatorId(originatorIndex int) NodeId {
 	return s.Originators[originatorIndex]
 }
 

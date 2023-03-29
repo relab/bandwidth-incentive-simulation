@@ -5,9 +5,9 @@ import (
 	"sync/atomic"
 )
 
-func FailedRequestsThreshold(state *types.State, requestResult types.RequestResult) int32 {
+func FailedRequestsThreshold(state *types.State, requestResult types.RequestResult) int64 {
 	if requestResult.ThresholdFailed {
-		return atomic.AddInt32(&state.FailedRequestsThreshold, 1)
+		return atomic.AddInt64(&state.FailedRequestsThreshold, 1)
 	}
-	return atomic.LoadInt32(&state.FailedRequestsThreshold)
+	return atomic.LoadInt64(&state.FailedRequestsThreshold)
 }

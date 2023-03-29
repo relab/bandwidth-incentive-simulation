@@ -15,7 +15,7 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 	var accessFailed bool
 	mainOriginatorId := request.OriginatorId
 	chunkId := request.ChunkId
-	lastDistance := firstNodeId.ToInt32() ^ chunkId.ToInt32()
+	lastDistance := firstNodeId.ToInt() ^ chunkId.ToInt()
 	//fmt.Printf("\n last distance is : %d, chunk is: %d, first is: %d", lastDistance, chunkId, firstNodeId)
 	//fmt.Printf("\n which bucket: %d \n", 16-BitLength(chunkId^firstNodeId))
 
@@ -24,11 +24,11 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 
 	//var lockedEdges []types.NodeId
 
-	bin := constants.GetBits() - general.BitLength(firstNodeId.ToInt32()^chunkId.ToInt32())
+	bin := constants.GetBits() - general.BitLength(firstNodeId.ToInt()^chunkId.ToInt())
 	firstNodeAdjIds := graph.GetNodeAdj(firstNodeId)
 
 	for _, nodeId := range firstNodeAdjIds[bin] {
-		dist := nodeId.ToInt32() ^ chunkId.ToInt32()
+		dist := nodeId.ToInt() ^ chunkId.ToInt()
 		if general.BitLength(dist) >= general.BitLength(lastDistance) {
 			continue
 		}
