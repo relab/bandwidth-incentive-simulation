@@ -1,6 +1,6 @@
 package config
 
-// These functions modifies the respective fields based changes from default
+// These functions modify the respective fields based changes from default
 
 func OmegaExperiment() {
 	Variables.ThresholdEnabled = false
