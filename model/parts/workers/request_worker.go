@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan types.Request, globalState *types.State, wg *sync.WaitGroup, iterations int) {
+func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan types.Request, globalState *types.State, wg *sync.WaitGroup, iterations int, numRoutingGoroutines int) {
 
 	defer wg.Done()
 	var requestQueueSize = 10
@@ -17,7 +17,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 	var timeStep = 0
 	var counter = 0
 	var responsibleNodes [4]int
-	var curEpoch = config.GetEpoch()
+	var curEpoch = 0
 	var PickedFromWaiting int
 
 	defer close(requestChan)
@@ -37,10 +37,10 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			if timeStep%config.GetRequestsPerSecond() == 0 {
 				curEpoch = update.Epoch(globalState)
 
-				for i := 0; i < config.GetNumRoutingGoroutines(); i++ {
+				for i := 0; i < numRoutingGoroutines; i++ {
 					pauseChan <- true
 				}
-				for i := 0; i < config.GetNumRoutingGoroutines(); i++ {
+				for i := 0; i < numRoutingGoroutines; i++ {
 					<-continueChan
 				}
 			}

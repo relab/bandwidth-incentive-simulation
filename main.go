@@ -6,7 +6,6 @@ import (
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/workers"
 	"go-incentive-simulation/model/state"
-	"runtime"
 	"sync"
 	"time"
 )
@@ -30,14 +29,13 @@ import (
 
 func main() {
 	start := time.Now()
-	config.ChooseExperiment()
-	//config.ChooseExperiment()
+	config.InitConfigs()
 	network := fmt.Sprintf("./data/nodes_data_%d_10000.txt", config.GetBinSize())
 	globalState := state.MakeInitialState(network)
 
-	var iterations = config.GetIterations()
-	numTotalGoRoutines := runtime.NumCPU()
-	numRoutingGoroutines := config.SetNumRoutingGoroutines(numTotalGoRoutines)
+	iterations := config.GetIterations()
+	numTotalGoRoutines := config.GetNumGoroutines()
+	numRoutingGoroutines := config.GetNumRoutingGoroutines()
 	//numLoops := iterations / numGoroutines
 
 	wgMain := &sync.WaitGroup{}
@@ -58,7 +56,7 @@ func main() {
 		go workers.StateFlushWorker(stateChan, wgOutput)
 	}
 
-	go workers.RequestWorker(pauseChan, continueChan, requestChan, &globalState, wgMain, iterations)
+	go workers.RequestWorker(pauseChan, continueChan, requestChan, &globalState, wgMain, iterations, numRoutingGoroutines)
 	wgMain.Add(1)
 
 	go workers.OutputWorker(outputChan, wgOutput)

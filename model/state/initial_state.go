@@ -36,7 +36,7 @@ func MakeInitialState(path string) types.State {
 		FailedRequestsThreshold: 0,
 		FailedRequestsAccess:    0,
 		TimeStep:                0,
-		Epoch:                   config.GetEpoch(),
+		Epoch:                   0,
 	}
 	return initialState
 }

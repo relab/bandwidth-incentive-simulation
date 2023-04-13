@@ -1,7 +1,7 @@
 package config
 
-func SetNumRoutingGoroutines(num int) int {
-	//num-- // fot the outputWorker
+func GetNumRoutingGoroutines() int {
+	num := Variables.NumGoroutines
 	//if IsWriteStatesToFile() {
 	//	num--
 	//}
@@ -9,8 +9,12 @@ func SetNumRoutingGoroutines(num int) int {
 	//	num--
 	//}
 	num-- // for the requestWorker
-	Variable.NumRoutingGoroutines = num
+	//num-- // for the outputWorker
 	return num
+}
+
+func GetNumGoroutines() int {
+	return Variables.NumGoroutines
 }
 
 // func CreateRangeAddress(c *constant){
@@ -22,79 +26,75 @@ func SetNumRoutingGoroutines(num int) int {
 // }
 
 func IsAdjustableThreshold() bool {
-	return Variable.AdjustableThreshold
+	return Variables.AdjustableThreshold
 }
 
 func IsForgivenessEnabled() bool {
-	return Variable.ForgivenessEnabled
+	return Variables.ForgivenessEnabled
 }
 
 func IsForgivenessDuringRouting() bool {
-	return Variable.ForgivenessDuringRouting
+	return Variables.ForgivenessDuringRouting
 }
 
 func IsCacheEnabled() bool {
-	return Variable.CacheIsEnabled
+	return Variables.CacheIsEnabled
 }
 
 func IsPreferredChunksEnabled() bool {
-	return Variable.PreferredChunks
+	return Variables.PreferredChunks
 }
 
 func IsRetryWithAnotherPeer() bool {
-	return Variable.RetryWithAnotherPeer
+	return Variables.RetryWithAnotherPeer
 }
 
 func IsForwarderPayForceOriginatorToPay() bool {
-	return Variable.ForwarderPayForceOriginatorToPay
+	return Variables.ForwardersPayForceOriginatorToPay
 }
 
 func IsPayIfOrigPays() bool {
-	return Variable.PayIfOrigPays
+	return Variables.PayIfOrigPays
 }
 
 func IsPayOnlyForCurrentRequest() bool {
-	return Variable.PayOnlyForCurrentRequest
+	return Variables.PayOnlyForCurrentRequest
 }
 
 func IsOnlyOriginatorPays() bool {
-	return Variable.OnlyOriginatorPays
+	return Variables.OnlyOriginatorPays
 }
 
 func IsWaitingEnabled() bool {
-	return Variable.WaitingEnabled
+	return Variables.WaitingEnabled
 }
 
 func GetMaxPOCheckEnabled() bool {
-	return Variable.MaxPOCheckEnabled
+	return Variables.MaxPOCheckEnabled
 }
 
 func GetThresholdEnabled() bool {
-	return Variable.ThresholdEnabled
+	return Variables.ThresholdEnabled
 }
 
 func GetPaymentEnabled() bool {
-	return Variable.PaymentEnabled
+	return Variables.PaymentEnabled
 }
 
 func GetRequestsPerSecond() int {
-	return Variable.RequestsPerSecond
-}
-
-func GetChunks() int {
-	return Variable.Chunks
+	return Variables.RequestsPerSecond
 }
 
 func GetBits() int {
-	return Variable.Bits
+	return Variables.Bits
 }
 
 func GetNetworkSize() int {
-	return Variable.NetworkSize
+	return Variables.NetworkSize
 }
 
 func GetBinSize() int {
-	return Variable.BinSize
+	return Variables.BinSize
 }
 
 func GetSimulationRuns() int {
@@ -102,73 +102,65 @@ func GetSimulationRuns() int {
 }
 
 func GetRangeAddress() int {
-	return Variable.RangeAddress
+	return Variables.RangeAddress
 }
 
 func GetOriginators() int {
-	return Variable.Originators
+	return Variables.Originators
 }
 
 func GetRefreshRate() int {
-	return Variable.RefreshRate
+	return Variables.RefreshRate
 }
 
 func GetThreshold() int {
-	return Variable.Threshold
+	return Variables.Threshold
 }
 
 func GetRandomSeed() int64 {
-	return Variable.RandomSeed
+	return Variables.RandomSeed
 }
 
 func GetMaxProximityOrder() int {
-	return Variable.MaxProximityOrder
+	return Variables.MaxProximityOrder
 }
 
 func GetPrice() int {
-	return Variable.Price
+	return Variables.Price
 }
 
 func GetSameOriginator() bool {
-	return Variable.SameOriginator
+	return Variables.SameOriginator
 }
 
 func GetEdgeLock() bool {
-	return Variable.EdgeLock
+	return Variables.EdgeLock
 }
 
 func IsPrecomputeRespNodes() bool {
-	return Variable.PrecomputeRespNodes
+	return Variables.PrecomputeRespNodes
 }
 
 func IsWriteRoutesToFile() bool {
-	return Variable.WriteRoutesToFile
+	return Variables.WriteRoutesToFile
 }
 
 func IsWriteStatesToFile() bool {
-	return Variable.WriteStatesToFile
+	return Variables.WriteStatesToFile
 }
 
 func IsIterationMeansUniqueChunk() bool {
-	return Variable.IterationMeansUniqueChunk
+	return Variables.IterationMeansUniqueChunk
 }
 
 func IsDebugPrints() bool {
-	return Variable.DebugPrints
+	return Variables.DebugPrints
 }
 
 func GetDebugInterval() int {
-	return Variable.DebugInterval
-}
-
-func GetNumRoutingGoroutines() int {
-	return Variable.NumRoutingGoroutines
-}
-
-func GetEpoch() int {
-	return Variable.Epoch
+	return Variables.DebugInterval
 }
 
 func GetIterations() int {
-	return Variable.Iterations
+	return Variables.Iterations
 }

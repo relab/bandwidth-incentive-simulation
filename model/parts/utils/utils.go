@@ -73,8 +73,7 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 		for _, adjItems := range nodeAdj {
 			for _, item := range adjItems {
 				threshold := general.BitLength(nodeId ^ item)
-				epoke := config.GetEpoch()
-				attrs := types.EdgeAttrs{A2B: 0, Last: 0, EpokeLastForgiven: epoke, Threshold: threshold}
+				attrs := types.EdgeAttrs{A2B: 0, Last: 0, EpokeLastForgiven: 0, Threshold: threshold}
 				err := graph.AddEdge(node.Id, item, attrs)
 				if err != nil {
 					return nil, err
