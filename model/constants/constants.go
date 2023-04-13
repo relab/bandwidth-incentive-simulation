@@ -36,8 +36,8 @@ type constant struct {
 	iterationMeansUniqueChunk         bool
 	debugPrints                       bool
 	debugInterval                     int
-	numGoroutines                     int
-	epoke                             int
+	numRoutingGoroutines              int
+	epoch                             int
 	meanRewardPerForward              bool
 	averageNumberOfHops               bool
 	averageFractionOfTotalRewardsK8   bool
@@ -52,7 +52,7 @@ var constants = constant{
 	runs:                              1,
 	bits:                              16,
 	networkSize:                       10000,
-	binSize:                           8,
+	binSize:                           16,
 	rangeAddress:                      65536, // 2 * *Bits
 	originators:                       1000,  // int(0.001 * NetworkSize)
 	refreshRate:                       8,
@@ -62,11 +62,11 @@ var constants = constant{
 	price:                             1,
 	chunks:                            10000,
 	requestsPerSecond:                 100000,  // 12500
-	thresholdEnabled:                  true,    // The maximum limit of debt an edge can have in one direction
-	forgivenessEnabled:                true,    // Edge debt gets forgiven some amount on an interval (amortized)
-	forgivenessDuringRouting:          true,    // If the forgiveness should happen before threshold is checked or after in updateGraph
-	paymentEnabled:                    true,    // Nodes pay if they Threshold fail
-	maxPOCheckEnabled:                 false,   // Used to find the proper variable called "omega" in the python paper
+	thresholdEnabled:                  false,   // The maximum limit of debt an edge can have in one direction
+	forgivenessEnabled:                false,   // Edge debt gets forgiven some amount on an interval (amortized)
+	forgivenessDuringRouting:          false,   // If the forgiveness should happen before threshold is checked or after in updateGraph
+	paymentEnabled:                    false,   // Nodes pay if they Threshold fail
+	maxPOCheckEnabled:                 true,    // Used to find the proper variable called "omega" in the python paper
 	onlyOriginatorPays:                false,   // Only the originator will pay, others will threshold fail or wait
 	payOnlyForCurrentRequest:          false,   // Only pay for current request or the full debt on the edge
 	payIfOrigPays:                     false,   // Only pay if the originator pays -- NOT NEEDED
@@ -84,16 +84,16 @@ var constants = constant{
 	iterationMeansUniqueChunk:         false,   // If a single iteration means all unique chunks or include chunks we look for again relating to waiting/retry
 	debugPrints:                       true,    // Prints out many useful debug prints during the run
 	debugInterval:                     1000000, // How many iterations between each debug print
-	numGoroutines:                     25,      // 25 seems to currently be the sweet spot
-	epoke:                             50000,   //
-	meanRewardPerForward:              false,   // If the mean reward per forward should be calculated
-	averageNumberOfHops:               false,   // If the average number of hops should be calculated
-	averageFractionOfTotalRewardsK8:   false,   // If the average fraction of total rewards should be calculated for k=8
-	averageFractionOfTotalRewardsK16:  false,   // If the average fraction of total rewards should be calculated for k=16
+	numRoutingGoroutines:              25,      // 25 seems to currently be the sweet spot
+	epoch:                             1,       //
+	meanRewardPerForward:              true,    // If the mean reward per forward should be calculated
+	averageNumberOfHops:               true,    // If the average number of hops should be calculated
+	averageFractionOfTotalRewardsK8:   true,    // If the average fraction of total rewards should be calculated for k=8
+	averageFractionOfTotalRewardsK16:  true,    // If the average fraction of total rewards should be calculated for k=16
 	rewardFairnessForForwardingAction: false,   // If the reward fairness should be calculated for the forwarding action
 	rewardFairnessForStoringAction:    false,   // If the reward fairness should be calculated for the storing action
 	rewardFairnessForAllActions:       false,   // If the reward fairness should be calculated for all actions
-	negativeIncome:                    false,   // If the income should be negative
+	negativeIncome:                    true,    // If the income should be negative
 }
 
 // func CreateRangeAddress(c *constant){
@@ -104,12 +104,35 @@ var constants = constant{
 // 	c.originators = int(0.001 * float64(c.networkSize))
 // }
 
+func SetNumRoutingGoroutines(num int) int {
+	num-- // for the outputWorker
+	num-- // for the requestWorker
+	constants.numRoutingGoroutines = num
+	return num
+}
+
 func GetMeanRewardPerForward() bool {
-	return constants.meanRewardPerForward
+	if constants.maxPOCheckEnabled &&
+		!constants.thresholdEnabled &&
+		!constants.forgivenessEnabled &&
+		!constants.paymentEnabled &&
+		!constants.waitingEnabled &&
+		!constants.retryWithAnotherPeer {
+		return constants.meanRewardPerForward
+	}
+	return false
 }
 
 func GetAverageNumberOfHops() bool {
-	return constants.averageNumberOfHops
+	if constants.maxPOCheckEnabled &&
+		!constants.thresholdEnabled &&
+		!constants.forgivenessEnabled &&
+		!constants.paymentEnabled &&
+		!constants.waitingEnabled &&
+		!constants.retryWithAnotherPeer {
+		return constants.averageNumberOfHops
+	}
+	return false
 }
 
 func GetAverageFractionOfTotalRewardsK8() bool {
@@ -117,23 +140,63 @@ func GetAverageFractionOfTotalRewardsK8() bool {
 }
 
 func GetAverageFractionOfTotalRewardsK16() bool {
-	return constants.averageFractionOfTotalRewardsK16
+	if constants.maxPOCheckEnabled &&
+		constants.binSize == 16 &&
+		!constants.thresholdEnabled &&
+		!constants.forgivenessEnabled &&
+		!constants.paymentEnabled &&
+		!constants.waitingEnabled &&
+		!constants.retryWithAnotherPeer {
+		return constants.averageFractionOfTotalRewardsK16
+	}
+	return false
+
 }
 
 func GetRewardFairnessForForwardingAction() bool {
-	return constants.rewardFairnessForForwardingAction
+	if constants.maxPOCheckEnabled &&
+		!constants.thresholdEnabled &&
+		!constants.forgivenessEnabled &&
+		!constants.paymentEnabled &&
+		!constants.waitingEnabled &&
+		!constants.retryWithAnotherPeer {
+		return constants.rewardFairnessForForwardingAction
+	}
+	return false
 }
 
 func GetRewardFairnessForStoringAction() bool {
-	return constants.rewardFairnessForStoringAction
+	if constants.maxPOCheckEnabled &&
+		!constants.thresholdEnabled &&
+		!constants.forgivenessEnabled &&
+		!constants.paymentEnabled &&
+		!constants.waitingEnabled &&
+		!constants.retryWithAnotherPeer {
+		return constants.rewardFairnessForStoringAction
+	}
+	return false
 }
 
 func GetRewardFairnessForAllActions() bool {
-	return constants.rewardFairnessForAllActions
+	if constants.maxPOCheckEnabled &&
+		!constants.thresholdEnabled &&
+		!constants.forgivenessEnabled &&
+		!constants.paymentEnabled &&
+		!constants.waitingEnabled &&
+		!constants.retryWithAnotherPeer {
+		return constants.rewardFairnessForAllActions
+	}
+	return false
 }
 
+// Kan ver merr det mp ver checks her
 func GetNegativeIncome() bool {
-	return constants.negativeIncome
+	if constants.paymentEnabled &&
+		constants.forgivenessEnabled &&
+		constants.forgivenessDuringRouting {
+		return constants.negativeIncome
+	}
+	return false
 }
 
 func SetProximityOrder(po int) {
@@ -280,10 +343,10 @@ func GetDebugInterval() int {
 	return constants.debugInterval
 }
 
-func GetNumGoroutines() int {
-	return constants.numGoroutines
+func GetNumRoutingGoroutines() int {
+	return constants.numRoutingGoroutines
 }
 
-func GetEpoke() int {
-	return constants.epoke
+func GetEpoch() int {
+	return constants.epoch
 }

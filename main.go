@@ -6,6 +6,7 @@ import (
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/workers"
 	"go-incentive-simulation/model/state"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -17,8 +18,8 @@ import (
 //	found, route, thresholdFailed, accessFailed, paymentsList := policy.SendRequest(state, index)
 //
 
-//	p := types.RequestResult{
-//		Found:                found,
+//p := types.RequestResult{
+//	Found:                found,
 //		Route:                route,
 //		ThresholdFailedLists: thresholdFailed,
 //		AccessFailed:         accessFailed,
@@ -32,47 +33,62 @@ func main() {
 	network := fmt.Sprintf("./data/nodes_data_%d_10000.txt", constants.GetBinSize())
 	globalState := state.MakeInitialState(network)
 
-	const iterations = 20_000_000
-	numGoroutines := constants.GetNumGoroutines()
+	const iterations = 10_000_000
+	numTotalGoRoutines := runtime.NumCPU()
+	numRoutingGoroutines := constants.SetNumRoutingGoroutines(numTotalGoRoutines)
+
 	//numLoops := iterations / numGoroutines
 
 	wgMain := &sync.WaitGroup{}
-	wgFlush := &sync.WaitGroup{}
-	requestChan := make(chan types.Request, numGoroutines)
-	outputChan := make(chan types.Output, numGoroutines)
-	routeChan := make(chan types.RouteData, numGoroutines)
-	stateChan := make(chan types.StateSubset, 10000)
+	wgOutput := &sync.WaitGroup{}
+	requestChan := make(chan types.Request, numRoutingGoroutines)
+	outputChan := make(chan types.Output, 100000)
+	routeChan := make(chan types.RouteData, 100000)
+	stateChan := make(chan types.StateSubset, 100000)
+	pauseChan := make(chan bool, numRoutingGoroutines)
+	continueChan := make(chan bool, numRoutingGoroutines)
 
 	if constants.IsWriteRoutesToFile() {
-		wgFlush.Add(1)
-		go workers.RouteFlushWorker(routeChan, wgFlush)
+		wgOutput.Add(1)
+		go workers.RouteFlushWorker(routeChan, wgOutput)
 	}
 	if constants.IsWriteStatesToFile() {
-		wgFlush.Add(1)
-		go workers.StateFlushWorker(stateChan, wgFlush)
+		wgOutput.Add(1)
+		go workers.StateFlushWorker(stateChan, wgOutput)
 	}
 
-	go workers.RequestWorker(requestChan, &globalState, wgMain, iterations)
+	go workers.RequestWorker(pauseChan, continueChan, requestChan, &globalState, wgMain, iterations)
 	wgMain.Add(1)
+	if constants.GetMeanRewardPerForward() ||
+		constants.GetAverageNumberOfHops() ||
+		constants.GetAverageFractionOfTotalRewardsK8() ||
+		constants.GetAverageFractionOfTotalRewardsK16() ||
+		constants.GetRewardFairnessForForwardingAction() ||
+		constants.GetRewardFairnessForStoringAction() ||
+		constants.GetRewardFairnessForAllActions() ||
+		constants.GetNegativeIncome() {
+		go workers.OutputWorker(outputChan, wgOutput)
+		wgOutput.Add(1)
+	}
 
-	go workers.OutputWorker(outputChan)
-
-	for i := 0; i < numGoroutines; i++ {
+	for i := 0; i < numRoutingGoroutines; i++ {
 		wgMain.Add(1)
-		go workers.RoutingWorker(requestChan, outputChan, routeChan, stateChan, &globalState, wgMain)
+		go workers.RoutingWorker(pauseChan, continueChan, requestChan, outputChan, routeChan, stateChan, &globalState, wgMain)
 	}
 
 	wgMain.Wait()
+	close(outputChan)
 	close(stateChan)
 	close(routeChan)
-	wgFlush.Wait()
+	wgOutput.Wait()
 
 	fmt.Println("")
 	fmt.Println("end of main: ")
 	elapsed := time.Since(start)
 	fmt.Println("Time taken:", elapsed)
 	fmt.Println("Number of Iterations: ", iterations)
-	fmt.Println("Number of Goroutines: ", numGoroutines)
+	fmt.Println("Number of Total Goroutines: ", numTotalGoRoutines)
+	fmt.Println("Number of Routing Goroutines: ", numRoutingGoroutines)
 	// allReq, thresholdFails, requestsToBucketZero, rejectedBucketZero, rejectedFirstHop := ReadRoutes("routes.json")
 	// fmt.Println("allReq: ", allReq)
 	// fmt.Println("thresholdFails: ", thresholdFails)
@@ -144,6 +160,8 @@ func PrintState(state types.State) {
 	fmt.Println("CacheHits:", state.CacheStruct.CacheHits)
 	fmt.Println("TimeStep: ", state.TimeStep)
 	fmt.Println("OriginatorIndex: ", state.OriginatorIndex)
+	fmt.Println("UniqueRerouteCounter: ", state.RerouteStruct.UniqueRerouteCounter)
+	fmt.Println("UniquePendingCounter: ", state.PendingStruct.UniquePendingCounter)
 	//fmt.Println("PendingMap: ", state.PendingStruct.PendingMap, state.PendingStruct.Counter)
 	//fmt.Println("RerouteMap: ", state.RerouteStruct.RerouteMap)
 	//fmt.Println("RouteLists: ", state.RouteLists)

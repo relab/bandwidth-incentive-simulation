@@ -9,13 +9,16 @@ import (
 	"sync"
 )
 
-func RequestWorker(requestChan chan types.Request, globalState *types.State, wg *sync.WaitGroup, iterations int) {
+func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan types.Request, globalState *types.State, wg *sync.WaitGroup, iterations int) {
 
 	defer wg.Done()
 	var requestQueueSize = 10
 	var originatorIndex = 0
 	var timeStep = 0
 	var counter = 0
+	var responsibleNodes [4]int
+	var curEpoch = constants.GetEpoch()
+	var PickedFromWaiting int
 
 	defer close(requestChan)
 
@@ -31,6 +34,17 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 				}
 			}
 
+			if timeStep%constants.GetRequestsPerSecond() == 0 {
+				curEpoch = update.Epoch(globalState)
+
+				for i := 0; i < constants.GetNumRoutingGoroutines(); i++ {
+					pauseChan <- true
+				}
+				for i := 0; i < constants.GetNumRoutingGoroutines(); i++ {
+					<-continueChan
+				}
+			}
+
 			if constants.IsDebugPrints() {
 				if timeStep%(iterations/2) == 0 {
 					if constants.IsWaitingEnabled() {
@@ -43,37 +57,33 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 			}
 
 			originatorIndex = int(update.OriginatorIndex(globalState, timeStep))
-
 			originatorId := globalState.Originators[originatorIndex]
+			//originator := globalState.Graph.GetNode(originatorIndex)
 
 			chunkId := -1
-			responsibleNodes := [4]int{}
-
-			if constants.IsWaitingEnabled() {
-				pendingNode := globalState.PendingStruct.GetPending(originatorId)
-
-				if (timeStep-originatorIndex)%constants.GetEpoke() == 0 || timeStep > iterations {
-					if len(pendingNode.ChunkIds) > 0 {
-						pendingNode.EpokeDecrement = int32(len(pendingNode.ChunkIds))
-						//atomic.AddInt32(&globalState.PendingStruct.Counter, int32(len(pendingNode.ChunkIds)))
-					}
-				}
-				if pendingNode.EpokeDecrement > 0 {
-					pendingNodeIds := pendingNode.ChunkIds
-					if len(pendingNodeIds) > 0 {
-						//if !globalState.PendingStruct.IsEmpty(originatorId) {
-						chunkId = pendingNodeIds[pendingNode.EpokeDecrement-1]
-						responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
-						pendingNode.EpokeDecrement--
-					}
-				}
-			}
 
 			if constants.IsRetryWithAnotherPeer() {
-				reroute := globalState.RerouteStruct.GetRerouteMap(originatorId)
-				if reroute != nil {
-					chunkId = reroute[len(reroute)-1]
+
+				routeStruct := globalState.RerouteStruct.GetRerouteMap(originatorId)
+				//if routeStruct.LastEpoch < curEpoch {
+				if routeStruct.Reroute != nil {
+					chunkId = routeStruct.ChunkId
 					responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+				}
+				//globalState.RerouteStruct.UpdateEpoch(originatorId, curEpoch)
+			}
+
+			if constants.IsWaitingEnabled() && chunkId == -1 { // No valid chunkId in reroute
+				pending, ok := globalState.PendingStruct.GetPending(originatorId)
+
+				if ok && len(pending.ChunkQueue) > 0 {
+					chunkStruct, _ := globalState.PendingStruct.GetChunkFromQueue(originatorId)
+					if chunkStruct.LastEpoch < curEpoch {
+						chunkId = chunkStruct.ChunkId
+						responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkStruct.ChunkId)
+						globalState.PendingStruct.UpdateEpoch(originatorId, chunkId, curEpoch)
+						PickedFromWaiting++
+					}
 				}
 			}
 
@@ -85,7 +95,7 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 				counter++
 			}
 
-			if chunkId == -1 && timeStep < iterations { // No waiting and no retry, and
+			if chunkId == -1 && timeStep <= iterations { // No waiting and no retry, and qualify for unique chunk
 				chunkId = rand.Intn(constants.GetRangeAddress() - 1)
 
 				if constants.IsPreferredChunksEnabled() {
@@ -106,10 +116,12 @@ func RequestWorker(requestChan chan types.Request, globalState *types.State, wg 
 					OriginatorIndex: originatorIndex,
 					OriginatorId:    originatorId,
 					TimeStep:        timeStep,
+					Epoch:           curEpoch,
 					ChunkId:         chunkId,
 					RespNodes:       responsibleNodes,
 				}
 			}
 		}
 	}
+	fmt.Println("Number of requests chunks picked from Pending: ", PickedFromWaiting)
 }

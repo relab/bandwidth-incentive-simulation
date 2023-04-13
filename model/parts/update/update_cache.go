@@ -22,7 +22,7 @@ func CacheMap(state *types.State, policyInput types.RequestResult) types.CacheSt
 			if general.Contains(route, -3) {
 				for i := 0; i < len(route)-3; i++ {
 					nodeId := route[i]
-					state.CacheStruct.AddToCache(nodeId, chunkId)
+					//state.CacheStruct.AddToCache(nodeId, chunkId)
 					node := state.Graph.GetNode(nodeId)
 					node.Mutex.Lock()
 					cacheMap := node.CacheMap
@@ -40,7 +40,7 @@ func CacheMap(state *types.State, policyInput types.RequestResult) types.CacheSt
 			} else {
 				for i := 0; i < len(route)-2; i++ {
 					nodeId := route[i]
-					state.CacheStruct.AddToCache(nodeId, chunkId)
+					//state.CacheStruct.AddToCache(nodeId, chunkId)
 					node := state.Graph.GetNode(nodeId)
 					node.Mutex.Lock()
 					cacheMap := node.CacheMap
