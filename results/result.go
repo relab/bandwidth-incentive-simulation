@@ -48,7 +48,7 @@ type RouteData struct {
 func ReadOutput(filename string) [][]Transaction {
 	file, err := os.Open(filename)
 	if err != nil {
-		panic(err)
+		return nil
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)

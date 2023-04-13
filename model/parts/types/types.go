@@ -2,6 +2,7 @@ package types
 
 type Request struct {
 	TimeStep        int
+	Epoch           int
 	OriginatorIndex int
 	OriginatorId    int
 	ChunkId         int
@@ -53,6 +54,7 @@ type State struct {
 	FailedRequestsThreshold int32
 	FailedRequestsAccess    int32
 	TimeStep                int32
+	Epoch                   int
 }
 
 type RequestResult struct {

@@ -73,7 +73,8 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 		for _, adjItems := range nodeAdj {
 			for _, item := range adjItems {
 				threshold := general.BitLength(nodeId ^ item)
-				attrs := types.EdgeAttrs{A2B: 0, Last: 0, Threshold: threshold}
+				epoke := constants.GetEpoch()
+				attrs := types.EdgeAttrs{A2B: 0, Last: 0, EpokeLastForgiven: epoke, Threshold: threshold}
 				err := graph.AddEdge(node.Id, item, attrs)
 				if err != nil {
 					return nil, err
@@ -131,7 +132,7 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 	currDist := lastDistance
 	payDist := lastDistance
 
-	var lockedEdges []int
+	//var lockedEdges []int
 	//var unlockedEdges []int
 
 	//firstNode := graph.NodesMap[firstNodeId]
@@ -143,63 +144,56 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 		if general.BitLength(dist) >= general.BitLength(lastDistance) {
 			continue
 		}
-		// TODO: Decide on where to put this dist < currDist check, as having it here is faster but resulting in more thresholdFails
-		//if dist < currDist {
+		if dist >= currDist {
+			continue
+		}
 		// This means the node is now actively trying to communicate with the other node
 		if constants.GetEdgeLock() {
 			graph.LockEdge(firstNodeId, nodeId)
-			lockedEdges = append(lockedEdges, nodeId)
 		}
 		if !isThresholdFailed(firstNodeId, nodeId, chunkId, graph, request) {
-			if dist < currDist {
-				// This means the node is now actively trying to communicate with the other node
-				if constants.IsRetryWithAnotherPeer() {
-					reroute := rerouteStruct.GetRerouteMap(mainOriginatorId)
-					if reroute != nil {
-						allExceptLast := len(reroute)
-						if general.Contains(reroute[:allExceptLast], nodeId) {
-							continue
-						} else {
-							if payNextId != 0 {
-								//graph.UnlockEdge(firstNodeId, payNextId)
-							}
-							if nextNodeId != 0 {
-								//graph.UnlockEdge(firstNodeId, nextNodeId)
-							}
-							currDist = dist
-							nextNodeId = nodeId
+			thresholdFailed = false
+			if constants.IsRetryWithAnotherPeer() {
+				if reroute := rerouteStruct.GetRerouteMap(mainOriginatorId).Reroute; reroute != nil {
+					if general.Contains(reroute, nodeId) {
+						if constants.GetEdgeLock() {
+							graph.UnlockEdge(firstNodeId, nodeId)
 						}
-					} else {
-						if nextNodeId != 0 {
-							//graph.UnlockEdge(firstNodeId, nextNodeId)
-						}
-						currDist = dist
-						nextNodeId = nodeId
+						continue // skips node that's been part of a failed route before
 					}
-				} else {
-					if nextNodeId != 0 {
-						//graph.UnlockEdge(firstNodeId, nextNodeId)
-					}
-					currDist = dist
-					nextNodeId = nodeId
 				}
-			} else {
-				//graph.UnlockEdge(firstNodeId, nodeId)
 			}
+
+			if constants.GetEdgeLock() {
+				if nextNodeId != 0 {
+					graph.UnlockEdge(firstNodeId, nextNodeId)
+				}
+				if payNextId != 0 {
+					graph.UnlockEdge(firstNodeId, payNextId)
+					payNextId = 0 // IMPORTANT!
+				}
+			}
+			currDist = dist
+			nextNodeId = nodeId
+
 		} else {
 			thresholdFailed = true
 			if constants.GetPaymentEnabled() {
-				if dist < payDist {
-					if payNextId != 0 {
-						//graph.UnlockEdge(firstNodeId, payNextId)
+				if dist < payDist && nextNodeId == 0 {
+					if constants.GetEdgeLock() && payNextId != 0 {
+						graph.UnlockEdge(firstNodeId, payNextId)
 					}
 					payDist = dist
 					payNextId = nodeId
 				} else {
-					//graph.UnlockEdge(firstNodeId, nodeId)
+					if constants.GetEdgeLock() {
+						graph.UnlockEdge(firstNodeId, nodeId)
+					}
 				}
 			} else {
-				//graph.UnlockEdge(firstNodeId, nodeId)
+				if constants.GetEdgeLock() {
+					graph.UnlockEdge(firstNodeId, nodeId)
+				}
 			}
 		}
 	}
@@ -207,76 +201,73 @@ func getNext(firstNodeId int, chunkId int, graph *types.Graph, mainOriginatorId 
 	if nextNodeId != 0 {
 		thresholdFailed = false
 		accessFailed = false
+	} else if !thresholdFailed {
+		accessFailed = true
+		nextNodeId = -2 // Access Failed
 	} else {
-		if !thresholdFailed {
-			accessFailed = true
-			nextNodeId = -2 // Access Failed
-		} else {
-			nextNodeId = -1 // Threshold Failed
-		}
-		if constants.GetPaymentEnabled() {
-			if payNextId != 0 {
-				accessFailed = false
-				if constants.IsOnlyOriginatorPays() {
-					if firstNodeId == mainOriginatorId {
-						payment.IsOriginator = true
-						payment.FirstNodeId = firstNodeId
-						payment.PayNextId = payNextId
-						payment.ChunkId = chunkId
-						nextNodeId = payNextId
-					} else {
-						thresholdFailed = true
-						nextNodeId = -1
-					}
-				} else if constants.IsPayIfOrigPays() {
-					if prevNodePaid {
-						nextNodeId = payNextId
-						thresholdFailed = false
-						if firstNodeId == mainOriginatorId {
-							payment.IsOriginator = true
-						} else {
-							payment.IsOriginator = false
-						}
-						payment.FirstNodeId = firstNodeId
-						payment.PayNextId = payNextId
-						payment.ChunkId = chunkId
-					} else {
-						if firstNodeId == mainOriginatorId {
-							payment.IsOriginator = true
-							payment.FirstNodeId = firstNodeId
-							payment.PayNextId = payNextId
-							payment.ChunkId = chunkId
-							nextNodeId = payNextId
-						} else {
-							thresholdFailed = true
-							nextNodeId = -1
-							payNextId = 0
-						}
-					}
-				} else {
-					nextNodeId = payNextId
-					thresholdFailed = false
-					if firstNodeId == mainOriginatorId {
-						payment.IsOriginator = true
-					} else {
-						payment.IsOriginator = false
-					}
-					payment.FirstNodeId = firstNodeId
-					payment.PayNextId = payNextId
-					payment.ChunkId = chunkId
-				}
+		nextNodeId = -1 // Threshold Failed
+	}
+
+	if constants.GetPaymentEnabled() && payNextId != 0 {
+		accessFailed = false
+
+		if constants.IsOnlyOriginatorPays() {
+			if firstNodeId == mainOriginatorId {
+				payment.IsOriginator = true
+				payment.FirstNodeId = firstNodeId
+				payment.PayNextId = payNextId
+				payment.ChunkId = chunkId
+				nextNodeId = payNextId
 			}
+
+		} else if constants.IsPayIfOrigPays() {
+			if prevNodePaid {
+				thresholdFailed = false
+				if firstNodeId == mainOriginatorId {
+					payment.IsOriginator = true
+				} else {
+					payment.IsOriginator = false
+				}
+				payment.FirstNodeId = firstNodeId
+				payment.PayNextId = payNextId
+				payment.ChunkId = chunkId
+				nextNodeId = payNextId
+
+			} else if firstNodeId == mainOriginatorId {
+				payment.IsOriginator = true
+				payment.FirstNodeId = firstNodeId
+				payment.PayNextId = payNextId
+				payment.ChunkId = chunkId
+				nextNodeId = payNextId
+
+			} else {
+				thresholdFailed = true
+				nextNodeId = -1
+				payNextId = 0
+			}
+
+		} else {
+			thresholdFailed = false
+			if firstNodeId == mainOriginatorId {
+				payment.IsOriginator = true
+			} else {
+				payment.IsOriginator = false
+			}
+			payment.FirstNodeId = firstNodeId
+			payment.PayNextId = payNextId
+			payment.ChunkId = chunkId
+			nextNodeId = payNextId
 		}
 	}
 
-	// unlocks all nodes except the nextNodeId lock
-	if constants.GetEdgeLock() {
-		for _, nodeId := range lockedEdges {
-			if nodeId != nextNodeId {
-				graph.UnlockEdge(firstNodeId, nodeId)
-			}
-		}
-	}
+	//// unlocks all nodes except the nextNodeId lock
+	//if constants.GetEdgeLock() {
+	//	for _, nodeId := range lockedEdges {
+	//		if nodeId != nextNodeId {
+	//			graph.UnlockEdge(firstNodeId, nodeId)
+	//		}
+	//	}
+	//}
 
 	if constants.GetPaymentEnabled() {
 	out:

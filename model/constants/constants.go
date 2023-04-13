@@ -36,8 +36,8 @@ type constant struct {
 	iterationMeansUniqueChunk         bool
 	debugPrints                       bool
 	debugInterval                     int
-	numGoroutines                     int
-	epoke                             int
+	numRoutingGoroutines              int
+	epoch                             int
 	meanRewardPerForward              bool
 	averageNumberOfHops               bool
 	averageFractionOfTotalRewardsK8   bool
@@ -70,8 +70,8 @@ var constants = constant{
 	payOnlyForCurrentRequest:          false,   // Only pay for current request or the full debt on the edge
 	payIfOrigPays:                     false,   // Only pay if the originator pays -- NOT NEEDED
 	forwarderPayForceOriginatorToPay:  false,   // If Threshold fails, forces all the nodes in the route to pay for the current request
-	waitingEnabled:                    false,   // When Threshold fails, will wait before trying to traverse same route
-	retryWithAnotherPeer:              false,   // The Route to the chunk will try to take many paths to find the chunk
+	waitingEnabled:                    true,    // When Threshold fails, will wait before trying to traverse same route
+	retryWithAnotherPeer:              true,    // The Route to the chunk will try to take many paths to find the chunk
 	cacheIsEnabled:                    false,   // Cache, which stores previously looked after chunks on the nodes
 	preferredChunks:                   false,   // Fits well with cache, where some chunkIds are chosen more often
 	adjustableThreshold:               false,   // The Threshold limit of an edge is determined based on the XOR distance
@@ -83,15 +83,29 @@ var constants = constant{
 	iterationMeansUniqueChunk:         false,   // If a single iteration means all unique chunks or include chunks we look for again relating to waiting/retry
 	debugPrints:                       true,    // Prints out many useful debug prints during the run
 	debugInterval:                     1000000, // How many iterations between each debug print
-	numGoroutines:                     25,      // 25 seems to currently be the sweet spot
-	epoke:                             50000,   //
-	meanRewardPerForward:              false,   // If the mean reward per forward should be calculated
-	averageNumberOfHops:               false,   // If the average number of hops should be calculated
-	averageFractionOfTotalRewardsK8:   false,   // If the average fraction of total rewards should be calculated for k=8
-	averageFractionOfTotalRewardsK16:  false,   // If the average fraction of total rewards should be calculated for k=16
-	rewardFairnessForForwardingAction: false,   // If the reward fairness should be calculated for the forwarding action
-	rewardFairnessForStoringAction:    false,   // If the reward fairness should be calculated for the storing action
-	rewardFairnessForAllActions:       false,   // If the reward fairness should be calculated for all actions
+	numRoutingGoroutines:              25,      // 25 seems to currently be the sweet spot
+	epoch:                             1,       // Defined as timeStep / requestsPerSecond, updated by requestWorker
+	meanRewardPerForward:              true,    // If the mean reward per forward should be calculated
+	averageNumberOfHops:               true,    // If the average number of hops should be calculated
+	averageFractionOfTotalRewardsK8:   true,    // If the average fraction of total rewards should be calculated for k=8
+	averageFractionOfTotalRewardsK16:  true,    // If the average fraction of total rewards should be calculated for k=16
+	rewardFairnessForForwardingAction: true,    // If the reward fairness should be calculated for the forwarding action
+	rewardFairnessForStoringAction:    true,    // If the reward fairness should be calculated for the storing action
+	rewardFairnessForAllActions:       true,    // If the reward fairness should be calculated for all actions
+}
+
+func SetNumRoutingGoroutines(num int) int {
+	//num-- // fot the outputWorker
+	//if IsWriteStatesToFile() {
+	//	num--
+	//}
+	//if IsWriteRoutesToFile() {
+	//	num--
+	//}
+	num-- // for the outputWorker
+	num-- // for the requestWorker
+	constants.numRoutingGoroutines = num
+	return num
 }
 
 // func CreateRangeAddress(c *constant){
@@ -274,10 +288,10 @@ func GetDebugInterval() int {
 	return constants.debugInterval
 }
 
-func GetNumGoroutines() int {
-	return constants.numGoroutines
+func GetNumRoutingGoroutines() int {
+	return constants.numRoutingGoroutines
 }
 
-func GetEpoke() int {
-	return constants.epoke
+func GetEpoch() int {
+	return constants.epoch
 }

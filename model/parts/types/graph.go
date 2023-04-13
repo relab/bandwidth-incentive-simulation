@@ -32,9 +32,10 @@ type Edge struct {
 // "last" is for the last forgiveness time,
 // "threshold" is for the adjustable threshold limit.
 type EdgeAttrs struct {
-	A2B       int
-	Last      int
-	Threshold int
+	A2B               int
+	Last              int
+	EpokeLastForgiven int
+	Threshold         int
 }
 
 //func (g *Graph) FindResponsibleNodes(chunkId int) [4]int {
