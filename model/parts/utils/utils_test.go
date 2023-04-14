@@ -2,7 +2,7 @@ package utils
 
 import (
 	"fmt"
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/parts/types"
 	"testing"
 	"time"
@@ -32,7 +32,7 @@ func TestCreateDowloaderList(t *testing.T) {
 	// Creates graph
 	graph, _ := CreateGraphNetwork(network)
 	// Get number of originators used in the func
-	c := constants.GetOriginators()
+	c := config.GetOriginators()
 
 	// Create a list of downloaders
 	l := CreateDownloadersList(graph)

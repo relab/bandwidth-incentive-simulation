@@ -10,7 +10,7 @@ func Choice(nodes []int, k int) []int {
 
 	var val int
 	for i := 0; i < k; i++ {
-		val = rand.Intn(len(nodes)) - 1
+		val = rand.Intn(len(nodes) - 1)
 		res[i] = nodes[val]
 	}
 	return res

@@ -1,7 +1,7 @@
 package update
 
 import (
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/parts/types"
 	"sync/atomic"
 )
@@ -10,9 +10,9 @@ import (
 func OriginatorIndex(state *types.State, timeStep int) int32 {
 
 	curOriginatorIndex := atomic.LoadInt32(&state.OriginatorIndex)
-	if constants.GetSameOriginator() {
+	if config.GetSameOriginator() {
 		if (timeStep)%100 == 0 {
-			if int(curOriginatorIndex+1) >= constants.GetOriginators() {
+			if int(curOriginatorIndex+1) >= config.GetOriginators() {
 				atomic.StoreInt32(&state.OriginatorIndex, 0)
 				return 0
 			} else {
@@ -20,11 +20,11 @@ func OriginatorIndex(state *types.State, timeStep int) int32 {
 			}
 		}
 	} else {
-		if int(curOriginatorIndex+1) >= constants.GetOriginators() {
+		if int(curOriginatorIndex+1) >= config.GetOriginators() {
 			atomic.StoreInt32(&state.OriginatorIndex, 0)
 			return 0
 		} else {
-			if constants.GetSameOriginator() {
+			if config.GetSameOriginator() {
 				if atomic.LoadInt32(&state.TimeStep)%100 == 0 {
 					return atomic.AddInt32(&state.OriginatorIndex, 1)
 				}

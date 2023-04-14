@@ -1,13 +1,13 @@
 package update
 
 import (
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
 )
 
 func RerouteMap(state *types.State, requestResult types.RequestResult, curEpoch int) types.RerouteStruct {
-	if constants.IsRetryWithAnotherPeer() {
+	if config.IsRetryWithAnotherPeer() {
 		route := requestResult.Route
 		originator := route[0]
 		firstHopNode := route[1]
@@ -35,7 +35,7 @@ func RerouteMap(state *types.State, requestResult types.RequestResult, curEpoch 
 
 		routeStruct := state.RerouteStruct.GetRerouteMap(originator)
 		if routeStruct.Reroute != nil {
-			if len(routeStruct.Reroute) > constants.GetBinSize() {
+			if len(routeStruct.Reroute) > config.GetBinSize() {
 				state.RerouteStruct.DeleteReroute(originator)
 			}
 		}

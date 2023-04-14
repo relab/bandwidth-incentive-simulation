@@ -1,7 +1,7 @@
 package types
 
 import (
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"sync"
 )
 
@@ -52,7 +52,7 @@ func (p *PendingStruct) AddPendingChunkId(originator int, chunkId int, curEpoch 
 		p.UniquePendingCounter++
 
 	} else { // chunk seen before
-		if pending.ChunkQueue[chunkStructIndex].Counter < constants.GetBinSize() {
+		if pending.ChunkQueue[chunkStructIndex].Counter < config.GetBinSize() {
 			pending.ChunkQueue[chunkStructIndex].Counter++
 			p.PendingMap[originator] = pending
 

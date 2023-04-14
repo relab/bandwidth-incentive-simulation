@@ -3,7 +3,7 @@ package workers
 import (
 	"bufio"
 	"fmt"
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/parts/types"
 	"math"
 	"os"
@@ -119,13 +119,13 @@ func (o *RewardFairnessForForwardingActions) CalculateRewardFairnessForForwardin
 }
 
 type NegativeIncome struct {
-	IncomeDict map[int]int
-	Writer     *bufio.Writer
+	IncomeMap map[int]int
+	Writer    *bufio.Writer
 }
 
 func (o *NegativeIncome) CalculateNegativeIncome() float64 {
 	totalNegativeIncomeCounter := 0
-	for _, value := range o.IncomeDict {
+	for _, value := range o.IncomeMap {
 		if value < 0 {
 			totalNegativeIncomeCounter += 1
 		}
@@ -144,7 +144,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 	var rewardFairnessForAllActions RewardFairnessForAllActions
 	var rewardFairnessForForwardingAction RewardFairnessForForwardingActions
 	var negativeIncome NegativeIncome
-	negativeIncome.IncomeDict = make(map[int]int)
+	negativeIncome.IncomeMap = make(map[int]int)
 	filePath := "./results/output.txt"
 	err := os.Remove(filePath)
 	if err != nil {
@@ -169,7 +169,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 			fmt.Println("Couldn't flush the remaining buffer in the writer for output")
 		}
 	}(writer)
-	if constants.GetMeanRewardPerForward() {
+	if config.GetMeanRewardPerForward() {
 		file := MakeMeanRewardPerForwardFile()
 		defer func(file *os.File) {
 			err1 := file.Close()
@@ -185,7 +185,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 			}
 		}(meanRewardPerForward.Writer)
 	}
-	if constants.GetAverageNumberOfHops() {
+	if config.GetAverageNumberOfHops() {
 		file2 := MakeAvgNumberOfHopsFile()
 		defer func(file2 *os.File) {
 			err1 := file2.Close()
@@ -201,7 +201,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 			}
 		}(avgNumberOfHops.Writer)
 	}
-	if constants.GetAverageFractionOfTotalRewardsK16() {
+	if config.GetAverageFractionOfTotalRewardsK16() {
 		file3 := MakeFractionOfRewardsFile()
 		defer func(file3 *os.File) {
 			err1 := file3.Close()
@@ -217,7 +217,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 			}
 		}(fractions.Writer)
 	}
-	if constants.GetRewardFairnessForStoringAction() {
+	if config.GetRewardFairnessForStoringAction() {
 		file4 := MakeRewardFairnessForStoringActionFile()
 		defer func(file4 *os.File) {
 			err1 := file4.Close()
@@ -233,7 +233,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 			}
 		}(rewardFairnessForStoringAction.Writer)
 	}
-	if constants.GetRewardFairnessForAllActions() {
+	if config.GetRewardFairnessForAllActions() {
 		file5 := MakeRewardFairnessForAllActionsFile()
 		defer func(file5 *os.File) {
 			err1 := file5.Close()
@@ -249,7 +249,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 			}
 		}(rewardFairnessForAllActions.Writer)
 	}
-	if constants.GetRewardFairnessForForwardingAction() {
+	if config.GetRewardFairnessForForwardingAction() {
 		file6 := MakeRewardFairnessForForwardingActionFile()
 		defer func(file6 *os.File) {
 			err1 := file6.Close()
@@ -265,7 +265,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 			}
 		}(rewardFairnessForForwardingAction.Writer)
 	}
-	if constants.GetNegativeIncome() {
+	if config.GetNegativeIncome() {
 		file7 := MakeNegativeIncomeFile()
 		defer func(file7 *os.File) {
 			err1 := file7.Close()
@@ -287,7 +287,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 			//fmt.Println("counter is now: ", counter)
 			//fmt.Println("time since start: ", time.Since(start))
 		}
-		if constants.GetMeanRewardPerForward() {
+		if config.GetMeanRewardPerForward() {
 			for i := range output.RoutesWithPrice {
 				if i == len(output.RoutesWithPrice)-1 {
 					break
@@ -305,7 +305,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 				//fmt.Println("time since start: ", time.Since(start))
 			}
 		}
-		if constants.GetAverageNumberOfHops() {
+		if config.GetAverageNumberOfHops() {
 			avgNumberOfHops.TotalNumberOfHops += len(output.RoutesWithPrice)
 			avgNumberOfHops.NumberOfRoutes++
 			if counter%100_000 == 0 {
@@ -314,7 +314,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 				//fmt.Println("time since start: ", time.Since(start))
 			}
 		}
-		if constants.GetAverageFractionOfTotalRewardsK16() && constants.GetMaxProximityOrder() == 16 {
+		if config.GetAverageFractionOfTotalRewardsK16() && config.GetMaxProximityOrder() == 16 {
 			var FractionOfRewardsK16 FractionOfRewardsK16
 			if len(output.RoutesWithPrice) == 2 {
 				FractionOfRewardsK16.RouteRewards = append(FractionOfRewardsK16.RouteRewards, output.RoutesWithPrice[0].Price-output.RoutesWithPrice[1].Price)
@@ -350,7 +350,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 				//fmt.Println("time since start: ", time.Since(start))
 			}
 		}
-		if constants.GetRewardFairnessForStoringAction() {
+		if config.GetRewardFairnessForStoringAction() {
 			route := output.RoutesWithPrice
 			if route != nil {
 				reward := route[len(route)-1].Price
@@ -363,7 +363,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 				//fmt.Println("time since start: ", time.Since(start))
 			}
 		}
-		if constants.GetRewardFairnessForAllActions() {
+		if config.GetRewardFairnessForAllActions() {
 			route := output.RoutesWithPrice
 			if route != nil {
 				for i := range route {
@@ -384,7 +384,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 				}
 			}
 		}
-		if constants.GetRewardFairnessForForwardingAction() {
+		if config.GetRewardFairnessForForwardingAction() {
 			route := output.RoutesWithPrice
 			if route != nil {
 				for i := range route {
@@ -403,7 +403,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 			}
 		}
 		// payment enabled, forgivness enabled, threshold enabled, k = 8
-		if constants.GetNegativeIncome() && constants.GetPaymentEnabled() && constants.IsForgivenessDuringRouting() { //Payment enabled can use outout.Payment
+		if config.GetNegativeIncome() && config.GetPaymentEnabled() && config.IsForgivenessDuringRouting() { //Payment enabled can use outout.Payment
 			payments := output.PaymentsWithPrice
 			if payments != nil {
 				for i, payment := range payments {
@@ -413,16 +413,16 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 					payer := payment.Payment.FirstNodeId
 					payee := payment.Payment.PayNextId
 					value := payment.Price
-					valPayer, ok := negativeIncome.IncomeDict[payer]
+					valPayer, ok := negativeIncome.IncomeMap[payer]
 					if !ok {
-						negativeIncome.IncomeDict[payer] = 0
+						negativeIncome.IncomeMap[payer] = 0
 					}
-					valPayee, ok := negativeIncome.IncomeDict[payee]
+					valPayee, ok := negativeIncome.IncomeMap[payee]
 					if !ok {
-						negativeIncome.IncomeDict[payee] = 0
+						negativeIncome.IncomeMap[payee] = 0
 					}
-					negativeIncome.IncomeDict[payer] = valPayer - value
-					negativeIncome.IncomeDict[payee] = valPayee + value
+					negativeIncome.IncomeMap[payer] = valPayer - value
+					negativeIncome.IncomeMap[payee] = valPayee + value
 				}
 			}
 			// if counter%500_000==0 or counter==100_000 {

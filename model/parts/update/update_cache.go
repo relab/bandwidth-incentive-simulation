@@ -1,7 +1,7 @@
 package update
 
 import (
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
 )
@@ -9,7 +9,7 @@ import (
 func CacheMap(state *types.State, policyInput types.RequestResult) types.CacheStruct {
 	chunkId := 0
 
-	if constants.IsCacheEnabled() {
+	if config.IsCacheEnabled() {
 		route := policyInput.Route
 		if general.Contains(route, -3) {
 			// -3 means found by caching

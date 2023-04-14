@@ -2,14 +2,14 @@ package workers
 
 import (
 	"fmt"
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/update"
 	"math/rand"
 	"sync"
 )
 
-func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan types.Request, globalState *types.State, wg *sync.WaitGroup, iterations int) {
+func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan types.Request, globalState *types.State, wg *sync.WaitGroup, iterations int, numRoutingGoroutines int) {
 
 	defer wg.Done()
 	var requestQueueSize = 10
@@ -17,8 +17,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 	var timeStep = 0
 	var counter = 0
 	var responsibleNodes [4]int
-	var curEpoch = constants.GetEpoch()
-	var PickedFromWaiting int
+	var curEpoch = 0
 
 	defer close(requestChan)
 
@@ -28,29 +27,29 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			// TODO: decide on where we should update the timestep. At request creation or request fulfillment
 			timeStep = update.Timestep(globalState)
 			//timeStep = atomic.LoadInt32(&globalState.TimeStep)
-			if constants.IsDebugPrints() {
-				if timeStep%constants.GetDebugInterval() == 0 {
+			if config.IsDebugPrints() {
+				if timeStep%config.GetDebugInterval() == 0 {
 					fmt.Println("TimeStep is currently:", timeStep)
 				}
 			}
 
-			if timeStep%constants.GetRequestsPerSecond() == 0 {
+			if timeStep%config.GetRequestsPerSecond() == 0 {
 				curEpoch = update.Epoch(globalState)
 
-				for i := 0; i < constants.GetNumRoutingGoroutines(); i++ {
+				for i := 0; i < numRoutingGoroutines; i++ {
 					pauseChan <- true
 				}
-				for i := 0; i < constants.GetNumRoutingGoroutines(); i++ {
+				for i := 0; i < numRoutingGoroutines; i++ {
 					<-continueChan
 				}
 			}
 
-			if constants.IsDebugPrints() {
+			if config.IsDebugPrints() {
 				if timeStep%(iterations/2) == 0 {
-					if constants.IsWaitingEnabled() {
+					if config.IsWaitingEnabled() {
 						fmt.Println("PendingMap is currently:", globalState.PendingStruct.PendingMap)
 					}
-					if constants.IsRetryWithAnotherPeer() {
+					if config.IsRetryWithAnotherPeer() {
 						fmt.Println("RerouteMap is currently:", globalState.RerouteStruct.RerouteMap)
 					}
 				}
@@ -62,7 +61,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 
 			chunkId := -1
 
-			if constants.IsRetryWithAnotherPeer() {
+			if config.IsRetryWithAnotherPeer() {
 
 				routeStruct := globalState.RerouteStruct.GetRerouteMap(originatorId)
 				//if routeStruct.LastEpoch < curEpoch {
@@ -73,7 +72,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 				//globalState.RerouteStruct.UpdateEpoch(originatorId, curEpoch)
 			}
 
-			if constants.IsWaitingEnabled() && chunkId == -1 { // No valid chunkId in reroute
+			if config.IsWaitingEnabled() && chunkId == -1 { // No valid chunkId in reroute
 				pending, ok := globalState.PendingStruct.GetPending(originatorId)
 
 				if ok && len(pending.ChunkQueue) > 0 {
@@ -82,12 +81,11 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 						chunkId = chunkStruct.ChunkId
 						responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkStruct.ChunkId)
 						globalState.PendingStruct.UpdateEpoch(originatorId, chunkId, curEpoch)
-						PickedFromWaiting++
 					}
 				}
 			}
 
-			if constants.IsIterationMeansUniqueChunk() {
+			if config.IsIterationMeansUniqueChunk() {
 				if chunkId == -1 {
 					counter++
 				}
@@ -96,16 +94,16 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			}
 
 			if chunkId == -1 && timeStep <= iterations { // No waiting and no retry, and qualify for unique chunk
-				chunkId = rand.Intn(constants.GetRangeAddress() - 1)
+				chunkId = rand.Intn(config.GetRangeAddress() - 1)
 
-				if constants.IsPreferredChunksEnabled() {
+				if config.IsPreferredChunksEnabled() {
 					var random float32
 					numPreferredChunks := 1000
 					random = rand.Float32()
 					if float32(random) <= 0.5 {
 						chunkId = rand.Intn(numPreferredChunks)
 					} else {
-						chunkId = rand.Intn(constants.GetRangeAddress()-numPreferredChunks) + numPreferredChunks
+						chunkId = rand.Intn(config.GetRangeAddress()-numPreferredChunks) + numPreferredChunks
 					}
 				}
 				responsibleNodes = globalState.Graph.FindResponsibleNodes(chunkId)
@@ -123,5 +121,4 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			}
 		}
 	}
-	fmt.Println("Number of requests chunks picked from Pending: ", PickedFromWaiting)
 }
