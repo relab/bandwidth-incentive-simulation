@@ -1,4 +1,4 @@
-#### Simulation Configurations ####
+#### Global Configurations ####
 
 # Global configuration options, defaults in comment
 ConfOptions:
@@ -44,18 +44,30 @@ ConfOptions:
   DebugInterval: 1_000_000
   # NumGoroutines: -1, number of active goroutines, leave at -1 for automatically using numCPU
   NumGoroutines: -1
+  # Enabled the outputWorker which handles writing output to file and analysis of results
+  OutputEnabled: true
+  # Which logic should be used in the outputWorker
+  OutputOptions:
+    MeanRewardPerForward: true
+    AverageNumberOfHops: false
+    AverageFractionOfTotalRewardsK8: false
+    AverageFractionOfTotalRewardsK16: false
+    RewardFairnessForForwardingAction: false
+    RewardFairnessForStoringAction: false
+    RewardFairnessForAllActions: false
+    NegativeIncome: false
 
-# Experiments to choose from:
+  # Experiments to choose from:
   # omega: maxPoCheckEnabled
   #
   # empty or default: default, in code
   # custom: custom, defined below
 
 Experiment:
-  ExperimentName: "custom"
+  Name: "custom"
 
 # Defines your own custom experiment
-Custom:
+CustomExperiment:
   # ThresholdEnabled: true, enabling the maximum limit of debt an edge can have in one direction
   ThresholdEnabled: true
   # ForgivenessEnabled: true, edge debt gets forgiven some amount on an interval (amortized)

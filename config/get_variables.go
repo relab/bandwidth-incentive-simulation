@@ -1,7 +1,7 @@
 package config
 
 func GetNumRoutingGoroutines() int {
-	num := Variables.NumGoroutines
+	num := Variables.confOptions.NumGoroutines
 	//if IsWriteStatesToFile() {
 	//	num--
 	//}
@@ -9,12 +9,14 @@ func GetNumRoutingGoroutines() int {
 	//	num--
 	//}
 	num-- // for the requestWorker
-	//num-- // for the outputWorker
+	if IsOutputEnabled() {
+		num-- // for the outputWorker
+	}
 	return num
 }
 
 func GetNumGoroutines() int {
-	return Variables.NumGoroutines
+	return Variables.confOptions.NumGoroutines
 }
 
 // func CreateRangeAddress(c *constant){
@@ -26,141 +28,229 @@ func GetNumGoroutines() int {
 // }
 
 func IsAdjustableThreshold() bool {
-	return Variables.AdjustableThreshold
+	return Variables.experimentOptions.AdjustableThreshold
 }
 
 func IsForgivenessEnabled() bool {
-	return Variables.ForgivenessEnabled
+	return Variables.experimentOptions.ForgivenessEnabled
 }
 
 func IsForgivenessDuringRouting() bool {
-	return Variables.ForgivenessDuringRouting
+	return Variables.experimentOptions.ForgivenessDuringRouting
 }
 
 func IsCacheEnabled() bool {
-	return Variables.CacheIsEnabled
+	return Variables.experimentOptions.CacheIsEnabled
 }
 
 func IsPreferredChunksEnabled() bool {
-	return Variables.PreferredChunks
+	return Variables.experimentOptions.PreferredChunks
 }
 
 func IsRetryWithAnotherPeer() bool {
-	return Variables.RetryWithAnotherPeer
+	return Variables.experimentOptions.RetryWithAnotherPeer
 }
 
 func IsForwarderPayForceOriginatorToPay() bool {
-	return Variables.ForwardersPayForceOriginatorToPay
+	return Variables.experimentOptions.ForwardersPayForceOriginatorToPay
 }
 
 func IsPayIfOrigPays() bool {
-	return Variables.PayIfOrigPays
+	return Variables.experimentOptions.PayIfOrigPays
 }
 
 func IsPayOnlyForCurrentRequest() bool {
-	return Variables.PayOnlyForCurrentRequest
+	return Variables.experimentOptions.PayOnlyForCurrentRequest
 }
 
 func IsOnlyOriginatorPays() bool {
-	return Variables.OnlyOriginatorPays
+	return Variables.experimentOptions.OnlyOriginatorPays
 }
 
 func IsWaitingEnabled() bool {
-	return Variables.WaitingEnabled
+	return Variables.experimentOptions.WaitingEnabled
 }
 
 func GetMaxPOCheckEnabled() bool {
-	return Variables.MaxPOCheckEnabled
+	return Variables.experimentOptions.MaxPOCheckEnabled
 }
 
 func GetThresholdEnabled() bool {
-	return Variables.ThresholdEnabled
+	return Variables.experimentOptions.ThresholdEnabled
 }
 
 func GetPaymentEnabled() bool {
-	return Variables.PaymentEnabled
+	return Variables.experimentOptions.PaymentEnabled
 }
 
 func GetRequestsPerSecond() int {
-	return Variables.RequestsPerSecond
-}
-
-func GetBits() int {
-	return Variables.Bits
-}
-
-func GetNetworkSize() int {
-	return Variables.NetworkSize
-}
-
-func GetBinSize() int {
-	return Variables.BinSize
-}
-
-func GetSimulationRuns() int {
-	return 125000
-}
-
-func GetRangeAddress() int {
-	return Variables.RangeAddress
-}
-
-func GetOriginators() int {
-	return Variables.Originators
-}
-
-func GetRefreshRate() int {
-	return Variables.RefreshRate
-}
-
-func GetThreshold() int {
-	return Variables.Threshold
-}
-
-func GetRandomSeed() int64 {
-	return Variables.RandomSeed
-}
-
-func GetMaxProximityOrder() int {
-	return Variables.MaxProximityOrder
-}
-
-func GetPrice() int {
-	return Variables.Price
-}
-
-func GetSameOriginator() bool {
-	return Variables.SameOriginator
-}
-
-func GetEdgeLock() bool {
-	return Variables.EdgeLock
-}
-
-func IsPrecomputeRespNodes() bool {
-	return Variables.PrecomputeRespNodes
-}
-
-func IsWriteRoutesToFile() bool {
-	return Variables.WriteRoutesToFile
-}
-
-func IsWriteStatesToFile() bool {
-	return Variables.WriteStatesToFile
-}
-
-func IsIterationMeansUniqueChunk() bool {
-	return Variables.IterationMeansUniqueChunk
-}
-
-func IsDebugPrints() bool {
-	return Variables.DebugPrints
-}
-
-func GetDebugInterval() int {
-	return Variables.DebugInterval
+	return Variables.confOptions.RequestsPerSecond
 }
 
 func GetIterations() int {
-	return Variables.Iterations
+	return Variables.confOptions.Iterations
+}
+
+func GetBits() int {
+	return Variables.confOptions.Bits
+}
+
+func GetNetworkSize() int {
+	return Variables.confOptions.NetworkSize
+}
+
+func GetBinSize() int {
+	return Variables.confOptions.BinSize
+}
+
+func GetRangeAddress() int {
+	return Variables.confOptions.RangeAddress
+}
+
+func GetOriginators() int {
+	return Variables.confOptions.Originators
+}
+
+func GetRefreshRate() int {
+	return Variables.confOptions.RefreshRate
+}
+
+func GetThreshold() int {
+	return Variables.confOptions.Threshold
+}
+
+func GetRandomSeed() int64 {
+	return Variables.confOptions.RandomSeed
+}
+
+func GetMaxProximityOrder() int {
+	return Variables.confOptions.MaxProximityOrder
+}
+
+func GetPrice() int {
+	return Variables.confOptions.Price
+}
+
+func GetSameOriginator() bool {
+	return Variables.confOptions.SameOriginator
+}
+
+func GetEdgeLock() bool {
+	return Variables.confOptions.EdgeLock
+}
+
+func IsPrecomputeRespNodes() bool {
+	return Variables.confOptions.PrecomputeRespNodes
+}
+
+func IsWriteRoutesToFile() bool {
+	return Variables.confOptions.WriteRoutesToFile
+}
+
+func IsWriteStatesToFile() bool {
+	return Variables.confOptions.WriteStatesToFile
+}
+
+func IsIterationMeansUniqueChunk() bool {
+	return Variables.confOptions.IterationMeansUniqueChunk
+}
+
+func IsDebugPrints() bool {
+	return Variables.confOptions.DebugPrints
+}
+
+func GetDebugInterval() int {
+	return Variables.confOptions.DebugInterval
+}
+
+func IsOutputEnabled() bool {
+	return Variables.confOptions.OutputEnabled
+}
+
+func GetMeanRewardPerForward() bool {
+	if Variables.experimentOptions.MaxPOCheckEnabled &&
+		!Variables.experimentOptions.ThresholdEnabled &&
+		!Variables.experimentOptions.ForgivenessEnabled &&
+		!Variables.experimentOptions.PaymentEnabled &&
+		!Variables.experimentOptions.WaitingEnabled &&
+		!Variables.experimentOptions.RetryWithAnotherPeer {
+		return Variables.confOptions.OutputOptions.MeanRewardPerForward
+	}
+	return false
+}
+
+func GetAverageNumberOfHops() bool {
+	if Variables.experimentOptions.MaxPOCheckEnabled &&
+		!Variables.experimentOptions.ThresholdEnabled &&
+		!Variables.experimentOptions.ForgivenessEnabled &&
+		!Variables.experimentOptions.PaymentEnabled &&
+		!Variables.experimentOptions.WaitingEnabled &&
+		!Variables.experimentOptions.RetryWithAnotherPeer {
+		return Variables.confOptions.OutputOptions.AverageNumberOfHops
+	}
+	return false
+}
+
+func GetAverageFractionOfTotalRewardsK8() bool {
+	return Variables.confOptions.OutputOptions.AverageFractionOfTotalRewardsK8
+}
+
+func GetAverageFractionOfTotalRewardsK16() bool {
+	if Variables.experimentOptions.MaxPOCheckEnabled &&
+		Variables.confOptions.BinSize == 16 &&
+		!Variables.experimentOptions.ThresholdEnabled &&
+		!Variables.experimentOptions.ForgivenessEnabled &&
+		!Variables.experimentOptions.PaymentEnabled &&
+		!Variables.experimentOptions.WaitingEnabled &&
+		!Variables.experimentOptions.RetryWithAnotherPeer {
+		return Variables.confOptions.OutputOptions.AverageFractionOfTotalRewardsK16
+	}
+	return false
+
+}
+
+func GetRewardFairnessForForwardingAction() bool {
+	if Variables.experimentOptions.MaxPOCheckEnabled &&
+		!Variables.experimentOptions.ThresholdEnabled &&
+		!Variables.experimentOptions.ForgivenessEnabled &&
+		!Variables.experimentOptions.PaymentEnabled &&
+		!Variables.experimentOptions.WaitingEnabled &&
+		!Variables.experimentOptions.RetryWithAnotherPeer {
+		return Variables.confOptions.OutputOptions.RewardFairnessForForwardingAction
+	}
+	return false
+}
+
+func GetRewardFairnessForStoringAction() bool {
+	if Variables.experimentOptions.MaxPOCheckEnabled &&
+		!Variables.experimentOptions.ThresholdEnabled &&
+		!Variables.experimentOptions.ForgivenessEnabled &&
+		!Variables.experimentOptions.PaymentEnabled &&
+		!Variables.experimentOptions.WaitingEnabled &&
+		!Variables.experimentOptions.RetryWithAnotherPeer {
+		return Variables.confOptions.OutputOptions.RewardFairnessForStoringAction
+	}
+	return false
+}
+
+func GetRewardFairnessForAllActions() bool {
+	if Variables.experimentOptions.MaxPOCheckEnabled &&
+		!Variables.experimentOptions.ThresholdEnabled &&
+		!Variables.experimentOptions.ForgivenessEnabled &&
+		!Variables.experimentOptions.PaymentEnabled &&
+		!Variables.experimentOptions.WaitingEnabled &&
+		!Variables.experimentOptions.RetryWithAnotherPeer {
+		return Variables.confOptions.OutputOptions.RewardFairnessForAllActions
+	}
+	return false
+}
+
+// GetNegativeIncome TODO: Kan ver merr det må ver mer checks her
+func GetNegativeIncome() bool {
+	if Variables.experimentOptions.PaymentEnabled &&
+		Variables.experimentOptions.ForgivenessEnabled &&
+		Variables.experimentOptions.ForgivenessDuringRouting {
+		return Variables.confOptions.OutputOptions.NegativeIncome
+	}
+	return false
 }

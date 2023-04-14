@@ -36,14 +36,13 @@ func main() {
 	iterations := config.GetIterations()
 	numTotalGoRoutines := config.GetNumGoroutines()
 	numRoutingGoroutines := config.GetNumRoutingGoroutines()
-	//numLoops := iterations / numGoroutines
 
 	wgMain := &sync.WaitGroup{}
 	wgOutput := &sync.WaitGroup{}
 	requestChan := make(chan types.Request, numRoutingGoroutines)
 	outputChan := make(chan types.Output, 100000)
-	routeChan := make(chan types.RouteData, 10000)
-	stateChan := make(chan types.StateSubset, 10000)
+	routeChan := make(chan types.RouteData, 100000)
+	stateChan := make(chan types.StateSubset, 100000)
 	pauseChan := make(chan bool, numRoutingGoroutines)
 	continueChan := make(chan bool, numRoutingGoroutines)
 
@@ -59,8 +58,10 @@ func main() {
 	go workers.RequestWorker(pauseChan, continueChan, requestChan, &globalState, wgMain, iterations, numRoutingGoroutines)
 	wgMain.Add(1)
 
-	go workers.OutputWorker(outputChan, wgOutput)
-	wgOutput.Add(1)
+	if config.IsOutputEnabled() {
+		go workers.OutputWorker(outputChan, wgOutput)
+		wgOutput.Add(1)
+	}
 
 	for i := 0; i < numRoutingGoroutines; i++ {
 		wgMain.Add(1)
@@ -140,7 +141,6 @@ func main() {
 	// 	fmt.Printf("Length: %d\n", route.GetLength())
 	// 	count++
 	// }
-
 }
 
 func PrintState(state types.State) {

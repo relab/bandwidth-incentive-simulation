@@ -48,13 +48,14 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			// TODO: originatorIndex is now updated by the requestWorker
 			//originatorIndex := UpdateOriginatorIndex(globalState)
 
+			// sending the "output" to the outputWorker
 			successfulFound := update.SuccessfulFound(globalState, requestResult)
 			failedRequestThreshold := update.FailedRequestsThreshold(globalState, requestResult)
 			failedRequestAccess := update.FailedRequestsAccess(globalState, requestResult)
 			//routeLists := update.RouteListAndFlush(globalState, requestResult, curTimeStep)
 
 			// sending the "output" to the outputWorker
-			if config.GetMaxPOCheckEnabled() {
+			if config.IsOutputEnabled() {
 				if config.IsDebugPrints() {
 					if curTimeStep%config.GetDebugInterval() == 0 {
 						fmt.Println("outputChan length: ", len(outputChan))

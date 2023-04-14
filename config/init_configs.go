@@ -9,11 +9,10 @@ import (
 )
 
 // Variables This is the one that gets changed in setup
-var Variables = defaultVariables
+var Variables = GetDefaultVariables()
 
 func InitConfigs() {
 	ymlData := ReadYamlFile()
-	SetNumGoroutines(ymlData.ConfOptions.NumGoroutines)
 	SetConfOptions(ymlData.ConfOptions)
 	SetExperiment(ymlData)
 }
@@ -35,7 +34,7 @@ func ReadYamlFile() Yml {
 
 func SetExperiment(yml Yml) {
 
-	switch yml.Experiment.ExperimentName {
+	switch yml.Experiment.Name {
 	case "omega":
 		fmt.Println("omega experiment chosen")
 		OmegaExperiment()
@@ -44,40 +43,53 @@ func SetExperiment(yml Yml) {
 
 	case "custom":
 		fmt.Println("custom experiment chosen")
-		CustomExperiment(yml.Custom)
+		CustomExperiment(yml.CustomExperiment)
 
 	default:
 		fmt.Println("default experiment chosen")
 	}
 }
 
-func SetConfOptions(configOptions ConfVariables) {
-	Variables.Iterations = configOptions.Iterations
-	Variables.Bits = configOptions.Bits
-	Variables.NetworkSize = configOptions.NetworkSize
-	Variables.BinSize = configOptions.BinSize
-	Variables.RangeAddress = configOptions.RangeAddress
-	Variables.Originators = configOptions.Originators
-	Variables.RefreshRate = configOptions.RefreshRate
-	Variables.Threshold = configOptions.Threshold
-	Variables.RandomSeed = configOptions.RandomSeed
-	Variables.MaxProximityOrder = configOptions.MaxProximityOrder
-	Variables.Price = configOptions.Price
-	Variables.RequestsPerSecond = configOptions.RequestsPerSecond
-	Variables.EdgeLock = configOptions.EdgeLock
-	Variables.SameOriginator = configOptions.SameOriginator
-	Variables.PrecomputeRespNodes = configOptions.PrecomputeRespNodes
-	Variables.WriteRoutesToFile = configOptions.WriteRoutesToFile
-	Variables.WriteStatesToFile = configOptions.WriteStatesToFile
-	Variables.IterationMeansUniqueChunk = configOptions.IterationMeansUniqueChunk
-	Variables.DebugPrints = configOptions.DebugPrints
-	Variables.DebugInterval = configOptions.DebugInterval
+func SetConfOptions(configOptions confOptions) {
+	Variables.confOptions.Iterations = configOptions.Iterations
+	Variables.confOptions.Bits = configOptions.Bits
+	Variables.confOptions.NetworkSize = configOptions.NetworkSize
+	Variables.confOptions.BinSize = configOptions.BinSize
+	Variables.confOptions.RangeAddress = configOptions.RangeAddress
+	Variables.confOptions.Originators = configOptions.Originators
+	Variables.confOptions.RefreshRate = configOptions.RefreshRate
+	Variables.confOptions.Threshold = configOptions.Threshold
+	Variables.confOptions.RandomSeed = configOptions.RandomSeed
+	Variables.confOptions.MaxProximityOrder = configOptions.MaxProximityOrder
+	Variables.confOptions.Price = configOptions.Price
+	Variables.confOptions.RequestsPerSecond = configOptions.RequestsPerSecond
+	Variables.confOptions.EdgeLock = configOptions.EdgeLock
+	Variables.confOptions.SameOriginator = configOptions.SameOriginator
+	Variables.confOptions.PrecomputeRespNodes = configOptions.PrecomputeRespNodes
+	Variables.confOptions.WriteRoutesToFile = configOptions.WriteRoutesToFile
+	Variables.confOptions.WriteStatesToFile = configOptions.WriteStatesToFile
+	Variables.confOptions.IterationMeansUniqueChunk = configOptions.IterationMeansUniqueChunk
+	Variables.confOptions.DebugPrints = configOptions.DebugPrints
+	Variables.confOptions.DebugInterval = configOptions.DebugInterval
+	Variables.confOptions.OutputEnabled = configOptions.OutputEnabled
+
+	SetNumGoroutines(configOptions.NumGoroutines)
+
+	Variables.confOptions.OutputOptions.MeanRewardPerForward = configOptions.OutputOptions.MeanRewardPerForward
+	Variables.confOptions.OutputOptions.AverageNumberOfHops = configOptions.OutputOptions.AverageNumberOfHops
+	Variables.confOptions.OutputOptions.AverageFractionOfTotalRewardsK8 = configOptions.OutputOptions.AverageFractionOfTotalRewardsK8
+	Variables.confOptions.OutputOptions.AverageFractionOfTotalRewardsK16 = configOptions.OutputOptions.AverageFractionOfTotalRewardsK16
+	Variables.confOptions.OutputOptions.RewardFairnessForForwardingAction = configOptions.OutputOptions.RewardFairnessForForwardingAction
+	Variables.confOptions.OutputOptions.RewardFairnessForStoringAction = configOptions.OutputOptions.RewardFairnessForStoringAction
+	Variables.confOptions.OutputOptions.RewardFairnessForAllActions = configOptions.OutputOptions.RewardFairnessForAllActions
+	Variables.confOptions.OutputOptions.NegativeIncome = configOptions.OutputOptions.NegativeIncome
+
 }
 
 func SetNumGoroutines(numGoroutines int) {
 	if numGoroutines == -1 {
-		Variables.NumGoroutines = runtime.NumCPU()
+		Variables.confOptions.NumGoroutines = runtime.NumCPU()
 	} else {
-		Variables.NumGoroutines = numGoroutines
+		Variables.confOptions.NumGoroutines = numGoroutines
 	}
 }

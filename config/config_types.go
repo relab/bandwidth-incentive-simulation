@@ -1,40 +1,47 @@
 package config
 
 type Yml struct {
-	ConfOptions ConfVariables   `yaml:"ConfOptions"`
-	Experiment  Experiment      `yaml:"Experiment"`
-	Custom      CustomVariables `yaml:"Custom"`
+	ConfOptions      confOptions       `yaml:"ConfOptions"`
+	Experiment       experiment        `yaml:"Experiment"`
+	CustomExperiment experimentOptions `yaml:"CustomExperiment"`
 }
 
-type Experiment struct {
-	ExperimentName string `yaml:"ExperimentName"`
+type experiment struct {
+	Name string `yaml:"Name"`
 }
 
-type ConfVariables struct {
-	Iterations                int   `yaml:"Iterations"`
-	Bits                      int   `yaml:"Bits"`
-	NetworkSize               int   `yaml:"NetworkSize"`
-	BinSize                   int   `yaml:"BinSize"`
-	RangeAddress              int   `yaml:"RangeAddress"`
-	Originators               int   `yaml:"Originators"`
-	RefreshRate               int   `yaml:"RefreshRate"`
-	Threshold                 int   `yaml:"Threshold"`
-	RandomSeed                int64 `yaml:"RandomSeed"`
-	MaxProximityOrder         int   `yaml:"MaxProximityOrder"`
-	Price                     int   `yaml:"Price"`
-	RequestsPerSecond         int   `yaml:"RequestsPerSecond"`
-	EdgeLock                  bool  `yaml:"EdgeLock"`
-	SameOriginator            bool  `yaml:"SameOriginator"`
-	PrecomputeRespNodes       bool  `yaml:"PrecomputeRespNodes"`
-	WriteRoutesToFile         bool  `yaml:"WriteRoutesToFile"`
-	WriteStatesToFile         bool  `yaml:"WriteStatesToFile"`
-	IterationMeansUniqueChunk bool  `yaml:"IterationMeansUniqueChunk"`
-	DebugPrints               bool  `yaml:"DebugPrints"`
-	DebugInterval             int   `yaml:"DebugInterval"`
-	NumGoroutines             int   `yaml:"NumGoroutines"`
+type VariablesType struct {
+	confOptions       confOptions
+	experimentOptions experimentOptions
 }
 
-type CustomVariables struct {
+type confOptions struct {
+	Iterations                int           `yaml:"Iterations"`
+	Bits                      int           `yaml:"Bits"`
+	NetworkSize               int           `yaml:"NetworkSize"`
+	BinSize                   int           `yaml:"BinSize"`
+	RangeAddress              int           `yaml:"RangeAddress"`
+	Originators               int           `yaml:"Originators"`
+	RefreshRate               int           `yaml:"RefreshRate"`
+	Threshold                 int           `yaml:"Threshold"`
+	RandomSeed                int64         `yaml:"RandomSeed"`
+	MaxProximityOrder         int           `yaml:"MaxProximityOrder"`
+	Price                     int           `yaml:"Price"`
+	RequestsPerSecond         int           `yaml:"RequestsPerSecond"`
+	EdgeLock                  bool          `yaml:"EdgeLock"`
+	SameOriginator            bool          `yaml:"SameOriginator"`
+	PrecomputeRespNodes       bool          `yaml:"PrecomputeRespNodes"`
+	WriteRoutesToFile         bool          `yaml:"WriteRoutesToFile"`
+	WriteStatesToFile         bool          `yaml:"WriteStatesToFile"`
+	IterationMeansUniqueChunk bool          `yaml:"IterationMeansUniqueChunk"`
+	DebugPrints               bool          `yaml:"DebugPrints"`
+	DebugInterval             int           `yaml:"DebugInterval"`
+	NumGoroutines             int           `yaml:"NumGoroutines"`
+	OutputEnabled             bool          `yaml:"OutputEnabled"`
+	OutputOptions             outputOptions `yaml:"OutputOptions"`
+}
+
+type experimentOptions struct {
 	ThresholdEnabled                  bool `yaml:"ThresholdEnabled"`
 	ForgivenessEnabled                bool `yaml:"ForgivenessEnabled"`
 	ForgivenessDuringRouting          bool `yaml:"ForgivenessDuringRouting"`
@@ -51,40 +58,13 @@ type CustomVariables struct {
 	PayIfOrigPays                     bool `yaml:"PayIfOrigPays"`
 }
 
-type VariablesType struct {
-	Iterations                        int
-	Bits                              int
-	NetworkSize                       int
-	BinSize                           int
-	RangeAddress                      int
-	Originators                       int
-	RefreshRate                       int
-	Threshold                         int
-	RandomSeed                        int64
-	MaxProximityOrder                 int
-	Price                             int
-	RequestsPerSecond                 int
-	ThresholdEnabled                  bool
-	ForgivenessEnabled                bool
-	ForgivenessDuringRouting          bool
-	PaymentEnabled                    bool
-	MaxPOCheckEnabled                 bool
-	WaitingEnabled                    bool
-	OnlyOriginatorPays                bool
-	PayOnlyForCurrentRequest          bool
-	PayIfOrigPays                     bool
-	ForwardersPayForceOriginatorToPay bool
-	RetryWithAnotherPeer              bool
-	CacheIsEnabled                    bool
-	PreferredChunks                   bool
-	AdjustableThreshold               bool
-	EdgeLock                          bool
-	SameOriginator                    bool
-	PrecomputeRespNodes               bool
-	WriteRoutesToFile                 bool
-	WriteStatesToFile                 bool
-	IterationMeansUniqueChunk         bool
-	DebugPrints                       bool
-	DebugInterval                     int
-	NumGoroutines                     int
+type outputOptions struct {
+	MeanRewardPerForward              bool `yaml:"MeanRewardPerForward"`
+	AverageNumberOfHops               bool `yaml:"AverageNumberOfHops"`
+	AverageFractionOfTotalRewardsK8   bool `yaml:"AverageFractionOfTotalRewardsK8"`
+	AverageFractionOfTotalRewardsK16  bool `yaml:"AverageFractionOfTotalRewardsK16"`
+	RewardFairnessForForwardingAction bool `yaml:"RewardFairnessForForwardingAction"`
+	RewardFairnessForStoringAction    bool `yaml:"RewardFairnessForStoringAction"`
+	RewardFairnessForAllActions       bool `yaml:"RewardFairnessForAllActions"`
+	NegativeIncome                    bool `yaml:"NegativeIncome"`
 }
