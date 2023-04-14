@@ -1,7 +1,7 @@
 package update
 
 import (
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/utils"
@@ -16,7 +16,7 @@ func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int)
 	var paymentWithPrice types.PaymentWithPrice
 	var output types.Output
 
-	if constants.GetPaymentEnabled() {
+	if config.GetPaymentEnabled() {
 		for _, payment := range paymentsList {
 			if payment != (types.Payment{}) {
 				if !payment.IsOriginator {
@@ -24,13 +24,13 @@ func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int)
 					edgeData2 := state.Graph.GetEdgeData(payment.PayNextId, payment.FirstNodeId)
 					price := utils.PeerPriceChunk(payment.PayNextId, payment.ChunkId)
 					actualPrice := edgeData1.A2B - edgeData2.A2B + price
-					if constants.IsPayOnlyForCurrentRequest() {
+					if config.IsPayOnlyForCurrentRequest() {
 						actualPrice = price
 					}
 					if actualPrice < 0 {
 						continue
 					} else {
-						if !constants.IsPayOnlyForCurrentRequest() {
+						if !config.IsPayOnlyForCurrentRequest() {
 							//edgeData1.A2B = 0
 							//edgeData2.A2B = 0
 							newEdgeData1 := edgeData1
@@ -51,13 +51,13 @@ func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int)
 					edgeData2 := state.Graph.GetEdgeData(payment.PayNextId, payment.FirstNodeId)
 					price := utils.PeerPriceChunk(payment.PayNextId, payment.ChunkId)
 					actualPrice := edgeData1.A2B - edgeData2.A2B + price
-					if constants.IsPayOnlyForCurrentRequest() {
+					if config.IsPayOnlyForCurrentRequest() {
 						actualPrice = price
 					}
 					if actualPrice < 0 {
 						continue
 					} else {
-						if !constants.IsPayOnlyForCurrentRequest() {
+						if !config.IsPayOnlyForCurrentRequest() {
 							//edgeData1.A2B = 0
 							//edgeData2.A2B = 0
 							newEdgeData1 := edgeData1
@@ -89,7 +89,7 @@ func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int)
 				newEdgeData.A2B += price
 				state.Graph.SetEdgeData(requesterNode, providerNode, newEdgeData)
 
-				if constants.GetMaxPOCheckEnabled() {
+				if config.GetMaxPOCheckEnabled() {
 					//routeWithPrice = append(routeWithPrice, requesterNode)
 					//routeWithPrice = append(routeWithPrice, price)
 					//routeWithPrice = append(routeWithPrice, providerNode)
@@ -97,7 +97,7 @@ func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int)
 					output.RoutesWithPrice = append(output.RoutesWithPrice, routeWithPrice)
 				}
 			}
-			if constants.GetMaxPOCheckEnabled() {
+			if config.GetMaxPOCheckEnabled() {
 				//fmt.Println("Route with price ", routeWithPrice)
 			}
 		} else {
@@ -112,7 +112,7 @@ func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int)
 				newEdgeData.A2B += price
 				state.Graph.SetEdgeData(requesterNode, providerNode, newEdgeData)
 
-				if constants.GetMaxPOCheckEnabled() {
+				if config.GetMaxPOCheckEnabled() {
 					//routeWithPrice = append(routeWithPrice, requesterNode)
 					//routeWithPrice = append(routeWithPrice, price)
 					//routeWithPrice = append(routeWithPrice, providerNode)
@@ -120,14 +120,14 @@ func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int)
 					output.RoutesWithPrice = append(output.RoutesWithPrice, routeWithPrice)
 				}
 			}
-			if constants.GetMaxPOCheckEnabled() {
+			if config.GetMaxPOCheckEnabled() {
 				//fmt.Println("Route with price ", routeWithPrice)
 			}
 		}
 	}
 	// TODO: Decide on if this logic should be here or moved to the isThresholdFailed function
-	if !constants.IsForgivenessDuringRouting() {
-		if constants.GetThresholdEnabled() && constants.IsForgivenessEnabled() {
+	if !config.IsForgivenessDuringRouting() {
+		if config.GetThresholdEnabled() && config.IsForgivenessEnabled() {
 			thresholdFailedLists := policyInput.ThresholdFailedLists
 			if len(thresholdFailedLists) > 0 {
 				for _, thresholdFailedL := range thresholdFailedLists {
@@ -136,10 +136,10 @@ func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int)
 							requesterNode := couple[0]
 							providerNode := couple[1]
 							edgeData := state.Graph.GetEdgeData(requesterNode, providerNode)
-							passedTime := (curTimeStep - edgeData.Last) / constants.GetRequestsPerSecond()
+							passedTime := (curTimeStep - edgeData.Last) / config.GetRequestsPerSecond()
 							if passedTime > 0 {
-								refreshRate := constants.GetRefreshRate()
-								if constants.IsAdjustableThreshold() {
+								refreshRate := config.GetRefreshRate()
+								if config.IsAdjustableThreshold() {
 									refreshRate = int(math.Ceil(float64(edgeData.Threshold / 2)))
 								}
 								removedDeptAmount := passedTime * refreshRate
@@ -158,7 +158,7 @@ func Graph(state *types.State, policyInput types.RequestResult, curTimeStep int)
 		}
 	}
 	// Unlocks all the edges between the nodes in the route
-	if constants.GetEdgeLock() {
+	if config.GetEdgeLock() {
 		if !general.Contains(route, -1) && !general.Contains(route, -2) {
 			if general.Contains(route, -3) {
 				for i := 0; i < len(route)-3; i++ {

@@ -2,7 +2,7 @@ package workers
 
 import (
 	"fmt"
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/update"
 	"go-incentive-simulation/model/parts/utils"
@@ -54,25 +54,25 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			//routeLists := update.RouteListAndFlush(globalState, requestResult, curTimeStep)
 
 			// sending the "output" to the outputWorker
-			if constants.GetMaxPOCheckEnabled() {
-				if constants.IsDebugPrints() {
-					if curTimeStep%constants.GetDebugInterval() == 0 {
+			if config.GetMaxPOCheckEnabled() {
+				if config.IsDebugPrints() {
+					if curTimeStep%config.GetDebugInterval() == 0 {
 						fmt.Println("outputChan length: ", len(outputChan))
 					}
 				}
 				outputChan <- output
 			}
 
-			if constants.IsWriteRoutesToFile() {
-				if constants.IsDebugPrints() {
-					if curTimeStep%constants.GetDebugInterval() == 0 {
+			if config.IsWriteRoutesToFile() {
+				if config.IsDebugPrints() {
+					if curTimeStep%config.GetDebugInterval() == 0 {
 						fmt.Println("routeChan length: ", len(routeChan))
 					}
 				}
 				routeChan <- types.RouteData{TimeStep: int32(curTimeStep), Route: route}
 			}
 
-			if constants.IsWriteStatesToFile() {
+			if config.IsWriteStatesToFile() {
 				// TODO: Decide on what subset of values we actually would like to store
 				stateSubset = types.StateSubset{
 					OriginatorIndex:         int32(request.OriginatorIndex),
@@ -84,8 +84,8 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 					FailedRequestsAccess:    failedRequestAccess,
 					TimeStep:                int32(curTimeStep),
 				}
-				if constants.IsDebugPrints() {
-					if curTimeStep%constants.GetDebugInterval() == 0 {
+				if config.IsDebugPrints() {
+					if curTimeStep%config.GetDebugInterval() == 0 {
 						fmt.Println("stateChan length: ", len(stateChan))
 					}
 				}

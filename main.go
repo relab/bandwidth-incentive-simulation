@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/workers"
 	"go-incentive-simulation/model/state"
-	"runtime"
 	"sync"
 	"time"
 )
@@ -30,12 +29,13 @@ import (
 
 func main() {
 	start := time.Now()
-	network := fmt.Sprintf("./data/nodes_data_%d_10000.txt", constants.GetBinSize())
+	config.InitConfigs()
+	network := fmt.Sprintf("./data/nodes_data_%d_10000.txt", config.GetBinSize())
 	globalState := state.MakeInitialState(network)
 
-	const iterations = 10_000_000
-	numTotalGoRoutines := runtime.NumCPU()
-	numRoutingGoroutines := constants.SetNumRoutingGoroutines(numTotalGoRoutines)
+	iterations := config.GetIterations()
+	numTotalGoRoutines := config.GetNumGoroutines()
+	numRoutingGoroutines := config.GetNumRoutingGoroutines()
 	//numLoops := iterations / numGoroutines
 
 	wgMain := &sync.WaitGroup{}
@@ -47,16 +47,16 @@ func main() {
 	pauseChan := make(chan bool, numRoutingGoroutines)
 	continueChan := make(chan bool, numRoutingGoroutines)
 
-	if constants.IsWriteRoutesToFile() {
+	if config.IsWriteRoutesToFile() {
 		wgOutput.Add(1)
 		go workers.RouteFlushWorker(routeChan, wgOutput)
 	}
-	if constants.IsWriteStatesToFile() {
+	if config.IsWriteStatesToFile() {
 		wgOutput.Add(1)
 		go workers.StateFlushWorker(stateChan, wgOutput)
 	}
 
-	go workers.RequestWorker(pauseChan, continueChan, requestChan, &globalState, wgMain, iterations)
+	go workers.RequestWorker(pauseChan, continueChan, requestChan, &globalState, wgMain, iterations, numRoutingGoroutines)
 	wgMain.Add(1)
 
 	go workers.OutputWorker(outputChan, wgOutput)
