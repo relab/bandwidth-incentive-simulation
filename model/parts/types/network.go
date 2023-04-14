@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/json"
-	"go-incentive-simulation/model/constants"
 	"go-incentive-simulation/model/general"
 	"math/rand"
 	"os"
@@ -107,7 +106,7 @@ func (network *Network) node(nodeId NodeId) *Node {
 			Reroute: Reroute{
 				RejectedNodes: nil,
 				ChunkId:       0,
-				LastEpoch:     constants.GetEpoch(),
+				LastEpoch:     0,
 			},
 			History:      make(map[ChunkId][]NodeId),
 			RerouteMutex: &sync.Mutex{},

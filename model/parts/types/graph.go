@@ -2,7 +2,7 @@ package types
 
 import (
 	"fmt"
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"sort"
 	"sync"
 )
@@ -68,7 +68,7 @@ func BinarySearchClosest(arr []NodeId, target int, n int) []NodeId {
 
 func (g *Graph) FindResponsibleNodes(chunkId ChunkId) [4]NodeId {
 	chunkIdInt := chunkId.ToInt()
-	if constants.IsPrecomputeRespNodes() {
+	if config.IsPrecomputeRespNodes() {
 		return g.RespNodes[chunkIdInt]
 
 	} else {
@@ -76,8 +76,9 @@ func (g *Graph) FindResponsibleNodes(chunkId ChunkId) [4]NodeId {
 			return g.RespNodes[chunkIdInt]
 
 		} else {
-			numNodesSearch := constants.GetBits()
+			numNodesSearch := config.GetBits()
 			closestNodes := BinarySearchClosest(g.NodeIds, chunkIdInt, numNodesSearch)
+
 			distances := make([]int, len(closestNodes))
 			result := [4]NodeId{}
 

@@ -1,21 +1,21 @@
 package update
 
 import (
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/parts/types"
 	"sync/atomic"
 )
 
 func Pending(state *types.State, requestResult types.RequestResult, curEpoch int) int64 {
 	var waitingCounter int64
-	if constants.IsWaitingEnabled() {
+	if config.IsWaitingEnabled() {
 		route := requestResult.Route
 		chunkId := requestResult.ChunkId
 		originatorId := route[0]
 		originator := state.Graph.GetNode(originatorId)
 		isNewChunk := false
 
-		if constants.IsRetryWithAnotherPeer() {
+		if config.IsRetryWithAnotherPeer() {
 			if requestResult.ThresholdFailed || requestResult.AccessFailed {
 				isNewChunk = originator.PendingStruct.AddPendingChunkId(chunkId, curEpoch)
 			} else if requestResult.Found {
