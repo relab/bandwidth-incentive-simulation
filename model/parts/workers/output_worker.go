@@ -20,6 +20,7 @@ type FractionOfRewardsK8 struct {
 type MeanRewardPerForward struct {
 	AllRewards []int
 	SumRewards int
+	Writer     *bufio.Writer
 }
 
 func (o *MeanRewardPerForward) CalculateMeanRewardPerForward() float64 {
@@ -29,6 +30,7 @@ func (o *MeanRewardPerForward) CalculateMeanRewardPerForward() float64 {
 type AvgNumberOfHops struct {
 	TotalNumberOfHops int
 	NumberOfRoutes    int
+	Writer            *bufio.Writer
 }
 
 func (o *AvgNumberOfHops) CalculateAverageNumberOfHops() float64 {
@@ -41,10 +43,12 @@ type FractionOfRewardsK16 struct {
 	Hop3            float64
 	RouteRewards    []int
 	SumRouteRewards int
+	Writer          *bufio.Writer
 }
 
 type Fractions struct {
 	Fractions []FractionOfRewardsK16
+	Writer    *bufio.Writer
 }
 
 func (o *Fractions) CalculateFractionOfRewards() (float64, float64, float64) {
@@ -66,6 +70,7 @@ type RewardFairnessForStoringAction struct {
 	SumAllStoringRewards int
 	Total                float64
 	Counter              int
+	Writer               *bufio.Writer
 }
 
 func (o *RewardFairnessForStoringAction) CalculateRewardFairnessForStoringAction() float64 {
@@ -82,6 +87,7 @@ func (o *RewardFairnessForStoringAction) CalculateRewardFairnessForStoringAction
 type RewardFairnessForAllActions struct {
 	AllRewards    []int
 	SumAllRewards int
+	Writer        *bufio.Writer
 }
 
 func (o *RewardFairnessForAllActions) CalculateRewardFairnessForAllActions() float64 {
@@ -98,6 +104,7 @@ func (o *RewardFairnessForAllActions) CalculateRewardFairnessForAllActions() flo
 type RewardFairnessForForwardingActions struct {
 	AllForwardingRewards    []int
 	SumAllForwardingRewards int
+	Writer                  *bufio.Writer
 }
 
 func (o *RewardFairnessForForwardingActions) CalculateRewardFairnessForForwardingAction() float64 {
@@ -113,6 +120,7 @@ func (o *RewardFairnessForForwardingActions) CalculateRewardFairnessForForwardin
 
 type NegativeIncome struct {
 	IncomeDict map[int]int
+	Writer     *bufio.Writer
 }
 
 func (o *NegativeIncome) CalculateNegativeIncome() float64 {
@@ -129,7 +137,6 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var output types.Output
 	counter := 1
-	filePath := "./results/output.txt"
 	var meanRewardPerForward MeanRewardPerForward
 	var avgNumberOfHops AvgNumberOfHops
 	var fractions Fractions
@@ -138,11 +145,11 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 	var rewardFairnessForForwardingAction RewardFairnessForForwardingActions
 	var negativeIncome NegativeIncome
 	negativeIncome.IncomeDict = make(map[int]int)
+	filePath := "./results/output.txt"
 	err := os.Remove(filePath)
 	if err != nil {
 		fmt.Println("Could not remove the file", filePath)
 	}
-
 	file, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
@@ -162,9 +169,118 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 			fmt.Println("Couldn't flush the remaining buffer in the writer for output")
 		}
 	}(writer)
-
-	//start := time.Now()
-
+	if constants.GetMeanRewardPerForward() {
+		file := MakeMeanRewardPerForwardFile()
+		defer func(file *os.File) {
+			err1 := file.Close()
+			if err1 != nil {
+				fmt.Println("Couldn't close the file with filepath: ", filePath)
+			}
+		}(file)
+		meanRewardPerForward.Writer = bufio.NewWriter(file)
+		defer func(writer *bufio.Writer) {
+			err1 := writer.Flush()
+			if err1 != nil {
+				fmt.Println("Couldn't flush the remaining buffer in the writer for output")
+			}
+		}(meanRewardPerForward.Writer)
+	}
+	if constants.GetAverageNumberOfHops() {
+		file2 := MakeAvgNumberOfHopsFile()
+		defer func(file2 *os.File) {
+			err1 := file2.Close()
+			if err1 != nil {
+				fmt.Println("Couldn't close the file with filepath: ", filePath)
+			}
+		}(file2)
+		avgNumberOfHops.Writer = bufio.NewWriter(file2)
+		defer func(writer *bufio.Writer) {
+			err1 := writer.Flush()
+			if err1 != nil {
+				fmt.Println("Couldn't flush the remaining buffer in the writer for output")
+			}
+		}(avgNumberOfHops.Writer)
+	}
+	if constants.GetAverageFractionOfTotalRewardsK16() {
+		file3 := MakeFractionOfRewardsFile()
+		defer func(file3 *os.File) {
+			err1 := file3.Close()
+			if err1 != nil {
+				fmt.Println("Couldn't close the file with filepath: ", filePath)
+			}
+		}(file3)
+		fractions.Writer = bufio.NewWriter(file3)
+		defer func(writer *bufio.Writer) {
+			err1 := writer.Flush()
+			if err1 != nil {
+				fmt.Println("Couldn't flush the remaining buffer in the writer for output")
+			}
+		}(fractions.Writer)
+	}
+	if constants.GetRewardFairnessForStoringAction() {
+		file4 := MakeRewardFairnessForStoringActionFile()
+		defer func(file4 *os.File) {
+			err1 := file4.Close()
+			if err1 != nil {
+				fmt.Println("Couldn't close the file with filepath: ", filePath)
+			}
+		}(file4)
+		rewardFairnessForStoringAction.Writer = bufio.NewWriter(file4)
+		defer func(writer *bufio.Writer) {
+			err1 := writer.Flush()
+			if err1 != nil {
+				fmt.Println("Couldn't flush the remaining buffer in the writer for output")
+			}
+		}(rewardFairnessForStoringAction.Writer)
+	}
+	if constants.GetRewardFairnessForAllActions() {
+		file5 := MakeRewardFairnessForAllActionsFile()
+		defer func(file5 *os.File) {
+			err1 := file5.Close()
+			if err1 != nil {
+				fmt.Println("Couldn't close the file with filepath: ", filePath)
+			}
+		}(file5)
+		rewardFairnessForAllActions.Writer = bufio.NewWriter(file5)
+		defer func(writer *bufio.Writer) {
+			err1 := writer.Flush()
+			if err1 != nil {
+				fmt.Println("Couldn't flush the remaining buffer in the writer for output")
+			}
+		}(rewardFairnessForAllActions.Writer)
+	}
+	if constants.GetRewardFairnessForForwardingAction() {
+		file6 := MakeRewardFairnessForForwardingActionFile()
+		defer func(file6 *os.File) {
+			err1 := file6.Close()
+			if err1 != nil {
+				fmt.Println("Couldn't close the file with filepath: ", filePath)
+			}
+		}(file6)
+		rewardFairnessForForwardingAction.Writer = bufio.NewWriter(file6)
+		defer func(writer *bufio.Writer) {
+			err1 := writer.Flush()
+			if err1 != nil {
+				fmt.Println("Couldn't flush the remaining buffer in the writer for output")
+			}
+		}(rewardFairnessForForwardingAction.Writer)
+	}
+	if constants.GetNegativeIncome() {
+		file7 := MakeNegativeIncomeFile()
+		defer func(file7 *os.File) {
+			err1 := file7.Close()
+			if err1 != nil {
+				fmt.Println("Couldn't close the file with filepath: ", filePath)
+			}
+		}(file7)
+		negativeIncome.Writer = bufio.NewWriter(file7)
+		defer func(writer *bufio.Writer) {
+			err1 := writer.Flush()
+			if err1 != nil {
+				fmt.Println("Couldn't flush the remaining buffer in the writer for output")
+			}
+		}(negativeIncome.Writer)
+	}
 	for output = range outputChan {
 		counter++
 		if counter%100_000 == 0 {
@@ -182,7 +298,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 			}
 			if counter%100_000 == 0 {
 				mean := meanRewardPerForward.CalculateMeanRewardPerForward()
-				_, err := writer.WriteString(fmt.Sprintf("Mean reward per forward: %f \n", mean))
+				_, err := meanRewardPerForward.Writer.WriteString(fmt.Sprintf("Mean reward per forward: %f \n", mean))
 				if err != nil {
 					panic(err)
 				}
@@ -194,7 +310,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 			avgNumberOfHops.NumberOfRoutes++
 			if counter%100_000 == 0 {
 				hops := avgNumberOfHops.CalculateAverageNumberOfHops()
-				writer.WriteString(fmt.Sprintf("Average number of hops: %f \n", hops))
+				avgNumberOfHops.Writer.WriteString(fmt.Sprintf("Average number of hops: %f \n", hops))
 				//fmt.Println("time since start: ", time.Since(start))
 			}
 		}
@@ -230,7 +346,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 				//writer.WriteString(fmt.Sprintf("hop 1: %f, ", hop1))
 				//writer.WriteString(fmt.Sprintf("hop 2: %f, ", hop2))
 				//writer.WriteString(fmt.Sprintf("hop 3: %f \n", hop3))
-				writer.WriteString(fmt.Sprintf("hop 1: %f, hop 2: %f, hop 3: %f \n", hop1, hop2, hop3))
+				fractions.Writer.WriteString(fmt.Sprintf("hop 1: %f, hop 2: %f, hop 3: %f \n", hop1, hop2, hop3))
 				//fmt.Println("time since start: ", time.Since(start))
 			}
 		}
@@ -263,7 +379,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 				}
 				if counter == 100_000 {
 					fairness := rewardFairnessForAllActions.CalculateRewardFairnessForAllActions()
-					writer.WriteString(fmt.Sprintf("Reward fairness for all actions: %f \n", fairness))
+					rewardFairnessForAllActions.Writer.WriteString(fmt.Sprintf("Reward fairness for all actions: %f \n", fairness))
 					//fmt.Println("time since start: ", time.Since(start))
 				}
 			}
@@ -281,7 +397,7 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 				}
 				if counter == 100_000 {
 					fairness := rewardFairnessForForwardingAction.CalculateRewardFairnessForForwardingAction()
-					writer.WriteString(fmt.Sprintf("Reward fairness for forwarding action: %f \n", fairness))
+					rewardFairnessForAllActions.Writer.WriteString(fmt.Sprintf("Reward fairness for forwarding action: %f \n", fairness))
 					//fmt.Println("time since start: ", time.Since(start))
 				}
 			}
@@ -319,31 +435,94 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 	}
 }
 
-// func OutputWorker(outputChan chan types.Output) {
-// 	//defer wg.Done()
-// 	var output types.Output
-// 	counter := 0
-// 	filePath := "./results/output.txt"
-// 	err := os.Remove(filePath)
-// 	if err != nil {
-// 		fmt.Println("Could not remove the file", filePath)
-// 	}
-// 	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
-// 	defer func(file *os.File) {
-// 		err1 := file.Close()
-// 		if err1 != nil {
-// 			fmt.Println("Couldn't close the file with filepath: ", filePath)
-// 		}
-// 	}(file)
-// 	for output = range outputChan {
-// 		counter++
-// 		//fmt.Println("Nr:", counter, "- Routes with price: ", output.RoutesWithPrice)
-// 		//fmt.Println("Nr:", counter, "- Payments with price: ", output.PaymentsWithPrice)
-// 		jsonData, err := json.Marshal(output.RoutesWithPrice)
-// 		if err != nil {
-// 			fmt.Println("Couldn't marshal routes with price")
-// 		}
-// 		file.Write(jsonData)
-// 		file.WriteString("\n")
-// 	}
-// }
+func MakeAvgNumberOfHopsFile() *os.File {
+	filePath := "./results/avgNumberOfHops.txt"
+	err := os.Remove(filePath)
+	if err != nil {
+		fmt.Println("Could not remove the file", filePath)
+	}
+	avgNumberOfHopsFile, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	return avgNumberOfHopsFile
+}
+
+func MakeMeanRewardPerForwardFile() *os.File {
+	filePath := "./results/meanRewardPerForward.txt"
+	err := os.Remove(filePath)
+	if err != nil {
+		fmt.Println("Could not remove the file", filePath)
+	}
+	meanRewardPerForwardFile, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	return meanRewardPerForwardFile
+}
+
+func MakeFractionOfRewardsFile() *os.File {
+	filePath := "./results/fractionOfRewards.txt"
+	err := os.Remove(filePath)
+	if err != nil {
+		fmt.Println("Could not remove the file", filePath)
+	}
+	fractionOfRewards, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	return fractionOfRewards
+}
+
+func MakeRewardFairnessForStoringActionFile() *os.File {
+	filepath := "./results/rewardFairnessForStoringAction.txt"
+	err := os.Remove(filepath)
+	if err != nil {
+		fmt.Println("Could not remove the file", filepath)
+	}
+	rewardFairnessForStoringActionFile, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	return rewardFairnessForStoringActionFile
+}
+
+func MakeRewardFairnessForAllActionsFile() *os.File {
+	filepath := "./results/rewardFairnessForAllActions.txt"
+	err := os.Remove(filepath)
+	if err != nil {
+		fmt.Println("Could not remove the file", filepath)
+	}
+	rewardFairnessForAllActionsFile, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	return rewardFairnessForAllActionsFile
+}
+
+func MakeRewardFairnessForForwardingActionFile() *os.File {
+	filepath := "./results/rewardFairnessForForwardingAction.txt"
+	err := os.Remove(filepath)
+	if err != nil {
+		fmt.Println("Could not remove the file", filepath)
+	}
+	rewardFairnessForForwardingActionFile, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	return rewardFairnessForForwardingActionFile
+}
+
+func MakeNegativeIncomeFile() *os.File {
+	filepath := "./results/negativeIncome.txt"
+	err := os.Remove(filepath)
+	if err != nil {
+		fmt.Println("Could not remove the file", filepath)
+	}
+	negativeIncomeFile, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	return negativeIncomeFile
+
+}
