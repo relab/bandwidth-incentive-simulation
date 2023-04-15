@@ -42,7 +42,6 @@ var defaultVariables = VariablesType{
 	experimentOptions: experimentOptions{
 		ThresholdEnabled:                  true,  // true
 		ForgivenessEnabled:                true,  // true
-		ForgivenessDuringRouting:          true,  // true
 		PaymentEnabled:                    false, // false
 		MaxPOCheckEnabled:                 false, // false
 		OnlyOriginatorPays:                false, // false

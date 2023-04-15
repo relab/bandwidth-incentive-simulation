@@ -5,9 +5,9 @@ import (
 	"sync/atomic"
 )
 
-func SuccessfulFound(state *types.State, policyInput types.RequestResult) int32 {
-	if policyInput.Found {
-		return atomic.AddInt32(&state.SuccessfulFound, 1)
+func SuccessfulFound(state *types.State, requestResult types.RequestResult) int64 {
+	if requestResult.Found {
+		return atomic.AddInt64(&state.SuccessfulFound, 1)
 	}
-	return atomic.LoadInt32(&state.SuccessfulFound)
+	return atomic.LoadInt64(&state.SuccessfulFound)
 }

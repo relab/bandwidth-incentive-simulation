@@ -4,41 +4,46 @@ import (
 	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
+	"sync/atomic"
 )
 
-func RerouteMap(state *types.State, requestResult types.RequestResult, curEpoch int) types.RerouteStruct {
+func Reroute(state *types.State, requestResult types.RequestResult, curEpoch int) int64 {
+	var retryCounter int64
 	if config.IsRetryWithAnotherPeer() {
+
 		route := requestResult.Route
-		originator := route[0]
-		firstHopNode := route[1]
-		chunkId := route[len(route)-1]
+		chunkId := requestResult.ChunkId
+		originatorId := route[0]
+		originator := state.Graph.GetNode(originatorId)
+		reroute := originator.RerouteStruct.Reroute // reroute = rejected nodes + chunk
 
-		// -1 = Threshold Fail, -2 = Access Fail --> request was successful
-		if !general.Contains(route, -1) && !general.Contains(route, -2) {
-			routeStruct := state.RerouteStruct.GetRerouteMap(originator) // reroute = rejected nodes + chunk
-			if routeStruct.Reroute != nil {
-				if routeStruct.ChunkId == chunkId { // If chunkId == chunkId
-					state.RerouteStruct.DeleteReroute(originator)
+		if requestResult.Found {
+			if reroute.RejectedNodes != nil {
+				if reroute.ChunkId == chunkId { // If chunkId == chunkId --> reset reroute
+					originator.RerouteStruct.ResetRerouteAndSaveToHistory(chunkId, curEpoch)
 				}
 			}
 
-		} else if len(route) > 3 { // Rejection in second hop (?), route contains at least originator, -1/-2, chunkId
-			routeStruct := state.RerouteStruct.GetRerouteMap(originator)
-			if routeStruct.Reroute != nil {
-				if !general.Contains(routeStruct.Reroute, firstHopNode) { // if the first hop in new route have not been searched before
-					state.RerouteStruct.AddNodeToReroute(originator, firstHopNode)
-				}
+		} else if len(route) > 1 { // Rejection in second hop --> route have at least an originator and a lastHopNode
+			lastHopNode := route[len(route)-1]
+			if reroute.RejectedNodes == nil {
+				reroute = originator.RerouteStruct.AddNewReroute(requestResult.AccessFailed, lastHopNode, chunkId, curEpoch)
+				retryCounter = atomic.AddInt64(&state.UniqueRetryCounter, 1)
 			} else {
-				state.RerouteStruct.AddNewReroute(originator, firstHopNode, chunkId, curEpoch)
+				if !general.Contains(reroute.RejectedNodes, lastHopNode) { // if the last hop in new route have not been searched before
+					originator.RerouteStruct.AddNodeToRejectedNodes(requestResult.AccessFailed, lastHopNode, curEpoch)
+				}
 			}
 		}
 
-		routeStruct := state.RerouteStruct.GetRerouteMap(originator)
-		if routeStruct.Reroute != nil {
-			if len(routeStruct.Reroute) > config.GetBinSize() {
-				state.RerouteStruct.DeleteReroute(originator)
-			}
+		if retryCounter == 0 {
+			retryCounter = atomic.LoadInt64(&state.UniqueRetryCounter)
 		}
+
+		if len(reroute.RejectedNodes) > config.GetBinSize() {
+			originator.RerouteStruct.ResetRerouteAndSaveToHistory(chunkId, curEpoch)
+		}
+
 	}
-	return state.RerouteStruct
+	return retryCounter
 }

@@ -6,26 +6,10 @@ import (
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/workers"
 	"go-incentive-simulation/model/state"
+	"math"
 	"sync"
 	"time"
 )
-
-//func MakePolicyOutput(state *types.State, index int) types.RequestResult {
-//	//fmt.Println("start of make initial policy")
-//
-//	//found, route, thresholdFailed, accessFailed, paymentsList := SendRequest(&state)
-//	found, route, thresholdFailed, accessFailed, paymentsList := policy.SendRequest(state, index)
-//
-
-//p := types.RequestResult{
-//	Found:                found,
-//		Route:                route,
-//		ThresholdFailedLists: thresholdFailed,
-//		AccessFailed:         accessFailed,
-//		PaymentList:          paymentsList,
-//	}
-//	return p
-//}
 
 func main() {
 	start := time.Now()
@@ -40,7 +24,7 @@ func main() {
 	wgMain := &sync.WaitGroup{}
 	wgOutput := &sync.WaitGroup{}
 	requestChan := make(chan types.Request, numRoutingGoroutines)
-	outputChan := make(chan types.Output, 100000)
+	outputChan := make(chan types.OutputStruct, 100000)
 	routeChan := make(chan types.RouteData, 100000)
 	stateChan := make(chan types.StateSubset, 100000)
 	pauseChan := make(chan bool, numRoutingGoroutines)
@@ -55,7 +39,7 @@ func main() {
 		go workers.StateFlushWorker(stateChan, wgOutput)
 	}
 
-	go workers.RequestWorker(pauseChan, continueChan, requestChan, &globalState, wgMain, iterations, numRoutingGoroutines)
+	go workers.RequestWorker(pauseChan, continueChan, requestChan, &globalState, wgMain)
 	wgMain.Add(1)
 
 	if config.IsOutputEnabled() {
@@ -144,14 +128,15 @@ func main() {
 }
 
 func PrintState(state types.State) {
-	fmt.Println("SuccessfulFound: ", state.SuccessfulFound)
-	fmt.Println("FailedRequestsThreshold: ", state.FailedRequestsThreshold)
-	fmt.Println("FailedRequestsAccess: ", state.FailedRequestsAccess)
-	fmt.Println("CacheHits:", state.CacheStruct.CacheHits)
+	total := float64(state.SuccessfulFound + state.FailedRequestsThreshold + state.FailedRequestsAccess)
+	fmt.Println("SuccessfulFound: ", state.SuccessfulFound, "-->", math.Round(float64(state.SuccessfulFound)/total*1000000)/10000, "%")
+	fmt.Println("ThresholdFail: ", state.FailedRequestsThreshold, "-->", math.Round(float64(state.FailedRequestsThreshold)/total*1000000)/10000, "%")
+	fmt.Println("AccessFail: ", state.FailedRequestsAccess, "-->", math.Round(float64(state.FailedRequestsAccess)/total*1000000)/10000, "%")
 	fmt.Println("TimeStep: ", state.TimeStep)
 	fmt.Println("OriginatorIndex: ", state.OriginatorIndex)
-	fmt.Println("UniqueRerouteCounter: ", state.RerouteStruct.UniqueRerouteCounter)
-	fmt.Println("UniquePendingCounter: ", state.PendingStruct.UniquePendingCounter)
+	fmt.Println("CacheHits:", state.CacheHits)
+	fmt.Println("UniqueRetryCounter: ", state.UniqueRetryCounter)
+	fmt.Println("UniqueWaitingCounter: ", state.UniqueWaitingCounter)
 	//fmt.Println("PendingMap: ", state.PendingStruct.PendingMap, state.PendingStruct.Counter)
 	//fmt.Println("RerouteMap: ", state.RerouteStruct.RerouteMap)
 	//fmt.Println("RouteLists: ", state.RouteLists)

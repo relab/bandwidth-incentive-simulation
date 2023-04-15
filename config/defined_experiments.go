@@ -5,14 +5,12 @@ package config
 func OmegaExperiment() {
 	Variables.experimentOptions.ThresholdEnabled = false
 	Variables.experimentOptions.ForgivenessEnabled = false
-	Variables.experimentOptions.ForgivenessDuringRouting = false
 	Variables.experimentOptions.MaxPOCheckEnabled = true
 }
 
 func CustomExperiment(customExperiment experimentOptions) {
 	Variables.experimentOptions.ThresholdEnabled = customExperiment.ThresholdEnabled
 	Variables.experimentOptions.ForgivenessEnabled = customExperiment.ForgivenessEnabled
-	Variables.experimentOptions.ForgivenessDuringRouting = customExperiment.ForgivenessDuringRouting
 	Variables.experimentOptions.PaymentEnabled = customExperiment.PaymentEnabled
 	Variables.experimentOptions.MaxPOCheckEnabled = customExperiment.MaxPOCheckEnabled
 	Variables.experimentOptions.OnlyOriginatorPays = customExperiment.OnlyOriginatorPays

@@ -5,10 +5,10 @@ import (
 	"sync/atomic"
 )
 
-func FailedRequestsAccess(state *types.State, policyInput types.RequestResult) int32 {
-	accessFailed := policyInput.AccessFailed
+func FailedRequestsAccess(state *types.State, requestResult types.RequestResult) int64 {
+	accessFailed := requestResult.AccessFailed
 	if accessFailed {
-		return atomic.AddInt32(&state.FailedRequestsAccess, 1)
+		return atomic.AddInt64(&state.FailedRequestsAccess, 1)
 	}
-	return atomic.LoadInt32(&state.FailedRequestsAccess)
+	return atomic.LoadInt64(&state.FailedRequestsAccess)
 }

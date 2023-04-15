@@ -49,7 +49,7 @@ ConfOptions:
   # Which logic should be used in the outputWorker
   OutputOptions:
     MeanRewardPerForward: true
-    AverageNumberOfHops: false
+    AverageNumberOfHops: true
     AverageFractionOfTotalRewardsK8: false
     AverageFractionOfTotalRewardsK16: false
     RewardFairnessForForwardingAction: false
@@ -72,8 +72,6 @@ CustomExperiment:
   ThresholdEnabled: true
   # ForgivenessEnabled: true, edge debt gets forgiven some amount on an interval (amortized)
   ForgivenessEnabled: true
-  # ForgivenessDuringRouting: true, if the forgiveness should happen before threshold is checked or after in updateGraph
-  ForgivenessDuringRouting: true
   # PaymentEnabled: false, nodes pay if they would get a threshold failure
   PaymentEnabled: false
   # MaxPOCheckEnabled: false, used to find the proper variable called "omega" in the python paper

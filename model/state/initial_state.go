@@ -6,7 +6,6 @@ import (
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/utils"
 	"math/rand"
-	"sync"
 )
 
 func MakeInitialState(path string) types.State {
@@ -19,18 +18,18 @@ func MakeInitialState(path string) types.State {
 	if err != nil {
 		fmt.Println("create graph network returned an error: ", err)
 	}
-	pendingStruct := types.PendingStruct{PendingMap: make(types.PendingMap, 0), PendingMutex: &sync.Mutex{}}
-	rerouteStruct := types.RerouteStruct{RerouteMap: make(types.RerouteMap, 0), RerouteMutex: &sync.Mutex{}}
-	cacheStruct := types.CacheStruct{CacheHits: 0, CacheMap: make(types.CacheMap), CacheMutex: &sync.Mutex{}}
+	//pendingStruct := types.PendingStruct{PendingMap: make(types.PendingMap, 0), PendingMutex: &sync.Mutex{}}
+	//rerouteStruct := types.RerouteStruct{RerouteMap: make(types.RerouteMap, 0), RerouteMutex: &sync.Mutex{}}
+	//cacheStruct := types.CacheStruct{CacheHits: 0, CacheMap: make(types.CacheMap), CacheMutex: &sync.Mutex{}}
 
 	initialState := types.State{
 		Graph:                   graph,
 		Originators:             utils.CreateDownloadersList(graph),
 		NodesId:                 utils.CreateNodesList(graph),
-		RouteLists:              make([]types.Route, 10000),
-		PendingStruct:           pendingStruct,
-		RerouteStruct:           rerouteStruct,
-		CacheStruct:             cacheStruct,
+		RouteLists:              make([]types.RequestResult, 10000),
+		CacheHits:               0,
+		UniqueWaitingCounter:    0,
+		UniqueRetryCounter:      0,
 		OriginatorIndex:         0,
 		SuccessfulFound:         0,
 		FailedRequestsThreshold: 0,

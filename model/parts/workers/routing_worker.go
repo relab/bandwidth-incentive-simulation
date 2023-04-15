@@ -9,88 +9,95 @@ import (
 	"sync"
 )
 
-func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan types.Request, outputChan chan types.Output, routeChan chan types.RouteData, stateChan chan types.StateSubset, globalState *types.State, wg *sync.WaitGroup) {
+func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan types.Request, outputChan chan types.OutputStruct, routeChan chan types.RouteData, stateChan chan types.StateSubset, globalState *types.State, wg *sync.WaitGroup) {
 
 	defer wg.Done()
-	//var request types.Request
-	var stateSubset types.StateSubset
+	openChannel := true
+	var request types.Request
 	var requestResult types.RequestResult
+	var route []types.NodeId
+	var paymentList []types.Payment
+	var found bool
+	var accessFailed bool
+	var thresholdFailed bool
+	var foundByCaching bool
+
 	for {
 		select {
 		case <-pauseChan:
 			continueChan <- true
 
-		case request, open := <-requestChan:
-			if !open {
+		case request, openChannel = <-requestChan:
+			if !openChannel {
 				return
 			}
 
-			found, route, thresholdFailed, accessFailed, paymentsList := utils.ConsumeTask(request, globalState.Graph, globalState.RerouteStruct, globalState.CacheStruct)
+			route, paymentList, found, accessFailed, thresholdFailed, foundByCaching = utils.FindRoute(request, globalState.Graph)
 
 			requestResult = types.RequestResult{
-				Found:                found,
-				Route:                route,
-				ThresholdFailedLists: thresholdFailed,
-				AccessFailed:         accessFailed,
-				PaymentList:          paymentsList,
+				Route:           route,
+				PaymentList:     paymentList,
+				ChunkId:         request.ChunkId,
+				Found:           found,
+				AccessFailed:    accessFailed,
+				ThresholdFailed: thresholdFailed,
+				FoundByCaching:  foundByCaching,
 			}
-
-			// TODO: decide on where we should update the timestep. At request creation or request fulfillment
-			//curTimeStep := update.Timestep(globalState)
 
 			curTimeStep := request.TimeStep
 			output := update.Graph(globalState, requestResult, curTimeStep)
 
-			pendingStruct := update.PendingMap(globalState, requestResult, request.Epoch)
-			rerouteStruct := update.RerouteMap(globalState, requestResult, request.Epoch)
-			cacheStruct := update.CacheMap(globalState, requestResult)
-
-			// TODO: originatorIndex is now updated by the requestWorker
-			//originatorIndex := UpdateOriginatorIndex(globalState)
+			waitingCounter := update.Pending(globalState, requestResult, request.Epoch)
+			retryCounter := update.Reroute(globalState, requestResult, request.Epoch)
+			cacheHits := update.Cache(globalState, requestResult)
 
 			// sending the "output" to the outputWorker
 			successfulFound := update.SuccessfulFound(globalState, requestResult)
 			failedRequestThreshold := update.FailedRequestsThreshold(globalState, requestResult)
 			failedRequestAccess := update.FailedRequestsAccess(globalState, requestResult)
-			//routeLists := update.RouteListAndFlush(globalState, requestResult, curTimeStep)
 
 			// sending the "output" to the outputWorker
-			if config.IsOutputEnabled() {
-				if config.IsDebugPrints() {
-					if curTimeStep%config.GetDebugInterval() == 0 {
-						fmt.Println("outputChan length: ", len(outputChan))
-					}
+
+			if config.GetMaxPOCheckEnabled() {
+				// TODO: find out why I put TimeForNewEpoch here and not TimeForDebugPrints?
+				if config.IsDebugPrints() && config.TimeForNewEpoch(curTimeStep) {
+					fmt.Println("outputChan length: ", len(outputChan))
 				}
 				outputChan <- output
 			}
 
 			if config.IsWriteRoutesToFile() {
-				if config.IsDebugPrints() {
-					if curTimeStep%config.GetDebugInterval() == 0 {
-						fmt.Println("routeChan length: ", len(routeChan))
-					}
+				// TODO: find out why I put TimeForNewEpoch here and not TimeForDebugPrints?
+				if config.IsDebugPrints() && config.TimeForNewEpoch(curTimeStep) {
+					fmt.Println("routeChan length: ", len(routeChan))
 				}
-				routeChan <- types.RouteData{TimeStep: int32(curTimeStep), Route: route}
+				routeChan <- types.RouteData{
+					Epoch:           request.Epoch,
+					Route:           route,
+					ChunkId:         request.ChunkId,
+					Found:           found,
+					ThresholdFailed: thresholdFailed,
+					AccessFailed:    accessFailed,
+				}
 			}
 
 			if config.IsWriteStatesToFile() {
+				if config.IsDebugPrints() && config.TimeForNewEpoch(curTimeStep) {
+					fmt.Println("stateChan length: ", len(stateChan))
+				}
 				// TODO: Decide on what subset of values we actually would like to store
-				stateSubset = types.StateSubset{
-					OriginatorIndex:         int32(request.OriginatorIndex),
-					PendingMap:              int32(len(pendingStruct.PendingMap)),
-					RerouteMap:              int32(len(rerouteStruct.RerouteMap)),
-					CacheStruct:             int32(len(cacheStruct.CacheMap)),
+				stateChan <- types.StateSubset{
+					WaitingCounter:          waitingCounter,
+					RetryCounter:            retryCounter,
+					CacheHits:               cacheHits,
+					ChunkId:                 int(request.ChunkId),
+					OriginatorIndex:         int64(request.OriginatorIndex),
 					SuccessfulFound:         successfulFound,
 					FailedRequestsThreshold: failedRequestThreshold,
 					FailedRequestsAccess:    failedRequestAccess,
-					TimeStep:                int32(curTimeStep),
+					TimeStep:                int64(curTimeStep),
+					Epoch:                   request.Epoch,
 				}
-				if config.IsDebugPrints() {
-					if curTimeStep%config.GetDebugInterval() == 0 {
-						fmt.Println("stateChan length: ", len(stateChan))
-					}
-				}
-				stateChan <- stateSubset
 			}
 		}
 	}

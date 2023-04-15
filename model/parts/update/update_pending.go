@@ -2,30 +2,44 @@ package update
 
 import (
 	"go-incentive-simulation/config"
-	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
+	"sync/atomic"
 )
 
-func PendingMap(state *types.State, requestResult types.RequestResult, curEpoch int) types.PendingStruct {
+func Pending(state *types.State, requestResult types.RequestResult, curEpoch int) int64 {
+	var waitingCounter int64
 	if config.IsWaitingEnabled() {
 		route := requestResult.Route
-		originator := route[0]
-		chunkId := route[len(route)-1]
+		chunkId := requestResult.ChunkId
+		originatorId := route[0]
+		originator := state.Graph.GetNode(originatorId)
+		isNewChunk := false
 
-		// -1 Threshold Fail, -2 Access Fail
 		if config.IsRetryWithAnotherPeer() {
-			if general.Contains(route, -1) || general.Contains(route, -2) {
-				state.PendingStruct.AddPendingChunkId(originator, chunkId, curEpoch)
-			} else {
-				state.PendingStruct.DeletePendingChunkId(originator, chunkId)
+			if requestResult.ThresholdFailed || requestResult.AccessFailed {
+				isNewChunk = originator.PendingStruct.AddPendingChunkId(chunkId, curEpoch)
+			} else if requestResult.Found {
+				if len(originator.PendingStruct.PendingQueue) > 0 {
+					originator.PendingStruct.DeletePendingChunkId(chunkId)
+				}
 			}
+
 		} else {
-			if general.Contains(route, -1) {
-				state.PendingStruct.AddPendingChunkId(originator, chunkId, curEpoch)
-			} else {
-				state.PendingStruct.DeletePendingChunkId(originator, chunkId)
+			if requestResult.ThresholdFailed {
+				isNewChunk = originator.PendingStruct.AddPendingChunkId(chunkId, curEpoch)
+			} else if requestResult.Found || requestResult.AccessFailed {
+				if len(originator.PendingStruct.PendingQueue) > 0 {
+					originator.PendingStruct.DeletePendingChunkId(chunkId)
+				}
 			}
 		}
+
+		if isNewChunk {
+			waitingCounter = atomic.AddInt64(&state.UniqueWaitingCounter, 1)
+		} else {
+			waitingCounter = atomic.LoadInt64(&state.UniqueWaitingCounter)
+		}
 	}
-	return state.PendingStruct
+
+	return waitingCounter
 }

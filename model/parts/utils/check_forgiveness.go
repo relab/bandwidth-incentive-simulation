@@ -6,9 +6,9 @@ import (
 	"math"
 )
 
-func CheckForgiveness(edgeData types.EdgeAttrs, firstNodeId int, secondNodeId int, graph *types.Graph, request types.Request) (int, bool) {
-	//passedTime := (request.TimeStep - edgeData.Last) / constants.GetRequestsPerSecond()
-	passedTime := request.Epoch - edgeData.EpokeLastForgiven
+func CheckForgiveness(edgeData types.EdgeAttrs, firstNodeId types.NodeId, secondNodeId types.NodeId, graph *types.Graph, request types.Request) (int, bool) {
+	//passedTime := (request.TimeStep - edgeData.Last) / constants.GetRequestsPerSecond() // Old method without Epoch
+	passedTime := request.Epoch - edgeData.LastEpoch
 	if passedTime > 0 {
 		refreshRate := config.GetRefreshRate()
 		if config.IsAdjustableThreshold() {
@@ -20,8 +20,7 @@ func CheckForgiveness(edgeData types.EdgeAttrs, firstNodeId int, secondNodeId in
 		if newEdgeData.A2B < 0 {
 			newEdgeData.A2B = 0
 		}
-		//newEdgeData.Last = request.LastEpoch
-		newEdgeData.EpokeLastForgiven = request.Epoch
+		newEdgeData.LastEpoch = request.Epoch
 		graph.SetEdgeData(firstNodeId, secondNodeId, newEdgeData)
 		return newEdgeData.A2B, true
 	}

@@ -4,36 +4,58 @@ type Request struct {
 	TimeStep        int
 	Epoch           int
 	OriginatorIndex int
-	OriginatorId    int
-	ChunkId         int
-	RespNodes       [4]int
+	OriginatorId    NodeId
+	ChunkId         ChunkId
+	RespNodes       [4]NodeId
 }
 
-type Route []int
+type RequestResult struct {
+	Route           []NodeId
+	PaymentList     []Payment
+	ChunkId         ChunkId
+	Found           bool
+	AccessFailed    bool
+	ThresholdFailed bool
+	FoundByCaching  bool
+}
 
 type Payment struct {
-	FirstNodeId  int
-	PayNextId    int
-	ChunkId      int
+	FirstNodeId  NodeId
+	PayNextId    NodeId
+	ChunkId      ChunkId
 	IsOriginator bool
 }
 
-type Threshold [2]int
+func (p Payment) IsNil() bool {
+	if p.PayNextId == 0 && p.FirstNodeId == 0 && p.ChunkId == 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
+type Threshold [2]NodeId
 
 type StateSubset struct {
-	OriginatorIndex         int32
-	PendingMap              int32
-	RerouteMap              int32
-	CacheStruct             int32
-	SuccessfulFound         int32
-	FailedRequestsThreshold int32
-	FailedRequestsAccess    int32
-	TimeStep                int32
+	WaitingCounter          int64
+	RetryCounter            int64
+	CacheHits               int64
+	ChunkId                 int
+	OriginatorIndex         int64
+	SuccessfulFound         int64
+	FailedRequestsThreshold int64
+	FailedRequestsAccess    int64
+	TimeStep                int64
+	Epoch                   int
 }
 
 type RouteData struct {
-	TimeStep int32 `json:"t"`
-	Route    Route `json:"r"`
+	Epoch           int      `json:"e"`
+	Route           []NodeId `json:"r"`
+	ChunkId         ChunkId  `json:"c"`
+	Found           bool     `json:"f"`
+	ThresholdFailed bool     `json:"t"`
+	AccessFailed    bool     `json:"a"`
 }
 
 //type StateData struct {
@@ -43,31 +65,27 @@ type RouteData struct {
 
 type State struct {
 	Graph                   *Graph
-	Originators             []int
-	NodesId                 []int
-	RouteLists              []Route
-	PendingStruct           PendingStruct
-	RerouteStruct           RerouteStruct
-	CacheStruct             CacheStruct
-	OriginatorIndex         int32
-	SuccessfulFound         int32
-	FailedRequestsThreshold int32
-	FailedRequestsAccess    int32
-	TimeStep                int32
+	Originators             []NodeId
+	NodesId                 []NodeId
+	RouteLists              []RequestResult
+	UniqueWaitingCounter    int64
+	UniqueRetryCounter      int64
+	CacheHits               int64
+	OriginatorIndex         int64
+	SuccessfulFound         int64
+	FailedRequestsThreshold int64
+	FailedRequestsAccess    int64
+	TimeStep                int64
 	Epoch                   int
 }
 
-type RequestResult struct {
-	Found                bool
-	Route                Route
-	ThresholdFailedLists [][]Threshold
-	AccessFailed         bool
-	PaymentList          []Payment
+func (s *State) GetOriginatorId(originatorIndex int) NodeId {
+	return s.Originators[originatorIndex]
 }
 
-type RouteWithPrice struct {
-	RequesterNode int
-	ProviderNode  int
+type NodePairWithPrice struct {
+	RequesterNode NodeId
+	ProviderNode  NodeId
 	Price         int
 }
 
@@ -76,11 +94,11 @@ type PaymentWithPrice struct {
 	Price   int
 }
 
-type Output struct {
-	RoutesWithPrice   []RouteWithPrice
-	PaymentsWithPrice []PaymentWithPrice
+type OutputStruct struct {
+	RouteWithPrices    []NodePairWithPrice
+	PaymentsWithPrices []PaymentWithPrice
 }
 
 type Outputs struct {
-	Outputs []Output
+	Outputs []OutputStruct
 }

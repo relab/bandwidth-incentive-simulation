@@ -2,62 +2,31 @@ package update
 
 import (
 	"go-incentive-simulation/config"
-	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
+	"sync/atomic"
 )
 
-func CacheMap(state *types.State, policyInput types.RequestResult) types.CacheStruct {
-	chunkId := 0
-
+func Cache(state *types.State, requestResult types.RequestResult) int64 {
+	var cacheHits int64 = -1
 	if config.IsCacheEnabled() {
-		route := policyInput.Route
-		if general.Contains(route, -3) {
-			// -3 means found by caching
-			state.CacheStruct.CacheHits++
-			chunkId = route[len(route)-2]
-		} else {
-			chunkId = route[len(route)-1]
-		}
-		if !general.Contains(route, -1) && !general.Contains(route, -2) {
-			if general.Contains(route, -3) {
-				for i := 0; i < len(route)-3; i++ {
-					nodeId := route[i]
-					//state.CacheStruct.AddToCache(nodeId, chunkId)
-					node := state.Graph.GetNode(nodeId)
-					node.Mutex.Lock()
-					cacheMap := node.CacheMap
-					if cacheMap != nil {
-						if _, ok := cacheMap[chunkId]; ok {
-							cacheMap[chunkId]++
-						} else {
-							cacheMap[chunkId] = 1
-						}
-					} else {
-						node.CacheMap = map[int]int{node.Id: 1}
-					}
-					node.Mutex.Unlock()
-				}
-			} else {
-				for i := 0; i < len(route)-2; i++ {
-					nodeId := route[i]
-					//state.CacheStruct.AddToCache(nodeId, chunkId)
-					node := state.Graph.GetNode(nodeId)
-					node.Mutex.Lock()
-					cacheMap := node.CacheMap
-					if cacheMap != nil {
-						if _, ok := cacheMap[chunkId]; ok {
-							cacheMap[chunkId]++
-						} else {
-							cacheMap[chunkId] = 1
-						}
-					} else {
-						node.CacheMap = map[int]int{node.Id: 1}
-					}
-					node.Mutex.Unlock()
-				}
+		route := requestResult.Route
+		chunkId := requestResult.ChunkId
+
+		if requestResult.Found {
+			for _, nodeId := range route {
+				node := state.Graph.GetNode(nodeId)
+				node.CacheStruct.AddToCache(chunkId)
+			}
+
+			if requestResult.FoundByCaching {
+				cacheHits = atomic.AddInt64(&state.CacheHits, 1)
 			}
 		}
+
+		if cacheHits == -1 {
+			cacheHits = atomic.LoadInt64(&state.CacheHits)
+		}
+
 	}
-	//state.CacheStruct = cacheStruct
-	return state.CacheStruct
+	return cacheHits
 }

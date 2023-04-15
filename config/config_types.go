@@ -44,7 +44,6 @@ type confOptions struct {
 type experimentOptions struct {
 	ThresholdEnabled                  bool `yaml:"ThresholdEnabled"`
 	ForgivenessEnabled                bool `yaml:"ForgivenessEnabled"`
-	ForgivenessDuringRouting          bool `yaml:"ForgivenessDuringRouting"`
 	PaymentEnabled                    bool `yaml:"PaymentEnabled"`
 	MaxPOCheckEnabled                 bool `yaml:"MaxPOCheckEnabled"`
 	OnlyOriginatorPays                bool `yaml:"OnlyOriginatorPays"`

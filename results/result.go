@@ -64,7 +64,7 @@ func ReadOutput(filename string) [][]Transaction {
 	return transactions
 }
 
-// thresholdEnabled: true,    forgivenessEnabled: true,   forgivenessDuringRouting: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
+// AvgRewardPerEachForwardingAction thresholdEnabled: true,    forgivenessEnabled: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
 func AvgRewardPerEachForwardingAction() float64 {
 	transactions := ReadOutput("output.txt")
 	var rewards []int
@@ -88,7 +88,7 @@ func sum(numbers []int) int {
 	return sum
 }
 
-// thresholdEnabled: true,    forgivenessEnabled: true,   forgivenessDuringRouting: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
+// AvgNumberOfHops thresholdEnabled: true,    forgivenessEnabled: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
 func AvgNumberOfHops() float64 {
 	transactions := ReadOutput("output.txt")
 	var totalHops int
@@ -111,7 +111,7 @@ type FractionOfRewardsK8 struct {
 	hop4 float64
 }
 
-// thresholdEnabled: true,    forgivenessEnabled: true,   forgivenessDuringRouting: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
+// AvgFractionOfTotalRewards thresholdEnabled: true,    forgivenessEnabled: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
 func AvgFractionOfTotalRewards(filename string) (FractionOfRewardsK16, FractionOfRewardsK8) {
 	transactions := ReadOutput(filename)
 	fractoionRewardsK16 := FractionOfRewardsK16Calc(transactions)
@@ -119,7 +119,7 @@ func AvgFractionOfTotalRewards(filename string) (FractionOfRewardsK16, FractionO
 	return fractoionRewardsK16, fractoionRewardsK8
 }
 
-// thresholdEnabled: true,    forgivenessEnabled: true,   forgivenessDuringRouting: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
+// FractionOfRewardsK16Calc thresholdEnabled: true,    forgivenessEnabled: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
 func FractionOfRewardsK16Calc(transactions [][]Transaction) FractionOfRewardsK16 {
 	threeHopRoutes := make([]FractionOfRewardsK16, 0)
 	for _, transactionList := range transactions {
@@ -175,7 +175,7 @@ func FractionOfRewardsK16Calc(transactions [][]Transaction) FractionOfRewardsK16
 	}
 }
 
-// thresholdEnabled: true,    forgivenessEnabled: true,   forgivenessDuringRouting: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
+// FractionOfRewardsK8Calc thresholdEnabled: true,    forgivenessEnabled: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
 func FractionOfRewardsK8Calc(transactions [][]Transaction) FractionOfRewardsK8 {
 	twoHopRoutes := make([]FractionOfRewardsK8, 0)
 	for _, transactionList := range transactions {
@@ -252,7 +252,7 @@ func FractionOfRewardsK8Calc(transactions [][]Transaction) FractionOfRewardsK8 {
 	}
 }
 
-// thresholdEnabled: true,    forgivenessEnabled: true,   forgivenessDuringRouting: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
+// RewardFairnessForForwardingActions thresholdEnabled: true,    forgivenessEnabled: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
 func RewardFairnessForForwardingActions(filename string) float64 {
 	transactions := ReadOutput(filename)
 	var rewards []int
@@ -268,7 +268,7 @@ func RewardFairnessForForwardingActions(filename string) float64 {
 	return gini(rewards)
 }
 
-// thresholdEnabled: true,    forgivenessEnabled: true,   forgivenessDuringRouting: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
+// RewardFairnessForStoringActions thresholdEnabled: true,    forgivenessEnabled: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
 func RewardFairnessForStoringActions(filename string) float64 {
 	transactions := ReadOutput(filename)
 	var rewards []int
@@ -282,7 +282,7 @@ func RewardFairnessForStoringActions(filename string) float64 {
 	return gini(rewards)
 }
 
-// thresholdEnabled: true,    forgivenessEnabled: true,   forgivenessDuringRouting: true,   paymentEnabled: true,   maxPOCheckEnabled: true,
+// RewardFarinessForAllActions thresholdEnabled: true,    forgivenessEnabled: true,     paymentEnabled: true,   maxPOCheckEnabled: true,
 func RewardFarinessForAllActions(filename string) float64 {
 	transactions := ReadOutput(filename)
 	var rewards []int

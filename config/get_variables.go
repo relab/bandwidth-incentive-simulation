@@ -35,10 +35,6 @@ func IsForgivenessEnabled() bool {
 	return Variables.experimentOptions.ForgivenessEnabled
 }
 
-func IsForgivenessDuringRouting() bool {
-	return Variables.experimentOptions.ForgivenessDuringRouting
-}
-
 func IsCacheEnabled() bool {
 	return Variables.experimentOptions.CacheIsEnabled
 }
@@ -51,7 +47,7 @@ func IsRetryWithAnotherPeer() bool {
 	return Variables.experimentOptions.RetryWithAnotherPeer
 }
 
-func IsForwarderPayForceOriginatorToPay() bool {
+func IsForwardersPayForceOriginatorToPay() bool {
 	return Variables.experimentOptions.ForwardersPayForceOriginatorToPay
 }
 
@@ -135,7 +131,7 @@ func GetSameOriginator() bool {
 	return Variables.confOptions.SameOriginator
 }
 
-func GetEdgeLock() bool {
+func IsEdgeLock() bool {
 	return Variables.confOptions.EdgeLock
 }
 
@@ -161,6 +157,17 @@ func IsDebugPrints() bool {
 
 func GetDebugInterval() int {
 	return Variables.confOptions.DebugInterval
+}
+
+func TimeForDebugPrints(timeStep int) bool {
+	if IsDebugPrints() {
+		return timeStep%GetDebugInterval() == 0
+	}
+	return false
+}
+
+func TimeForNewEpoch(timeStep int) bool {
+	return timeStep%GetRequestsPerSecond() == 0
 }
 
 func IsOutputEnabled() bool {
@@ -248,8 +255,7 @@ func GetRewardFairnessForAllActions() bool {
 // GetNegativeIncome TODO: Kan ver merr det må ver mer checks her
 func GetNegativeIncome() bool {
 	if Variables.experimentOptions.PaymentEnabled &&
-		Variables.experimentOptions.ForgivenessEnabled &&
-		Variables.experimentOptions.ForgivenessDuringRouting {
+		Variables.experimentOptions.ForgivenessEnabled {
 		return Variables.confOptions.OutputOptions.NegativeIncome
 	}
 	return false
