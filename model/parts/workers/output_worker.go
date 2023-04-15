@@ -4,146 +4,23 @@ import (
 	"bufio"
 	"fmt"
 	"go-incentive-simulation/config"
+	"go-incentive-simulation/model/parts/output"
 	"go-incentive-simulation/model/parts/types"
-	"math"
 	"os"
 	"sync"
 )
 
-type FractionOfRewardsK8 struct {
-	hop1 float64
-	hop2 float64
-	hop3 float64
-	hop4 float64
-}
-
-type MeanRewardPerForward struct {
-	AllRewards []int
-	SumRewards int
-	Writer     *bufio.Writer
-}
-
-func (o *MeanRewardPerForward) CalculateMeanRewardPerForward() float64 {
-	return float64(o.SumRewards) / float64(len(o.AllRewards))
-}
-
-type AvgNumberOfHops struct {
-	TotalNumberOfHops int
-	NumberOfRoutes    int
-	Writer            *bufio.Writer
-}
-
-func (o *AvgNumberOfHops) CalculateAverageNumberOfHops() float64 {
-	return float64(o.TotalNumberOfHops) / float64(o.NumberOfRoutes)
-}
-
-type FractionOfRewardsK16 struct {
-	Hop1            float64
-	Hop2            float64
-	Hop3            float64
-	RouteRewards    []int
-	SumRouteRewards int
-	Writer          *bufio.Writer
-}
-
-type Fractions struct {
-	Fractions []FractionOfRewardsK16
-	Writer    *bufio.Writer
-}
-
-func (o *Fractions) CalculateFractionOfRewards() (float64, float64, float64) {
-	var sumHop1 float64
-	var sumHop2 float64
-	var sumHop3 float64
-	for _, reward := range o.Fractions {
-		sumHop1 += reward.Hop1
-		sumHop2 += reward.Hop2
-		sumHop3 += reward.Hop3
-	}
-	hop1, hop2, hop3 := sumHop1/float64(len(o.Fractions)), sumHop2/float64(len(o.Fractions)), sumHop3/float64(len(o.Fractions))
-
-	return hop1, hop2, hop3
-}
-
-type RewardFairnessForStoringAction struct {
-	AllStoringRewards    []int
-	SumAllStoringRewards int
-	Total                float64
-	Counter              int
-	Writer               *bufio.Writer
-}
-
-func (o *RewardFairnessForStoringAction) CalculateRewardFairnessForStoringAction() float64 {
-	total := 0.0
-	x := o.AllStoringRewards
-	for i, xi := range x[:len(x)-1] {
-		for _, xj := range x[i+1:] {
-			total += math.Abs(float64(xi - xj))
-		}
-	}
-	return total / (math.Pow(float64(len(x)), 2) * (float64(o.SumAllStoringRewards) / float64(len(x))))
-}
-
-type RewardFairnessForAllActions struct {
-	AllRewards    []int
-	SumAllRewards int
-	Writer        *bufio.Writer
-}
-
-func (o *RewardFairnessForAllActions) CalculateRewardFairnessForAllActions() float64 {
-	total := 0.0
-	x := o.AllRewards
-	for i, xi := range x[:len(x)-1] {
-		for _, xj := range x[i+1:] {
-			total += math.Abs(float64(xi - xj))
-		}
-	}
-	return total / (math.Pow(float64(len(x)), 2) * (float64(o.SumAllRewards) / float64(len(x))))
-}
-
-type RewardFairnessForForwardingActions struct {
-	AllForwardingRewards    []int
-	SumAllForwardingRewards int
-	Writer                  *bufio.Writer
-}
-
-func (o *RewardFairnessForForwardingActions) CalculateRewardFairnessForForwardingAction() float64 {
-	total := 0.0
-	x := o.AllForwardingRewards
-	for i, xi := range x[:len(x)-1] {
-		for _, xj := range x[i+1:] {
-			total += math.Abs(float64(xi - xj))
-		}
-	}
-	return total / (math.Pow(float64(len(x)), 2) * (float64(o.SumAllForwardingRewards) / float64(len(x))))
-}
-
-type NegativeIncome struct {
-	IncomeMap map[int]int
-	Writer    *bufio.Writer
-}
-
-func (o *NegativeIncome) CalculateNegativeIncome() float64 {
-	totalNegativeIncomeCounter := 0
-	for _, value := range o.IncomeMap {
-		if value < 0 {
-			totalNegativeIncomeCounter += 1
-		}
-	}
-	return float64(totalNegativeIncomeCounter) / float64(10000)
-}
-
-func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
+func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 	defer wg.Done()
-	var output types.Output
+	var outputStruct types.OutputStruct
 	counter := 0
-	var meanRewardPerForward MeanRewardPerForward
-	var avgNumberOfHops AvgNumberOfHops
-	var fractions Fractions
-	var rewardFairnessForStoringAction RewardFairnessForStoringAction
-	var rewardFairnessForAllActions RewardFairnessForAllActions
-	var rewardFairnessForForwardingAction RewardFairnessForForwardingActions
-	var negativeIncome NegativeIncome
+	var meanRewardPerForward output.MeanRewardPerForward
+	var avgNumberOfHops output.AvgNumberOfHops
+	var fractions output.Fractions
+	var rewardFairnessForStoringAction output.RewardFairnessForStoringAction
+	var rewardFairnessForAllActions output.RewardFairnessForAllActions
+	var rewardFairnessForForwardingAction output.RewardFairnessForForwardingActions
+	var negativeIncome output.NegativeIncome
 	negativeIncome.IncomeMap = make(map[int]int)
 	filePath := "./results/output.txt"
 	err := os.Remove(filePath)
@@ -281,15 +158,15 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 			}
 		}(negativeIncome.Writer)
 	}
-	for output = range outputChan {
+	for outputStruct = range outputChan {
 		counter++
 
 		if config.GetMeanRewardPerForward() {
-			for i := range output.RouteWithPrices {
-				if i == len(output.RouteWithPrices)-1 {
+			for i := range outputStruct.RouteWithPrices {
+				if i == len(outputStruct.RouteWithPrices)-1 {
 					break
 				}
-				reward := output.RouteWithPrices[i].Price - output.RouteWithPrices[i+1].Price
+				reward := outputStruct.RouteWithPrices[i].Price - outputStruct.RouteWithPrices[i+1].Price
 				meanRewardPerForward.AllRewards = append(meanRewardPerForward.AllRewards, reward)
 				meanRewardPerForward.SumRewards += reward
 			}
@@ -303,34 +180,37 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 		}
 
 		if config.GetAverageNumberOfHops() {
-			avgNumberOfHops.TotalNumberOfHops += len(output.RouteWithPrices)
+			avgNumberOfHops.TotalNumberOfHops += len(outputStruct.RouteWithPrices)
 			avgNumberOfHops.NumberOfRoutes++
 			if counter%100_000 == 0 {
 				hops := avgNumberOfHops.CalculateAverageNumberOfHops()
-				avgNumberOfHops.Writer.WriteString(fmt.Sprintf("Average number of hops: %f \n", hops))
+				_, err := avgNumberOfHops.Writer.WriteString(fmt.Sprintf("Average number of hops: %f \n", hops))
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
 
 		if config.GetAverageFractionOfTotalRewardsK16() && config.GetMaxProximityOrder() == 16 {
-			var FractionOfRewardsK16 FractionOfRewardsK16
-			if len(output.RouteWithPrices) == 2 {
-				FractionOfRewardsK16.RouteRewards = append(FractionOfRewardsK16.RouteRewards, output.RouteWithPrices[0].Price-output.RouteWithPrices[1].Price)
-				FractionOfRewardsK16.RouteRewards = append(FractionOfRewardsK16.RouteRewards, output.RouteWithPrices[1].Price)
-				FractionOfRewardsK16.SumRouteRewards += output.RouteWithPrices[0].Price - output.RouteWithPrices[1].Price
-				FractionOfRewardsK16.SumRouteRewards += output.RouteWithPrices[1].Price
+			var FractionOfRewardsK16 output.FractionOfRewardsK16
+			if len(outputStruct.RouteWithPrices) == 2 {
+				FractionOfRewardsK16.RouteRewards = append(FractionOfRewardsK16.RouteRewards, outputStruct.RouteWithPrices[0].Price-outputStruct.RouteWithPrices[1].Price)
+				FractionOfRewardsK16.RouteRewards = append(FractionOfRewardsK16.RouteRewards, outputStruct.RouteWithPrices[1].Price)
+				FractionOfRewardsK16.SumRouteRewards += outputStruct.RouteWithPrices[0].Price - outputStruct.RouteWithPrices[1].Price
+				FractionOfRewardsK16.SumRouteRewards += outputStruct.RouteWithPrices[1].Price
 				FractionOfRewardsK16.Hop1 = float64(FractionOfRewardsK16.RouteRewards[0]) / float64(FractionOfRewardsK16.SumRouteRewards)
 				FractionOfRewardsK16.Hop2 = float64(FractionOfRewardsK16.RouteRewards[1]) / float64(FractionOfRewardsK16.SumRouteRewards)
 				fractions.Fractions = append(fractions.Fractions, FractionOfRewardsK16)
 				FractionOfRewardsK16.RouteRewards = nil
 				FractionOfRewardsK16.SumRouteRewards = 0
 			}
-			if len(output.RouteWithPrices) == 3 {
-				FractionOfRewardsK16.RouteRewards = append(FractionOfRewardsK16.RouteRewards, output.RouteWithPrices[0].Price-output.RouteWithPrices[1].Price)
-				FractionOfRewardsK16.RouteRewards = append(FractionOfRewardsK16.RouteRewards, output.RouteWithPrices[1].Price-output.RouteWithPrices[2].Price)
-				FractionOfRewardsK16.RouteRewards = append(FractionOfRewardsK16.RouteRewards, output.RouteWithPrices[2].Price)
-				FractionOfRewardsK16.SumRouteRewards += output.RouteWithPrices[0].Price - output.RouteWithPrices[1].Price
-				FractionOfRewardsK16.SumRouteRewards += output.RouteWithPrices[1].Price - output.RouteWithPrices[2].Price
-				FractionOfRewardsK16.SumRouteRewards += output.RouteWithPrices[2].Price
+			if len(outputStruct.RouteWithPrices) == 3 {
+				FractionOfRewardsK16.RouteRewards = append(FractionOfRewardsK16.RouteRewards, outputStruct.RouteWithPrices[0].Price-outputStruct.RouteWithPrices[1].Price)
+				FractionOfRewardsK16.RouteRewards = append(FractionOfRewardsK16.RouteRewards, outputStruct.RouteWithPrices[1].Price-outputStruct.RouteWithPrices[2].Price)
+				FractionOfRewardsK16.RouteRewards = append(FractionOfRewardsK16.RouteRewards, outputStruct.RouteWithPrices[2].Price)
+				FractionOfRewardsK16.SumRouteRewards += outputStruct.RouteWithPrices[0].Price - outputStruct.RouteWithPrices[1].Price
+				FractionOfRewardsK16.SumRouteRewards += outputStruct.RouteWithPrices[1].Price - outputStruct.RouteWithPrices[2].Price
+				FractionOfRewardsK16.SumRouteRewards += outputStruct.RouteWithPrices[2].Price
 				FractionOfRewardsK16.Hop1 = float64(FractionOfRewardsK16.RouteRewards[0]) / float64(FractionOfRewardsK16.SumRouteRewards)
 				FractionOfRewardsK16.Hop2 = float64(FractionOfRewardsK16.RouteRewards[1]) / float64(FractionOfRewardsK16.SumRouteRewards)
 				FractionOfRewardsK16.Hop3 = float64(FractionOfRewardsK16.RouteRewards[2]) / float64(FractionOfRewardsK16.SumRouteRewards)
@@ -340,12 +220,15 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 			}
 			if counter%100_000 == 0 {
 				hop1, hop2, hop3 := fractions.CalculateFractionOfRewards()
-				fractions.Writer.WriteString(fmt.Sprintf("hop 1: %f, hop 2: %f, hop 3: %f \n", hop1, hop2, hop3))
+				_, err := fractions.Writer.WriteString(fmt.Sprintf("hop 1: %f, hop 2: %f, hop 3: %f \n", hop1, hop2, hop3))
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
 
 		if config.GetRewardFairnessForStoringAction() {
-			route := output.RouteWithPrices
+			route := outputStruct.RouteWithPrices
 			if route != nil {
 				reward := route[len(route)-1].Price
 				rewardFairnessForStoringAction.AllStoringRewards = append(rewardFairnessForStoringAction.AllStoringRewards, reward)
@@ -353,13 +236,15 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 			}
 			if counter == 100_000 {
 				fairness := rewardFairnessForStoringAction.CalculateRewardFairnessForStoringAction()
-				writer.WriteString(fmt.Sprintf("Reward fairness for storing action: %f \n", fairness))
-				//fmt.Println("time since start: ", time.Since(start))
+				_, err := rewardFairnessForStoringAction.Writer.WriteString(fmt.Sprintf("Reward fairness for storing action: %f \n", fairness))
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
 
 		if config.GetRewardFairnessForAllActions() {
-			route := output.RouteWithPrices
+			route := outputStruct.RouteWithPrices
 			if route != nil {
 				for i := range route {
 					if i == len(route)-1 {
@@ -374,14 +259,16 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 				}
 				if counter == 100_000 {
 					fairness := rewardFairnessForAllActions.CalculateRewardFairnessForAllActions()
-					rewardFairnessForAllActions.Writer.WriteString(fmt.Sprintf("Reward fairness for all actions: %f \n", fairness))
-					//fmt.Println("time since start: ", time.Since(start))
+					_, err := rewardFairnessForAllActions.Writer.WriteString(fmt.Sprintf("Reward fairness for all actions: %f \n", fairness))
+					if err != nil {
+						panic(err)
+					}
 				}
 			}
 		}
 
 		if config.GetRewardFairnessForForwardingAction() {
-			route := output.RouteWithPrices
+			route := outputStruct.RouteWithPrices
 			if route != nil {
 				for i := range route {
 					if i == len(route)-1 {
@@ -393,23 +280,25 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 				}
 				if counter == 100_000 {
 					fairness := rewardFairnessForForwardingAction.CalculateRewardFairnessForForwardingAction()
-					rewardFairnessForAllActions.Writer.WriteString(fmt.Sprintf("Reward fairness for forwarding action: %f \n", fairness))
-					//fmt.Println("time since start: ", time.Since(start))
+					_, err := rewardFairnessForAllActions.Writer.WriteString(fmt.Sprintf("Reward fairness for forwarding action: %f \n", fairness))
+					if err != nil {
+						panic(err)
+					}
 				}
 			}
 		}
 
 		// payment enabled, forgiveness enabled, threshold enabled, k = 8
-		if config.GetNegativeIncome() && config.GetPaymentEnabled() && config.IsForgivenessEnabled() { //Payment enabled can use outout.Payment
-			payments := output.RouteWithPrices
-			if payments != nil {
-				for i, payment := range payments {
-					if i == len(payments)-1 {
-						break
-					}
-					payer := int(payment.RequesterNode)
-					payee := int(payment.ProviderNode)
-					value := payment.Price
+		if config.GetNegativeIncome() && config.GetPaymentEnabled() && config.IsForgivenessEnabled() { //Payment enabled can use output.Payment
+			route := outputStruct.RouteWithPrices
+			if route != nil {
+				for _, nodePair := range route {
+					//if i == len(payments)-1 {
+					//	break
+					//}
+					payer := int(nodePair.RequesterNode)
+					payee := int(nodePair.ProviderNode)
+					value := nodePair.Price
 					valPayer, ok := negativeIncome.IncomeMap[payer]
 					if !ok {
 						negativeIncome.IncomeMap[payer] = 0
@@ -424,102 +313,12 @@ func OutputWorker(outputChan chan types.Output, wg *sync.WaitGroup) {
 			}
 			// if counter%500_000==0 or counter==100_000 {
 			if counter%100_000 == 0 {
-				negativeIncome := negativeIncome.CalculateNegativeIncome()
-				writer.WriteString(fmt.Sprintf("Negative income: %f %% \n", negativeIncome*100))
+				negativeIncomeRes := negativeIncome.CalculateNegativeIncome()
+				_, err := negativeIncome.Writer.WriteString(fmt.Sprintf("Negative income: %f %% \n", negativeIncomeRes*100))
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
-
 	}
-}
-
-func MakeAvgNumberOfHopsFile() *os.File {
-	filePath := "./results/avgNumberOfHops.txt"
-	err := os.Remove(filePath)
-	if err != nil {
-		fmt.Println("Could not remove the file", filePath)
-	}
-	avgNumberOfHopsFile, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	return avgNumberOfHopsFile
-}
-
-func MakeMeanRewardPerForwardFile() *os.File {
-	filePath := "./results/meanRewardPerForward.txt"
-	err := os.Remove(filePath)
-	if err != nil {
-		fmt.Println("Could not remove the file", filePath)
-	}
-	meanRewardPerForwardFile, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	return meanRewardPerForwardFile
-}
-
-func MakeFractionOfRewardsFile() *os.File {
-	filePath := "./results/fractionOfRewards.txt"
-	err := os.Remove(filePath)
-	if err != nil {
-		fmt.Println("Could not remove the file", filePath)
-	}
-	fractionOfRewards, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	return fractionOfRewards
-}
-
-func MakeRewardFairnessForStoringActionFile() *os.File {
-	filepath := "./results/rewardFairnessForStoringAction.txt"
-	err := os.Remove(filepath)
-	if err != nil {
-		fmt.Println("Could not remove the file", filepath)
-	}
-	rewardFairnessForStoringActionFile, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	return rewardFairnessForStoringActionFile
-}
-
-func MakeRewardFairnessForAllActionsFile() *os.File {
-	filepath := "./results/rewardFairnessForAllActions.txt"
-	err := os.Remove(filepath)
-	if err != nil {
-		fmt.Println("Could not remove the file", filepath)
-	}
-	rewardFairnessForAllActionsFile, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	return rewardFairnessForAllActionsFile
-}
-
-func MakeRewardFairnessForForwardingActionFile() *os.File {
-	filepath := "./results/rewardFairnessForForwardingAction.txt"
-	err := os.Remove(filepath)
-	if err != nil {
-		fmt.Println("Could not remove the file", filepath)
-	}
-	rewardFairnessForForwardingActionFile, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	return rewardFairnessForForwardingActionFile
-}
-
-func MakeNegativeIncomeFile() *os.File {
-	filepath := "./results/negativeIncome.txt"
-	err := os.Remove(filepath)
-	if err != nil {
-		fmt.Println("Could not remove the file", filepath)
-	}
-	negativeIncomeFile, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	return negativeIncomeFile
-
 }

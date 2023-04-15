@@ -49,7 +49,7 @@ ConfOptions:
   # Which logic should be used in the outputWorker
   OutputOptions:
     MeanRewardPerForward: true
-    AverageNumberOfHops: false
+    AverageNumberOfHops: true
     AverageFractionOfTotalRewardsK8: false
     AverageFractionOfTotalRewardsK16: false
     RewardFairnessForForwardingAction: false
