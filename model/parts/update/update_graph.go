@@ -6,13 +6,13 @@ import (
 	"go-incentive-simulation/model/parts/utils"
 )
 
-func Graph(state *types.State, requestResult types.RequestResult, curTimeStep int) types.Output {
+func Graph(state *types.State, requestResult types.RequestResult, curTimeStep int) types.OutputStruct {
 	chunkId := requestResult.ChunkId
 	route := requestResult.Route
 	paymentsList := requestResult.PaymentList
 	var nodePairWithPrice types.NodePairWithPrice
 	var paymentWithPrice types.PaymentWithPrice
-	var output types.Output
+	var output types.OutputStruct
 
 	if config.GetPaymentEnabled() {
 		for _, payment := range paymentsList {
