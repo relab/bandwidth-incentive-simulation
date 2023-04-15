@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
 	"math/rand"
@@ -9,9 +9,9 @@ import (
 )
 
 func PrecomputeRespNodes(nodesId []types.NodeId) [][4]types.NodeId {
-	numPossibleChunks := constants.GetRangeAddress()
+	numPossibleChunks := config.GetRangeAddress()
 	result := make([][4]types.NodeId, numPossibleChunks)
-	numNodesSearch := constants.GetBits()
+	numNodesSearch := config.GetBits()
 
 	for chunkId := 0; chunkId < numPossibleChunks; chunkId++ {
 		closestNodes := types.BinarySearchClosest(nodesId, chunkId, numNodesSearch)
@@ -45,9 +45,10 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 	//fmt.Println("Creating graph network...")
 	sortedNodeIds := SortedKeys(net.NodesMap)
 	numNodes := len(net.NodesMap)
+
 	Edges := make(map[types.NodeId]map[types.NodeId]*types.Edge)
-	respNodes := make([][4]types.NodeId, constants.GetRangeAddress())
-	if constants.IsPrecomputeRespNodes() {
+	respNodes := make([][4]types.NodeId, config.GetRangeAddress())
+	if config.IsPrecomputeRespNodes() {
 		respNodes = PrecomputeRespNodes(sortedNodeIds)
 	}
 
@@ -72,8 +73,7 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 		for _, adjItems := range nodeAdj {
 			for _, otherNodeId := range adjItems {
 				threshold := general.BitLength(nodeId.ToInt() ^ otherNodeId.ToInt())
-				epoch := constants.GetEpoch()
-				attrs := types.EdgeAttrs{A2B: 0, LastEpoch: epoch, Threshold: threshold}
+				attrs := types.EdgeAttrs{A2B: 0, LastEpoch: 0, Threshold: threshold}
 				err := graph.AddEdge(node.Id, otherNodeId, attrs)
 				if err != nil {
 					return nil, err
@@ -86,8 +86,8 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 	return graph, nil
 }
 
-func GetChunkId() types.ChunkId {
-	return types.ChunkId(rand.Intn(constants.GetRangeAddress() - 1))
+func GetNewChunkId() types.ChunkId {
+	return types.ChunkId(rand.Intn(config.GetRangeAddress()-1) + 1)
 }
 
 func GetPreferredChunkId() types.ChunkId {
@@ -98,20 +98,20 @@ func GetPreferredChunkId() types.ChunkId {
 	if float32(random) <= 0.5 {
 		chunkId = types.ChunkId(rand.Intn(numPreferredChunks))
 	} else {
-		chunkId = types.ChunkId(rand.Intn(constants.GetRangeAddress()-numPreferredChunks) + numPreferredChunks)
+		chunkId = types.ChunkId(rand.Intn(config.GetRangeAddress()-numPreferredChunks) + numPreferredChunks)
 	}
 	return chunkId
 }
 
 func isThresholdFailed(firstNodeId types.NodeId, secondNodeId types.NodeId, graph *types.Graph, request types.Request) bool {
-	if constants.GetThresholdEnabled() {
+	if config.GetThresholdEnabled() {
 		edgeDataFirst := graph.GetEdgeData(firstNodeId, secondNodeId)
 		p2pFirst := edgeDataFirst.A2B
 		edgeDataSecond := graph.GetEdgeData(secondNodeId, firstNodeId)
 		p2pSecond := edgeDataSecond.A2B
 
-		threshold := constants.GetThreshold()
-		if constants.IsAdjustableThreshold() {
+		threshold := config.GetThreshold()
+		if config.IsAdjustableThreshold() {
 			threshold = edgeDataFirst.Threshold
 		}
 
@@ -120,7 +120,7 @@ func isThresholdFailed(firstNodeId types.NodeId, secondNodeId types.NodeId, grap
 		//fmt.Printf("price: %d = p2pFirst: %d - p2pSecond: %d + PeerPriceChunk: %d \n", price, p2pFirst, p2pSecond, peerPriceChunk)
 
 		if price > threshold {
-			if constants.IsForgivenessEnabled() {
+			if config.IsForgivenessEnabled() {
 				newP2pFirst, forgiven := CheckForgiveness(edgeDataFirst, firstNodeId, secondNodeId, graph, request)
 				//_, _ = CheckForgiveness(edgeDataSecond, secondNodeId, firstNodeId, graph, request)
 				if forgiven {
@@ -134,22 +134,24 @@ func isThresholdFailed(firstNodeId types.NodeId, secondNodeId types.NodeId, grap
 }
 
 func getProximityChunk(firstNodeId types.NodeId, chunkId types.ChunkId) int {
-	retVal := constants.GetBits() - general.BitLength(firstNodeId.ToInt()^chunkId.ToInt())
-	if retVal <= constants.GetMaxProximityOrder() {
+	retVal := config.GetBits() - general.BitLength(firstNodeId.ToInt()^chunkId.ToInt())
+	if retVal <= config.GetMaxProximityOrder() {
 		return retVal
 	} else {
-		return constants.GetMaxProximityOrder()
+		return config.GetMaxProximityOrder()
 	}
 }
 
 func PeerPriceChunk(firstNodeId types.NodeId, chunkId types.ChunkId) int {
-	val := (constants.GetMaxProximityOrder() - getProximityChunk(firstNodeId, chunkId) + 1) * constants.GetPrice()
+	val := (config.GetMaxProximityOrder() - getProximityChunk(firstNodeId, chunkId) + 1) * config.GetPrice()
 	return val
 }
 
 func CreateDownloadersList(g *types.Graph) []types.NodeId {
 	//fmt.Println("Creating downloaders list...")
-	downloadersList := types.Choice(g.NodeIds, constants.GetOriginators())
+
+	downloadersList := types.Choice(g.NodeIds, config.GetOriginators())
+
 	//fmt.Println("Downloaders list create...!")
 	return downloadersList
 }

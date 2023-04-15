@@ -1,36 +1,36 @@
 package results
 
 import (
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"testing"
 )
 
 func TestAvgRewardPerEachForwardingAction(t *testing.T) {
 	result := AvgRewardPerEachForwardingAction()
-	t.Log("Average reward per each forwarding action: ", result, "with k: ", constants.GetBinSize())
+	t.Log("Average reward per each forwarding action: ", result, "with k: ", config.GetBinSize())
 }
 
 func TestAvgNumberOfHops(t *testing.T) {
 	result := AvgNumberOfHops()
-	t.Log("Average number of hops from originator to store: ", result, "with k: ", constants.GetBinSize())
+	t.Log("Average number of hops from originator to store: ", result, "with k: ", config.GetBinSize())
 }
 
 func TestAvgFractionOfTotalRewards(t *testing.T) {
-	fractoionRewardsK16, fractionRewardsK8 := AvgFractionOfTotalRewards()
-	if constants.GetBinSize() == 16 {
-		t.Log("Average percent of total rewards for 1 hop: ", fractoionRewardsK16.hop1*100, "with k: ", constants.GetBinSize())
-		t.Log("Average percent of total rewards for 2 hop: ", fractoionRewardsK16.hop2*100, "with k: ", constants.GetBinSize())
-		t.Log("Average percent of total rewards for 3 hop: ", fractoionRewardsK16.hop3*100, "with k: ", constants.GetBinSize())
-	} else if constants.GetBinSize() == 8 {
-		t.Log("Average percent of total rewards for 1 hop: ", fractionRewardsK8.hop1*100, "with k: ", constants.GetBinSize())
-		t.Log("Average percent of total rewards for 2 hop: ", fractionRewardsK8.hop2*100, "with k: ", constants.GetBinSize())
-		t.Log("Average percent of total rewards for 3 hop: ", fractionRewardsK8.hop3*100, "with k: ", constants.GetBinSize())
-		t.Log("Average percnt of total rewards for 4 hop: ", fractionRewardsK8.hop4*100, "with k: ", constants.GetBinSize())
+	fractionRewardsK16, fractionRewardsK8 := AvgFractionOfTotalRewards("output.txt")
+	if config.GetBinSize() == 16 {
+		t.Log("Average percent of total rewards for 1 hop: ", fractionRewardsK16.Hop1*100, "with k: ", config.GetBinSize())
+		t.Log("Average percent of total rewards for 2 hop: ", fractionRewardsK16.Hop2*100, "with k: ", config.GetBinSize())
+		t.Log("Average percent of total rewards for 3 hop: ", fractionRewardsK16.Hop3*100, "with k: ", config.GetBinSize())
+	} else if config.GetBinSize() == 8 {
+		t.Log("Average percent of total rewards for 1 hop: ", fractionRewardsK8.hop1*100, "with k: ", config.GetBinSize())
+		t.Log("Average percent of total rewards for 2 hop: ", fractionRewardsK8.hop2*100, "with k: ", config.GetBinSize())
+		t.Log("Average percent of total rewards for 3 hop: ", fractionRewardsK8.hop3*100, "with k: ", config.GetBinSize())
+		t.Log("Average percnt of total rewards for 4 hop: ", fractionRewardsK8.hop4*100, "with k: ", config.GetBinSize())
 	}
 }
 
 func TestTest(t *testing.T) {
-	transactions := ReadOutput()
+	transactions := ReadOutput("output.txt")
 	var num1Length int
 	var num2Length int
 	var num3Length int
@@ -65,3 +65,19 @@ func TestTest(t *testing.T) {
 	t.Log("Number of 6 hop routes: ", num6Length)
 	t.Log("Total number of routes: ", num1Length+num2Length+num3Length+num4Length+num5Lenght+num6Length)
 }
+
+// func TestRewardFairness(t *testing.T) {
+// 	fairness := RewardFairnessForForwardingActions("output.txt")
+// 	t.Log("Reward fairness for forwarding action: ", fairness)
+// }
+
+// func TestRewardFairnessStoringAction(t *testing.T) {
+// 	fairness := RewardFairnessForStoringActions("output.txt")
+// 	t.Log("Reward fairness for storing action: ", fairness)
+// }
+
+// func TestRewardFairnessForAllActions(t *testing.T) {
+
+// 	fairness := RewardFarinessForAllActions("output.txt")
+// 	t.Log("Reward fairness for all actions: ", fairness)
+// }

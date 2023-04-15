@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"gotest.tools/assert"
 	"math/rand"
 	"testing"
 	"time"
@@ -31,5 +32,13 @@ func TestGenerateAndLoad(t *testing.T) {
 	if len(nodes2) != len(nodes) {
 		t.Error("NodesMap are different")
 	}
+}
 
+func TestChoice(t *testing.T) {
+	// List of nodes
+	nodes := []NodeId{2, 3, 4, 5, 6, 7, 8, 9, 10}
+	// Originators
+	k := 2
+	c := Choice(nodes, k)
+	assert.Equal(t, len(c), k)
 }

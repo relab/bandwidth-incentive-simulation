@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
 )
@@ -24,7 +24,7 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 
 	//var lockedEdges []types.NodeId
 
-	bin := constants.GetBits() - general.BitLength(firstNodeId.ToInt()^chunkId.ToInt())
+	bin := config.GetBits() - general.BitLength(firstNodeId.ToInt()^chunkId.ToInt())
 	firstNodeAdjIds := graph.GetNodeAdj(firstNodeId)
 
 	for _, nodeId := range firstNodeAdjIds[bin] {
@@ -36,16 +36,16 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 			continue
 		}
 		// This means the node is now actively trying to communicate with the other node
-		if constants.GetEdgeLock() {
+		if config.IsEdgeLock() {
 			graph.LockEdge(firstNodeId, nodeId)
 		}
 		if !isThresholdFailed(firstNodeId, nodeId, graph, request) {
 			thresholdFailed = false
-			if constants.IsRetryWithAnotherPeer() {
+			if config.IsRetryWithAnotherPeer() {
 				rerouteStruct := graph.GetNode(mainOriginatorId).RerouteStruct
 				if rerouteStruct.Reroute.RejectedNodes != nil {
 					if general.Contains(rerouteStruct.Reroute.RejectedNodes, nodeId) {
-						if constants.GetEdgeLock() {
+						if config.IsEdgeLock() {
 							graph.UnlockEdge(firstNodeId, nodeId)
 						}
 						continue // skips node that's been part of a failed route before
@@ -53,7 +53,7 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 				}
 			}
 
-			if constants.GetEdgeLock() {
+			if config.IsEdgeLock() {
 				if !nextNodeId.IsNil() {
 					graph.UnlockEdge(firstNodeId, nextNodeId)
 				}
@@ -67,20 +67,20 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 
 		} else {
 			thresholdFailed = true
-			if constants.GetPaymentEnabled() {
+			if config.GetPaymentEnabled() {
 				if dist < payDist && nextNodeId.IsNil() {
-					if constants.GetEdgeLock() && !payNextId.IsNil() {
+					if config.IsEdgeLock() && !payNextId.IsNil() {
 						graph.UnlockEdge(firstNodeId, payNextId)
 					}
 					payDist = dist
 					payNextId = nodeId
 				} else {
-					if constants.GetEdgeLock() {
+					if config.IsEdgeLock() {
 						graph.UnlockEdge(firstNodeId, nodeId)
 					}
 				}
 			} else {
-				if constants.GetEdgeLock() {
+				if config.IsEdgeLock() {
 					graph.UnlockEdge(firstNodeId, nodeId)
 				}
 			}
@@ -105,14 +105,14 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 	} else {
 	}
 
-	if constants.GetPaymentEnabled() && !payNextId.IsNil() {
+	if config.GetPaymentEnabled() && !payNextId.IsNil() {
 		accessFailed = false
 
 		if firstNodeId == mainOriginatorId {
 			payment.IsOriginator = true
 		}
 
-		if constants.IsOnlyOriginatorPays() {
+		if config.IsOnlyOriginatorPays() {
 			// Only set payment if the firstNode is the MainOriginator
 			if payment.IsOriginator {
 				payment.FirstNodeId = firstNodeId
@@ -121,7 +121,7 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 				nextNodeId = payNextId
 			}
 
-		} else if constants.IsPayIfOrigPays() {
+		} else if config.IsPayIfOrigPays() {
 			// Pay if the originator pays or if the previous node has paid
 			if payment.IsOriginator || prevNodePaid {
 				payment.FirstNodeId = firstNodeId

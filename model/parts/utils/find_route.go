@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
 )
@@ -23,7 +23,7 @@ func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []typ
 	var payment types.Payment
 	var nextNodeId types.NodeId
 
-	if constants.IsPayIfOrigPays() {
+	if config.IsPayIfOrigPays() {
 		prevNodePaid = true
 	}
 	if general.ArrContains(respNodes, mainOriginatorId) {
@@ -48,7 +48,7 @@ func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []typ
 					found = true
 					break out
 				}
-				if constants.IsCacheEnabled() {
+				if config.IsCacheEnabled() {
 					node := graph.GetNode(nextNodeId)
 					if node.CacheStruct.Contains(chunkId) {
 						foundByCaching = true
@@ -64,7 +64,7 @@ func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []typ
 		}
 	}
 
-	if constants.IsForwardersPayForceOriginatorToPay() {
+	if config.IsForwardersPayForceOriginatorToPay() {
 		if !accessFailed && len(paymentList) > 0 {
 
 			for i := 0; i < len(route)-1; i++ {

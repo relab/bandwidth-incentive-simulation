@@ -1,14 +1,14 @@
 package update
 
 import (
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/parts/types"
 	"sync/atomic"
 )
 
 func Cache(state *types.State, requestResult types.RequestResult) int64 {
-	var cacheHits int64
-	if constants.IsCacheEnabled() {
+	var cacheHits int64 = -1
+	if config.IsCacheEnabled() {
 		route := requestResult.Route
 		chunkId := requestResult.ChunkId
 
@@ -21,8 +21,9 @@ func Cache(state *types.State, requestResult types.RequestResult) int64 {
 			if requestResult.FoundByCaching {
 				cacheHits = atomic.AddInt64(&state.CacheHits, 1)
 			}
+		}
 
-		} else {
+		if cacheHits == -1 {
 			cacheHits = atomic.LoadInt64(&state.CacheHits)
 		}
 

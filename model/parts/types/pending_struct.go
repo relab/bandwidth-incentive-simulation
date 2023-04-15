@@ -1,7 +1,7 @@
 package types
 
 import (
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"sync"
 )
 
@@ -32,7 +32,7 @@ func (p *PendingStruct) AddPendingChunkId(chunkId ChunkId, curEpoch int) bool {
 		isNewChunk = true
 
 	} else { // chunk seen before
-		if p.PendingQueue[chunkIdIndex].Counter < constants.GetBinSize() {
+		if p.PendingQueue[chunkIdIndex].Counter < config.GetBinSize() {
 			p.PendingQueue[chunkIdIndex].Counter++
 
 		} else { // remove queued chunk

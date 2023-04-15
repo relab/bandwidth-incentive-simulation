@@ -1,7 +1,7 @@
 package update
 
 import (
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/utils"
 )
@@ -14,20 +14,20 @@ func Graph(state *types.State, requestResult types.RequestResult, curTimeStep in
 	var paymentWithPrice types.PaymentWithPrice
 	var output types.Output
 
-	if constants.GetPaymentEnabled() {
+	if config.GetPaymentEnabled() {
 		for _, payment := range paymentsList {
 			if !payment.IsNil() {
 				edgeData1 := state.Graph.GetEdgeData(payment.FirstNodeId, payment.PayNextId)
 				edgeData2 := state.Graph.GetEdgeData(payment.PayNextId, payment.FirstNodeId)
 				price := utils.PeerPriceChunk(payment.PayNextId, payment.ChunkId)
 				actualPrice := edgeData1.A2B - edgeData2.A2B + price
-				if constants.IsPayOnlyForCurrentRequest() {
+				if config.IsPayOnlyForCurrentRequest() {
 					actualPrice = price
 				}
 				if actualPrice < 0 {
 					continue
 				} else {
-					if !constants.IsPayOnlyForCurrentRequest() {
+					if !config.IsPayOnlyForCurrentRequest() {
 						newEdgeData1 := edgeData1
 						newEdgeData1.A2B = 0
 						state.Graph.SetEdgeData(payment.FirstNodeId, payment.PayNextId, newEdgeData1)
@@ -55,19 +55,18 @@ func Graph(state *types.State, requestResult types.RequestResult, curTimeStep in
 			newEdgeData.A2B += price
 			state.Graph.SetEdgeData(requesterNode, providerNode, newEdgeData)
 
-			if constants.GetMaxPOCheckEnabled() {
+			if config.GetMaxPOCheckEnabled() {
 				nodePairWithPrice = types.NodePairWithPrice{RequesterNode: requesterNode, ProviderNode: providerNode, Price: price}
 				output.RouteWithPrices = append(output.RouteWithPrices, nodePairWithPrice)
 			}
 		}
-		if constants.GetMaxPOCheckEnabled() {
+		if config.GetMaxPOCheckEnabled() {
 			//fmt.Println("RequestResult with price ", routeWithPrice)
 		}
 	}
 
 	// Unlocks all the edges between the nodes in the route
-
-	if constants.GetEdgeLock() {
+	if config.IsEdgeLock() {
 		for i := 0; i < len(route)-1; i++ {
 			state.Graph.UnlockEdge(route[i], route[i+1])
 		}

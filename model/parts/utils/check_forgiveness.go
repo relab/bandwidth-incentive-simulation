@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/parts/types"
 	"math"
 )
@@ -10,8 +10,8 @@ func CheckForgiveness(edgeData types.EdgeAttrs, firstNodeId types.NodeId, second
 	//passedTime := (request.TimeStep - edgeData.Last) / constants.GetRequestsPerSecond() // Old method without Epoch
 	passedTime := request.Epoch - edgeData.LastEpoch
 	if passedTime > 0 {
-		refreshRate := constants.GetRefreshRate()
-		if constants.IsAdjustableThreshold() {
+		refreshRate := config.GetRefreshRate()
+		if config.IsAdjustableThreshold() {
 			refreshRate = int(math.Ceil(float64(edgeData.Threshold / 2)))
 		}
 		removedDeptAmount := passedTime * refreshRate

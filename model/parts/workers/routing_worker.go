@@ -2,7 +2,7 @@ package workers
 
 import (
 	"fmt"
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/update"
 	"go-incentive-simulation/model/parts/utils"
@@ -22,7 +22,6 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 	var thresholdFailed bool
 	var foundByCaching bool
 
-	var stateSubset types.StateSubset
 	for {
 		select {
 		case <-pauseChan:
@@ -52,20 +51,24 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			retryCounter := update.Reroute(globalState, requestResult, request.Epoch)
 			cacheHits := update.Cache(globalState, requestResult)
 
+			// sending the "output" to the outputWorker
 			successfulFound := update.SuccessfulFound(globalState, requestResult)
 			failedRequestThreshold := update.FailedRequestsThreshold(globalState, requestResult)
 			failedRequestAccess := update.FailedRequestsAccess(globalState, requestResult)
 
 			// sending the "output" to the outputWorker
-			if constants.GetMaxPOCheckEnabled() {
-				if constants.IsDebugPrints() && constants.TimeForNewEpoch(curTimeStep) {
+
+			if config.GetMaxPOCheckEnabled() {
+				// TODO: find out why I put TimeForNewEpoch here and not TimeForDebugPrints?
+				if config.IsDebugPrints() && config.TimeForNewEpoch(curTimeStep) {
 					fmt.Println("outputChan length: ", len(outputChan))
 				}
 				outputChan <- output
 			}
 
-			if constants.IsWriteRoutesToFile() {
-				if constants.IsDebugPrints() && constants.TimeForNewEpoch(curTimeStep) {
+			if config.IsWriteRoutesToFile() {
+				// TODO: find out why I put TimeForNewEpoch here and not TimeForDebugPrints?
+				if config.IsDebugPrints() && config.TimeForNewEpoch(curTimeStep) {
 					fmt.Println("routeChan length: ", len(routeChan))
 				}
 				routeChan <- types.RouteData{
@@ -78,9 +81,12 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 				}
 			}
 
-			if constants.IsWriteStatesToFile() {
+			if config.IsWriteStatesToFile() {
+				if config.IsDebugPrints() && config.TimeForNewEpoch(curTimeStep) {
+					fmt.Println("stateChan length: ", len(stateChan))
+				}
 				// TODO: Decide on what subset of values we actually would like to store
-				stateSubset = types.StateSubset{
+				stateChan <- types.StateSubset{
 					WaitingCounter:          waitingCounter,
 					RetryCounter:            retryCounter,
 					CacheHits:               cacheHits,
@@ -92,10 +98,6 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 					TimeStep:                int64(curTimeStep),
 					Epoch:                   request.Epoch,
 				}
-				if constants.IsDebugPrints() && constants.TimeForNewEpoch(curTimeStep) {
-					fmt.Println("stateChan length: ", len(stateChan))
-				}
-				stateChan <- stateSubset
 			}
 		}
 	}

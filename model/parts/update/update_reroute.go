@@ -1,7 +1,7 @@
 package update
 
 import (
-	"go-incentive-simulation/model/constants"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
 	"sync/atomic"
@@ -9,7 +9,8 @@ import (
 
 func Reroute(state *types.State, requestResult types.RequestResult, curEpoch int) int64 {
 	var retryCounter int64
-	if constants.IsRetryWithAnotherPeer() {
+	if config.IsRetryWithAnotherPeer() {
+
 		route := requestResult.Route
 		chunkId := requestResult.ChunkId
 		originatorId := route[0]
@@ -39,7 +40,7 @@ func Reroute(state *types.State, requestResult types.RequestResult, curEpoch int
 			retryCounter = atomic.LoadInt64(&state.UniqueRetryCounter)
 		}
 
-		if len(reroute.RejectedNodes) > constants.GetBinSize() {
+		if len(reroute.RejectedNodes) > config.GetBinSize() {
 			originator.RerouteStruct.ResetRerouteAndSaveToHistory(chunkId, curEpoch)
 		}
 
