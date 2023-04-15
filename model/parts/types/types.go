@@ -94,11 +94,11 @@ type PaymentWithPrice struct {
 	Price   int
 }
 
-type Output struct {
+type OutputStruct struct {
 	RouteWithPrices    []NodePairWithPrice
 	PaymentsWithPrices []PaymentWithPrice
 }
 
 type Outputs struct {
-	Outputs []Output
+	Outputs []OutputStruct
 }

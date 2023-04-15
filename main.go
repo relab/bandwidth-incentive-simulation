@@ -24,7 +24,7 @@ func main() {
 	wgMain := &sync.WaitGroup{}
 	wgOutput := &sync.WaitGroup{}
 	requestChan := make(chan types.Request, numRoutingGoroutines)
-	outputChan := make(chan types.Output, 100000)
+	outputChan := make(chan types.OutputStruct, 100000)
 	routeChan := make(chan types.RouteData, 100000)
 	stateChan := make(chan types.StateSubset, 100000)
 	pauseChan := make(chan bool, numRoutingGoroutines)
