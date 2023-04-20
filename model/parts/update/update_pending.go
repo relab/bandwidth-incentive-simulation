@@ -7,7 +7,7 @@ import (
 )
 
 func Pending(state *types.State, requestResult types.RequestResult, curEpoch int) int64 {
-	var waitingCounter int64
+	var waitingCounter int64 = 0
 	if config.IsWaitingEnabled() {
 		route := requestResult.Route
 		chunkId := requestResult.ChunkId

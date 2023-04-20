@@ -35,7 +35,7 @@ ConfOptions:
   # WriteRoutesToFile: false, writes routes to file for future usage
   WriteRoutesToFile: false
   # WriteStatesToFile: false, writes a subset of states to file for future usage
-  WriteStatesToFile: false
+  WriteStatesToFile: true
   # IterationMeansUniqueChunk: false, if a chunk chosen again by waiting/retry counts as an iteration
   IterationMeansUniqueChunk: false
   # DebugPrints: false, enables some useful prints to terminal during the run
@@ -83,11 +83,11 @@ CustomExperiment:
   # ForwardersPayForceOriginatorToPay: false, if threshold fails, forces all the nodes in the route to pay for the current request
   ForwardersPayForceOriginatorToPay: false
   # WaitingEnabled: false, when Threshold fails, will wait before trying to traverse same route
-  WaitingEnabled: false
+  WaitingEnabled: true
   # RetryWithAnotherPeer: false, the Route to the chunk will try to take many paths to find the chunk
-  RetryWithAnotherPeer: false
+  RetryWithAnotherPeer: true
   # CacheIsEnabled: false, cache on nodes which stores chunks the node have seen before
-  CacheIsEnabled: false
+  CacheIsEnabled: true
   # PreferredChunks: false, fits well with cache, where some chunks are chosen more often than others
   PreferredChunks: false
   # AdjustableThreshold: false, the threshold limit of an edge is determined based on the XOR distance

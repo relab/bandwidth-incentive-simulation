@@ -68,7 +68,6 @@ package update
 //
 //}
 //
-//// TODO: RouteFlushing is having issues with the concurrent updates
 ////func TestUpdateRouteListAndFlush(t *testing.T) {
 ////	state := MakeInitialState(path)
 ////	policy := MakePolicyOutput(state)

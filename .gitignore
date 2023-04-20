@@ -20,6 +20,7 @@
 **/states.json
 **/routes.txt
 **/output.txt*
+**/**.csv
 **/performance*
 **/**.bin
 **/routes.json

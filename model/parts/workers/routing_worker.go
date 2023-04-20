@@ -59,16 +59,14 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			// sending the "output" to the outputWorker
 
 			if config.GetMaxPOCheckEnabled() {
-				// TODO: find out why I put TimeForNewEpoch here and not TimeForDebugPrints?
-				if config.IsDebugPrints() && config.TimeForNewEpoch(curTimeStep) {
+				if config.IsDebugPrints() && config.TimeForDebugPrints(curTimeStep) {
 					fmt.Println("outputChan length: ", len(outputChan))
 				}
 				outputChan <- output
 			}
 
 			if config.IsWriteRoutesToFile() {
-				// TODO: find out why I put TimeForNewEpoch here and not TimeForDebugPrints?
-				if config.IsDebugPrints() && config.TimeForNewEpoch(curTimeStep) {
+				if config.IsDebugPrints() && config.TimeForDebugPrints(curTimeStep) {
 					fmt.Println("routeChan length: ", len(routeChan))
 				}
 				routeChan <- types.RouteData{
@@ -82,20 +80,20 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			}
 
 			if config.IsWriteStatesToFile() {
-				if config.IsDebugPrints() && config.TimeForNewEpoch(curTimeStep) {
+				if config.IsDebugPrints() && config.TimeForDebugPrints(curTimeStep) {
 					fmt.Println("stateChan length: ", len(stateChan))
 				}
 				// TODO: Decide on what subset of values we actually would like to store
 				stateChan <- types.StateSubset{
-					WaitingCounter:          waitingCounter,
-					RetryCounter:            retryCounter,
-					CacheHits:               cacheHits,
+					WaitingCounter:          int(waitingCounter),
+					RetryCounter:            int(retryCounter),
+					CacheHits:               int(cacheHits),
 					ChunkId:                 int(request.ChunkId),
-					OriginatorIndex:         int64(request.OriginatorIndex),
-					SuccessfulFound:         successfulFound,
-					FailedRequestsThreshold: failedRequestThreshold,
-					FailedRequestsAccess:    failedRequestAccess,
-					TimeStep:                int64(curTimeStep),
+					OriginatorIndex:         request.OriginatorIndex,
+					SuccessfulFound:         int(successfulFound),
+					FailedRequestsThreshold: int(failedRequestThreshold),
+					FailedRequestsAccess:    int(failedRequestAccess),
+					TimeStep:                curTimeStep,
 					Epoch:                   request.Epoch,
 				}
 			}
