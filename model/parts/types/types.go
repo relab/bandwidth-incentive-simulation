@@ -37,16 +37,16 @@ func (p Payment) IsNil() bool {
 type Threshold [2]NodeId
 
 type StateSubset struct {
-	WaitingCounter          int64
-	RetryCounter            int64
-	CacheHits               int64
-	ChunkId                 int
-	OriginatorIndex         int64
-	SuccessfulFound         int64
-	FailedRequestsThreshold int64
-	FailedRequestsAccess    int64
-	TimeStep                int64
-	Epoch                   int
+	WaitingCounter          int `json:"waitingCounter,omitempty"`
+	RetryCounter            int `json:"retryCounter,omitempty"`
+	CacheHits               int `json:"cacheHits,omitempty"`
+	ChunkId                 int `json:"chunkId,omitempty"`
+	OriginatorIndex         int `json:"originatorIndex"`
+	SuccessfulFound         int `json:"successfulFound"`
+	FailedRequestsThreshold int `json:"failedRequestsThreshold"`
+	FailedRequestsAccess    int `json:"failedRequestsAccess"`
+	TimeStep                int `json:"timeStep"`
+	Epoch                   int `json:"epoch"`
 }
 
 type RouteData struct {

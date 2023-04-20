@@ -7,7 +7,7 @@ import (
 )
 
 func Cache(state *types.State, requestResult types.RequestResult) int64 {
-	var cacheHits int64 = -1
+	var cacheHits int64 = 0
 	if config.IsCacheEnabled() {
 		route := requestResult.Route
 		chunkId := requestResult.ChunkId
@@ -23,7 +23,7 @@ func Cache(state *types.State, requestResult types.RequestResult) int64 {
 			}
 		}
 
-		if cacheHits == -1 {
+		if cacheHits == 0 {
 			cacheHits = atomic.LoadInt64(&state.CacheHits)
 		}
 

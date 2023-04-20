@@ -8,7 +8,7 @@ import (
 )
 
 func Reroute(state *types.State, requestResult types.RequestResult, curEpoch int) int64 {
-	var retryCounter int64
+	var retryCounter int64 = 0
 	if config.IsRetryWithAnotherPeer() {
 
 		route := requestResult.Route
