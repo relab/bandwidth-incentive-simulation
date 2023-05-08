@@ -8,24 +8,79 @@ import (
 	"sort"
 )
 
-func PrecomputeRespNodes(nodesId []types.NodeId) [][4]types.NodeId {
+func PrecomputeRespNodes(nodesId []types.NodeId) map[types.ChunkId][4]types.NodeId {
 	numPossibleChunks := config.GetRangeAddress()
-	result := make([][4]types.NodeId, numPossibleChunks)
+	result := make(map[types.ChunkId][4]types.NodeId)
 	numNodesSearch := config.GetBits()
+	//numNodesSearch := 12
 
 	for chunkId := 0; chunkId < numPossibleChunks; chunkId++ {
-		closestNodes := types.BinarySearchClosest(nodesId, chunkId, numNodesSearch)
+		closestNodes, _ := types.BinarySearchClosest(nodesId, chunkId, numNodesSearch)
 		distances := make([]int, len(closestNodes))
 
 		for j, nodeId := range closestNodes {
 			distances[j] = nodeId.ToInt() ^ chunkId
 		}
+		//if chunkId%8423 == 0 {
+		//	fmt.Println("chunk is: ", chunkId)
+		//	fmt.Println("mid is: ", mid)
+		//	fmt.Println("closest nodes: ", closestNodes)
+		//	fmt.Println("least distances: ", distances)
+		//}
 
 		sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
 
+		arr := [4]types.NodeId{}
 		for k := 0; k < 4; k++ {
-			result[chunkId][k] = types.NodeId(distances[k] ^ chunkId) // this results in the nodeId again
+			arr[k] = types.NodeId(distances[k] ^ chunkId) // this results in the nodeId again
 		}
+
+		result[types.ChunkId(chunkId)] = arr
+
+		//if chunkId%8423 == 0 {
+		//	fmt.Println("chosen nodes: ", result[chunkId])
+		//	fmt.Println("with distances: ", distances[0:4])
+		//	fmt.Println(" ")
+		//}
+		//smallestNode := 100000000
+		//biggestNode := 0
+		//for n := 0; n < 4; n++ {
+		//	if result[chunkId][n].ToInt() < smallestNode {
+		//		smallestNode = result[chunkId][n].ToInt()
+		//	}
+		//	if result[chunkId][n].ToInt() > biggestNode {
+		//		biggestNode = result[chunkId][n].ToInt()
+		//	}
+		//}
+		//smallestIndex := 0
+		//biggestIndex := 0
+		//midIndex := 0
+		//for index, node := range closestNodes {
+		//	if node.ToInt() == smallestNode {
+		//		smallestIndex = index
+		//	}
+		//	if node == mid {
+		//		midIndex = index
+		//	}
+		//	if node.ToInt() == biggestNode {
+		//		biggestIndex = index
+		//	}
+		//}
+		//smallestToMid := midIndex - smallestIndex
+		//midToBiggest := biggestIndex - midIndex
+		//
+		//var rangeNumber float64 = 9
+		//if math.Abs(float64(smallestToMid)) > rangeNumber || math.Abs(float64(midToBiggest)) > rangeNumber {
+		//	fmt.Println("chunk is: ", chunkId)
+		//	fmt.Println("mid: ", mid)
+		//	fmt.Println("interval nodes", closestNodes[smallestIndex:biggestIndex+1])
+		//	fmt.Println("chosen nodes: ", result[chunkId])
+		//	fmt.Println("with distances: ", distances[0:4])
+		//	fmt.Println("range of nodes between smallest and mid: ", smallestToMid)
+		//	fmt.Println("range of nodes between mid and biggest: ", midToBiggest)
+		//	fmt.Println(" ")
+		//}
+
 	}
 	return result
 }
@@ -47,7 +102,8 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 	numNodes := len(net.NodesMap)
 
 	Edges := make(map[types.NodeId]map[types.NodeId]*types.Edge)
-	respNodes := make([][4]types.NodeId, config.GetRangeAddress())
+	//respNodes := make([][4]types.NodeId, config.GetRangeAddress())
+	respNodes := make(map[types.ChunkId][4]types.NodeId, 0)
 	if config.IsPrecomputeRespNodes() {
 		respNodes = PrecomputeRespNodes(sortedNodeIds)
 	}
@@ -150,7 +206,16 @@ func PeerPriceChunk(firstNodeId types.NodeId, chunkId types.ChunkId) int {
 func CreateDownloadersList(g *types.Graph) []types.NodeId {
 	//fmt.Println("Creating downloaders list...")
 
-	downloadersList := types.Choice(g.NodeIds, config.GetOriginators())
+	//downloadersList := types.Choice(g.NodeIds, config.GetOriginators())
+	downloadersList := make([]types.NodeId, 0)
+	counter := 0
+	for _, originator := range g.NodesMap {
+		downloadersList = append(downloadersList, originator.Id)
+		counter++
+		if counter >= config.GetOriginators() {
+			break
+		}
+	}
 
 	//fmt.Println("Downloaders list create...!")
 	return downloadersList

@@ -31,7 +31,7 @@ ConfOptions:
   # SameOriginator: false, makes the same originator request many times in a row
   SameOriginator: false
   # PrecomputeRespNodes: true, precomputes responsible nodes for chunks or ad-hoc during run
-  PrecomputeRespNodes: true
+  PrecomputeRespNodes: false
   # WriteRoutesToFile: false, writes routes to file for future usage
   WriteRoutesToFile: false
   # WriteStatesToFile: false, writes a subset of states to file for future usage
@@ -83,11 +83,11 @@ CustomExperiment:
   # ForwardersPayForceOriginatorToPay: false, if threshold fails, forces all the nodes in the route to pay for the current request
   ForwardersPayForceOriginatorToPay: false
   # WaitingEnabled: false, when Threshold fails, will wait before trying to traverse same route
-  WaitingEnabled: true
+  WaitingEnabled: false
   # RetryWithAnotherPeer: false, the Route to the chunk will try to take many paths to find the chunk
-  RetryWithAnotherPeer: true
+  RetryWithAnotherPeer: false
   # CacheIsEnabled: false, cache on nodes which stores chunks the node have seen before
-  CacheIsEnabled: true
+  CacheIsEnabled: false
   # PreferredChunks: false, fits well with cache, where some chunks are chosen more often than others
   PreferredChunks: false
   # AdjustableThreshold: false, the threshold limit of an edge is determined based on the XOR distance
