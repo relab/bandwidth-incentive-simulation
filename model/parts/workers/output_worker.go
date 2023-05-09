@@ -22,7 +22,8 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 	var rewardFairnessForForwardingAction output.RewardFairnessForForwardingActions
 	var negativeIncome output.NegativeIncome
 	negativeIncome.IncomeMap = make(map[int]int)
-	
+	negativeIncome.NetworkSize = uint(config.GetNetworkSize())
+
 	//filePath := "./results/output.txt"
 	//err := os.Remove(filePath)
 	//if err != nil {
@@ -47,7 +48,7 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 	//		fmt.Println("Couldn't flush the remaining buffer in the writer for output")
 	//	}
 	//}(writer)
-	
+
 	if config.GetMeanRewardPerForward() {
 		file, filePath := output.MakeMeanRewardPerForwardFile()
 		defer func(file *os.File) {
@@ -294,10 +295,8 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 		if config.GetNegativeIncome() && config.GetPaymentEnabled() && config.IsForgivenessEnabled() { //Payment enabled can use output.Payment
 			route := outputStruct.RouteWithPrices
 			if route != nil {
-				for _, nodePair := range route {
-					//if i == len(payments)-1 {
-					//	break
-					//}
+				for i, nodePair := range route {
+
 					payer := int(nodePair.RequesterNode)
 					payee := int(nodePair.ProviderNode)
 					value := nodePair.Price
@@ -309,14 +308,22 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 					if !ok {
 						negativeIncome.IncomeMap[payee] = 0
 					}
-					negativeIncome.IncomeMap[payer] = valPayer - value
+					if i != 0 {
+						// do not consider payments from originators for income.
+						negativeIncome.IncomeMap[payer] = valPayer - value
+					}
 					negativeIncome.IncomeMap[payee] = valPayee + value
 				}
 			}
 			// if counter%500_000==0 or counter==100_000 {
 			if counter%100_000 == 0 {
 				negativeIncomeRes := negativeIncome.CalculateNegativeIncome()
+				incomeFaireness := negativeIncome.CalculateIncomeFairness()
 				_, err := negativeIncome.Writer.WriteString(fmt.Sprintf("Negative income: %f %% \n", negativeIncomeRes*100))
+				if err != nil {
+					panic(err)
+				}
+				_, err = negativeIncome.Writer.WriteString(fmt.Sprintf("Income fairness: %f \n", incomeFaireness))
 				if err != nil {
 					panic(err)
 				}

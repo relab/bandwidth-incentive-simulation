@@ -116,8 +116,19 @@ func (o *RewardFairnessForForwardingActions) CalculateRewardFairnessForForwardin
 }
 
 type NegativeIncome struct {
-	IncomeMap map[int]int
-	Writer    *bufio.Writer
+	NetworkSize uint
+	IncomeMap   map[int]int
+	Writer      *bufio.Writer
+}
+
+func (o *NegativeIncome) CalculateIncomeFairness() float64 {
+	vals := make([]int, o.NetworkSize)
+	i := 0
+	for _, value := range o.IncomeMap {
+		vals[i] = value
+		i++
+	}
+	return gini(vals)
 }
 
 func (o *NegativeIncome) CalculateNegativeIncome() float64 {
@@ -219,4 +230,26 @@ func MakeNegativeIncomeFile() (*os.File, string) {
 		panic(err)
 	}
 	return negativeIncomeFile, filepath
+}
+
+func gini(x []int) float64 {
+	total := 0.0
+	for i, xi := range x[:len(x)-1] {
+		for _, xj := range x[i+1:] {
+			total += math.Abs(float64(xi) - float64(xj))
+		}
+	}
+	avg := mean(x)
+	denom := (math.Pow(float64(len(x)), 2) * avg)
+	return total / denom
+}
+
+func mean(x []int) float64 {
+	total := 0.0
+	for _, xi := range x {
+		if xi > 0 {
+			total += float64(xi)
+		}
+	}
+	return total / float64(len(x))
 }
