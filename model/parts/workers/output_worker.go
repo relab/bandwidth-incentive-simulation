@@ -293,28 +293,17 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 
 		// payment enabled, forgiveness enabled, threshold enabled, k = 8
 		if config.GetNegativeIncome() && config.GetPaymentEnabled() && config.IsForgivenessEnabled() { //Payment enabled can use output.Payment
-			route := outputStruct.RouteWithPrices
-			if route != nil {
-				for i, nodePair := range route {
+			payments := outputStruct.PaymentsWithPrices
+			for _, payment := range payments {
+				payer := int(payment.Payment.FirstNodeId)
+				payee := int(payment.Payment.PayNextId)
 
-					payer := int(nodePair.RequesterNode)
-					payee := int(nodePair.ProviderNode)
-					value := nodePair.Price
-					valPayer, ok := negativeIncome.IncomeMap[payer]
-					if !ok {
-						negativeIncome.IncomeMap[payer] = 0
-					}
-					valPayee, ok := negativeIncome.IncomeMap[payee]
-					if !ok {
-						negativeIncome.IncomeMap[payee] = 0
-					}
-					if i != 0 {
-						// do not consider payments from originators for income.
-						negativeIncome.IncomeMap[payer] = valPayer - value
-					}
-					negativeIncome.IncomeMap[payee] = valPayee + value
+				if !(payment.Payment.IsOriginator) {
+					negativeIncome.IncomeMap[payer] -= payment.Price
 				}
+				negativeIncome.IncomeMap[payee] += payment.Price
 			}
+
 			// if counter%500_000==0 or counter==100_000 {
 			if counter%100_000 == 0 {
 				negativeIncomeRes := negativeIncome.CalculateNegativeIncome()
