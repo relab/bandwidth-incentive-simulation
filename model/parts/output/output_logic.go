@@ -3,7 +3,6 @@ package output
 import (
 	"bufio"
 	"fmt"
-	"go-incentive-simulation/config"
 	"math"
 	"os"
 )
@@ -116,30 +115,10 @@ func (o *RewardFairnessForForwardingActions) CalculateRewardFairnessForForwardin
 	return total / (math.Pow(float64(len(x)), 2) * (float64(o.SumAllForwardingRewards) / float64(len(x))))
 }
 
-type IncomeInfo struct {
-	IncomeMap map[int]int
-	Writer    *bufio.Writer
-}
-
-func (o *IncomeInfo) CalculateIncomeFairness() float64 {
-	size := config.GetNetworkSize()
-	vals := make([]int, size)
-	i := 0
-	for _, value := range o.IncomeMap {
-		vals[i] = value
-		i++
-	}
-	return gini(vals)
-}
-
-func (o *IncomeInfo) CalculateNegativeIncome() float64 {
-	totalNegativeIncomeCounter := 0
-	for _, value := range o.IncomeMap {
-		if value < 0 {
-			totalNegativeIncomeCounter += 1
-		}
-	}
-	return float64(totalNegativeIncomeCounter) / float64(10000)
+type WorkInfo struct {
+	ForwardMap map[int]int
+	WorkMap    map[int]int
+	Writer     *bufio.Writer
 }
 
 func MakeMeanRewardPerForwardFile() (*os.File, string) {
@@ -218,19 +197,6 @@ func MakeRewardFairnessForAllActionsFile() (*os.File, string) {
 		panic(err)
 	}
 	return rewardFairnessForAllActionsFile, filepath
-}
-
-func MakeNegativeIncomeFile() (*os.File, string) {
-	filepath := "./results/negativeIncome.txt"
-	err := os.Remove(filepath)
-	if err != nil {
-		fmt.Println("Could not remove the file", filepath)
-	}
-	negativeIncomeFile, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	return negativeIncomeFile, filepath
 }
 
 func gini(x []int) float64 {

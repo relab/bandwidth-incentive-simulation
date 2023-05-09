@@ -20,8 +20,7 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 	var rewardFairnessForStoringAction output.RewardFairnessForStoringAction
 	var rewardFairnessForAllActions output.RewardFairnessForAllActions
 	var rewardFairnessForForwardingAction output.RewardFairnessForForwardingActions
-	var negativeIncome output.IncomeInfo
-	negativeIncome.IncomeMap = make(map[int]int)
+	var negativeIncome *output.IncomeInfo
 
 	//filePath := "./results/output.txt"
 	//err := os.Remove(filePath)
@@ -145,20 +144,8 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 		}(rewardFairnessForForwardingAction.Writer)
 	}
 	if config.GetNegativeIncome() {
-		file7, filePath7 := output.MakeNegativeIncomeFile()
-		defer func(file7 *os.File) {
-			err1 := file7.Close()
-			if err1 != nil {
-				fmt.Println("Couldn't close the file with filepath: ", filePath7)
-			}
-		}(file7)
-		negativeIncome.Writer = bufio.NewWriter(file7)
-		defer func(writer *bufio.Writer) {
-			err1 := writer.Flush()
-			if err1 != nil {
-				fmt.Println("Couldn't flush the remaining buffer in the writer for output")
-			}
-		}(negativeIncome.Writer)
+		negativeIncome = output.InitIncomeInfo()
+		defer negativeIncome.Close()
 	}
 	for outputStruct = range outputChan {
 		counter++
@@ -292,29 +279,11 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 
 		// payment enabled, forgiveness enabled, threshold enabled, k = 8
 		if config.GetNegativeIncome() && config.GetPaymentEnabled() && config.IsForgivenessEnabled() { //Payment enabled can use output.Payment
-			payments := outputStruct.PaymentsWithPrices
-			for _, payment := range payments {
-				payer := int(payment.Payment.FirstNodeId)
-				payee := int(payment.Payment.PayNextId)
-
-				if !(payment.Payment.IsOriginator) {
-					negativeIncome.IncomeMap[payer] -= payment.Price
-				}
-				negativeIncome.IncomeMap[payee] += payment.Price
-			}
+			negativeIncome.Update(&outputStruct)
 
 			// if counter%500_000==0 or counter==100_000 {
 			if counter%100_000 == 0 {
-				negativeIncomeRes := negativeIncome.CalculateNegativeIncome()
-				incomeFaireness := negativeIncome.CalculateIncomeFairness()
-				_, err := negativeIncome.Writer.WriteString(fmt.Sprintf("Negative income: %f %% \n", negativeIncomeRes*100))
-				if err != nil {
-					panic(err)
-				}
-				_, err = negativeIncome.Writer.WriteString(fmt.Sprintf("Income fairness: %f \n", incomeFaireness))
-				if err != nil {
-					panic(err)
-				}
+				negativeIncome.Log()
 			}
 		}
 	}
