@@ -94,7 +94,9 @@ func (network *Network) node(nodeId NodeId) *Node {
 		Id:      nodeId,
 		AdjIds:  make([][]NodeId, network.Bits),
 		CacheStruct: CacheStruct{
+			Size:       50,
 			CacheMap:   make(CacheMap),
+			CacheList:  make([]ChunkId, 0, 11),
 			CacheMutex: &sync.Mutex{},
 		},
 		PendingStruct: PendingStruct{

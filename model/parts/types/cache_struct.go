@@ -5,8 +5,10 @@ import "sync"
 type CacheMap map[ChunkId]int
 
 type CacheStruct struct {
+	Size       uint
 	Node       *Node
 	CacheMap   CacheMap
+	CacheList  []ChunkId
 	CacheMutex *sync.Mutex
 }
 
@@ -19,6 +21,12 @@ func (c *CacheStruct) AddToCache(chunkId ChunkId) CacheMap {
 	} else {
 		c.CacheMap[chunkId] = 1
 	}
+	c.CacheList = append(c.CacheList, chunkId)
+	if len(c.CacheList) > int(c.Size) {
+		firstChunk := c.CacheList[0]
+		c.CacheMap[firstChunk]--
+		c.CacheList = c.CacheList[1:]
+	}
 
 	return c.CacheMap
 }
@@ -27,7 +35,7 @@ func (c *CacheStruct) Contains(chunkId ChunkId) bool {
 	c.CacheMutex.Lock()
 	defer c.CacheMutex.Unlock()
 	cacheMap := c.CacheMap
-	if _, ok := cacheMap[chunkId]; ok {
+	if c, ok := cacheMap[chunkId]; ok && c > 0 {
 		return true
 	}
 	return false
