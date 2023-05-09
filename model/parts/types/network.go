@@ -181,14 +181,12 @@ func (network *Network) Dump(path string) error {
 }
 
 func Choice(nodes []NodeId, k int) []NodeId {
-	res := make([]NodeId, k)
-
-	var val int
-	for i := 0; i < k; i++ {
-		val = rand.Intn(len(nodes)) - 1
-		res[i] = nodes[val]
+	if k > len(nodes) {
+		panic("Cannot have more originators than nodes")
 	}
-	return res
+	rand.Shuffle(len(nodes), func(i, j int) { nodes[i], nodes[j] = nodes[j], nodes[i] })
+
+	return nodes[:k]
 }
 
 func shufflePairs(pairs [][2]*Node) {
