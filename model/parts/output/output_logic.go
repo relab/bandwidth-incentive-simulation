@@ -3,6 +3,7 @@ package output
 import (
 	"bufio"
 	"fmt"
+	"go-incentive-simulation/config"
 	"math"
 	"os"
 )
@@ -115,14 +116,14 @@ func (o *RewardFairnessForForwardingActions) CalculateRewardFairnessForForwardin
 	return total / (math.Pow(float64(len(x)), 2) * (float64(o.SumAllForwardingRewards) / float64(len(x))))
 }
 
-type NegativeIncome struct {
-	NetworkSize uint
-	IncomeMap   map[int]int
-	Writer      *bufio.Writer
+type IncomeInfo struct {
+	IncomeMap map[int]int
+	Writer    *bufio.Writer
 }
 
-func (o *NegativeIncome) CalculateIncomeFairness() float64 {
-	vals := make([]int, o.NetworkSize)
+func (o *IncomeInfo) CalculateIncomeFairness() float64 {
+	size := config.GetNetworkSize()
+	vals := make([]int, size)
 	i := 0
 	for _, value := range o.IncomeMap {
 		vals[i] = value
@@ -131,7 +132,7 @@ func (o *NegativeIncome) CalculateIncomeFairness() float64 {
 	return gini(vals)
 }
 
-func (o *NegativeIncome) CalculateNegativeIncome() float64 {
+func (o *IncomeInfo) CalculateNegativeIncome() float64 {
 	totalNegativeIncomeCounter := 0
 	for _, value := range o.IncomeMap {
 		if value < 0 {

@@ -20,9 +20,8 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 	var rewardFairnessForStoringAction output.RewardFairnessForStoringAction
 	var rewardFairnessForAllActions output.RewardFairnessForAllActions
 	var rewardFairnessForForwardingAction output.RewardFairnessForForwardingActions
-	var negativeIncome output.NegativeIncome
+	var negativeIncome output.IncomeInfo
 	negativeIncome.IncomeMap = make(map[int]int)
-	negativeIncome.NetworkSize = uint(config.GetNetworkSize())
 
 	//filePath := "./results/output.txt"
 	//err := os.Remove(filePath)
