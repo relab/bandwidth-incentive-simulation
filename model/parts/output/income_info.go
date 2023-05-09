@@ -18,7 +18,7 @@ type IncomeInfo struct {
 func InitIncomeInfo() *IncomeInfo {
 	iinfo := IncomeInfo{}
 	iinfo.IncomeMap = make(map[int]int)
-	iinfo.File = MakeIncomeFile()
+	iinfo.File = MakeFile("./results/income.txt")
 	iinfo.Writer = bufio.NewWriter(iinfo.File)
 	return &iinfo
 }
@@ -32,19 +32,6 @@ func (ii *IncomeInfo) Close() {
 	if err != nil {
 		fmt.Println("Couldn't close the file with filepath: ./results/income.txt")
 	}
-}
-
-func MakeIncomeFile() *os.File {
-	filepath := "./results/income.txt"
-	err := os.Remove(filepath)
-	if err != nil {
-		fmt.Println("Could not remove the file", filepath)
-	}
-	incomeFile, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	return incomeFile
 }
 
 func (o *IncomeInfo) CalculateIncomeFairness() float64 {

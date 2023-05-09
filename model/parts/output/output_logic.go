@@ -115,108 +115,45 @@ func (o *RewardFairnessForForwardingActions) CalculateRewardFairnessForForwardin
 	return total / (math.Pow(float64(len(x)), 2) * (float64(o.SumAllForwardingRewards) / float64(len(x))))
 }
 
-type WorkInfo struct {
-	ForwardMap map[int]int
-	WorkMap    map[int]int
-	Writer     *bufio.Writer
-}
-
 func MakeMeanRewardPerForwardFile() (*os.File, string) {
-	filePath := "./results/meanRewardPerForward.txt"
-	err := os.Remove(filePath)
-	if err != nil {
-		fmt.Println("Could not remove the file", filePath)
-	}
-	meanRewardPerForwardFile, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	return meanRewardPerForwardFile, filePath
+	filepath := "./results/meanRewardPerForward.txt"
+	return MakeFile(filepath), filepath
 }
 
 func MakeAvgNumberOfHopsFile() (*os.File, string) {
-	filePath := "./results/avgNumberOfHops.txt"
-	err := os.Remove(filePath)
-	if err != nil {
-		fmt.Println("Could not remove the file", filePath)
-	}
-	avgNumberOfHopsFile, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	return avgNumberOfHopsFile, filePath
+	filepath := "./results/avgNumberOfHops.txt"
+	return MakeFile(filepath), filepath
 }
 
 func MakeFractionOfRewardsFile() (*os.File, string) {
-	filePath := "./results/fractionOfRewards.txt"
-	err := os.Remove(filePath)
-	if err != nil {
-		fmt.Println("Could not remove the file", filePath)
-	}
-	fractionOfRewards, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	return fractionOfRewards, filePath
+	filepath := "./results/fractionOfRewards.txt"
+	return MakeFile(filepath), filepath
 }
 
 func MakeRewardFairnessForForwardingActionFile() (*os.File, string) {
 	filepath := "./results/rewardFairnessForForwardingAction.txt"
-	err := os.Remove(filepath)
-	if err != nil {
-		fmt.Println("Could not remove the file", filepath)
-	}
-	rewardFairnessForForwardingActionFile, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	return rewardFairnessForForwardingActionFile, filepath
+	return MakeFile(filepath), filepath
 }
 
 func MakeRewardFairnessForStoringActionFile() (*os.File, string) {
 	filepath := "./results/rewardFairnessForStoringAction.txt"
-	err := os.Remove(filepath)
-	if err != nil {
-		fmt.Println("Could not remove the file", filepath)
-	}
-	rewardFairnessForStoringActionFile, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	return rewardFairnessForStoringActionFile, filepath
+	return MakeFile(filepath), filepath
 }
 
 func MakeRewardFairnessForAllActionsFile() (*os.File, string) {
 	filepath := "./results/rewardFairnessForAllActions.txt"
+
+	return MakeFile(filepath), filepath
+}
+
+func MakeFile(filepath string) *os.File {
 	err := os.Remove(filepath)
 	if err != nil {
 		fmt.Println("Could not remove the file", filepath)
 	}
-	rewardFairnessForAllActionsFile, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
-	return rewardFairnessForAllActionsFile, filepath
-}
-
-func gini(x []int) float64 {
-	total := 0.0
-	for i, xi := range x[:len(x)-1] {
-		for _, xj := range x[i+1:] {
-			total += math.Abs(float64(xi) - float64(xj))
-		}
-	}
-	avg := mean(x)
-	denom := (math.Pow(float64(len(x)), 2) * avg)
-	return total / denom
-}
-
-func mean(x []int) float64 {
-	total := 0.0
-	for _, xi := range x {
-		if xi > 0 {
-			total += float64(xi)
-		}
-	}
-	return total / float64(len(x))
+	return file
 }
