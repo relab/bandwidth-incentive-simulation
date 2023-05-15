@@ -45,6 +45,9 @@ func RouteFlushWorker(routeChan chan types.RouteData, wg *sync.WaitGroup) {
 	for routeData = range routeChan {
 
 		bytes, err = json.Marshal(routeData)
+		if err != nil {
+			panic(err)
+		}
 		_, err = writer.Write(bytes)
 		if err != nil {
 			panic(err)

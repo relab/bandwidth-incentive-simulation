@@ -1,5 +1,7 @@
 package config
 
+import "fmt"
+
 func GetNumRoutingGoroutines() int {
 	num := Variables.confOptions.NumGoroutines
 	//if IsWriteStatesToFile() {
@@ -259,4 +261,25 @@ func GetNegativeIncome() bool {
 		return Variables.confOptions.OutputOptions.NegativeIncome
 	}
 	return false
+}
+
+func GetComputeWorkFairness() bool {
+	return Variables.confOptions.OutputOptions.ComputeWorkFairness
+}
+
+func GetExperimentString() (exp string) {
+	exp = fmt.Sprintf("O%dT%dsW%dTh%dFg%dW%d",
+		GetOriginators()*100/GetNetworkSize(),
+		GetIterations()/GetRequestsPerSecond(),
+		GetBinSize(),
+		GetThreshold(),
+		GetRefreshRate(),
+		GetMaxProximityOrder())
+	if GetPaymentEnabled() {
+		exp += "Pay"
+	}
+	if IsCacheEnabled() {
+		exp += "Cache"
+	}
+	return exp
 }

@@ -20,6 +20,7 @@ func InitIncomeInfo() *IncomeInfo {
 	iinfo.IncomeMap = make(map[int]int)
 	iinfo.File = MakeFile("./results/income.txt")
 	iinfo.Writer = bufio.NewWriter(iinfo.File)
+	LogExpSting(iinfo.Writer)
 	return &iinfo
 }
 

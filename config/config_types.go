@@ -66,4 +66,5 @@ type outputOptions struct {
 	RewardFairnessForStoringAction    bool `yaml:"RewardFairnessForStoringAction"`
 	RewardFairnessForAllActions       bool `yaml:"RewardFairnessForAllActions"`
 	NegativeIncome                    bool `yaml:"NegativeIncome"`
+	ComputeWorkFairness               bool `yaml:"ComputeWorkFairness"`
 }

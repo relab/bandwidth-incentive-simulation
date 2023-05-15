@@ -37,6 +37,7 @@ var defaultVariables = VariablesType{
 			RewardFairnessForStoringAction:    false, // false
 			RewardFairnessForAllActions:       false, // false
 			NegativeIncome:                    false, // false
+			ComputeWorkFairness:               false, // false
 		},
 	},
 	experimentOptions: experimentOptions{

@@ -21,6 +21,7 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 	var rewardFairnessForAllActions output.RewardFairnessForAllActions
 	var rewardFairnessForForwardingAction output.RewardFairnessForForwardingActions
 	var negativeIncome *output.IncomeInfo
+	var workInfo *output.WorkInfo
 
 	//filePath := "./results/output.txt"
 	//err := os.Remove(filePath)
@@ -147,6 +148,12 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 		negativeIncome = output.InitIncomeInfo()
 		defer negativeIncome.Close()
 	}
+
+	if config.GetComputeWorkFairness() {
+		workInfo = output.InitWorkInfo()
+		defer workInfo.Close()
+	}
+
 	for outputStruct = range outputChan {
 		counter++
 
@@ -274,6 +281,14 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 						panic(err)
 					}
 				}
+			}
+		}
+
+		if config.GetComputeWorkFairness() {
+			workInfo.Update(&outputStruct)
+
+			if counter%100_000 == 0 {
+				workInfo.Log()
 			}
 		}
 

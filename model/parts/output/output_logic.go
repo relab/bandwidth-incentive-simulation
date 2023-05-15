@@ -3,6 +3,7 @@ package output
 import (
 	"bufio"
 	"fmt"
+	"go-incentive-simulation/config"
 	"math"
 	"os"
 )
@@ -147,13 +148,20 @@ func MakeRewardFairnessForAllActionsFile() (*os.File, string) {
 }
 
 func MakeFile(filepath string) *os.File {
-	err := os.Remove(filepath)
-	if err != nil {
-		fmt.Println("Could not remove the file", filepath)
-	}
+	// err := os.Remove(filepath)
+	// if err != nil {
+	// 	fmt.Println("Could not remove the file", filepath)
+	// }
 	file, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
 	return file
+}
+
+func LogExpSting(writer *bufio.Writer) {
+	_, err := writer.WriteString(fmt.Sprintf("\n %s \n\n", config.GetExperimentString()))
+	if err != nil {
+		panic(err)
+	}
 }

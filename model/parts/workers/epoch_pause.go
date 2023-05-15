@@ -7,5 +7,4 @@ func waitForRoutingWorkers(pauseChan chan bool, continueChan chan bool, numRouti
 	for i := 0; i < numRoutingGoroutines; i++ {
 		<-continueChan
 	}
-	return
 }

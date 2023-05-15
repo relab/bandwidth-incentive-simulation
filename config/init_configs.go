@@ -2,10 +2,11 @@ package config
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"log"
 	"os"
 	"runtime"
+
+	"gopkg.in/yaml.v3"
 )
 
 // Variables This is the one that gets changed in setup
@@ -83,6 +84,7 @@ func SetConfOptions(configOptions confOptions) {
 	Variables.confOptions.OutputOptions.RewardFairnessForStoringAction = configOptions.OutputOptions.RewardFairnessForStoringAction
 	Variables.confOptions.OutputOptions.RewardFairnessForAllActions = configOptions.OutputOptions.RewardFairnessForAllActions
 	Variables.confOptions.OutputOptions.NegativeIncome = configOptions.OutputOptions.NegativeIncome
+	Variables.confOptions.OutputOptions.ComputeWorkFairness = configOptions.OutputOptions.ComputeWorkFairness
 
 }
 
