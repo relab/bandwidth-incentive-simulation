@@ -34,15 +34,6 @@ func Reroute(state *types.State, requestResult types.RequestResult, curEpoch int
 					originator.RerouteStruct.AddNodeToRejectedNodes(requestResult.AccessFailed, lastHopNode, curEpoch)
 				}
 			}
-			//firstHopNode := route[1]
-			//if reroute.RejectedNodes == nil {
-			//	reroute = originator.RerouteStruct.AddNewReroute(requestResult.AccessFailed, firstHopNode, chunkId, curEpoch)
-			//	retryCounter = atomic.AddInt64(&state.UniqueRetryCounter, 1)
-			//} else {
-			//	if !general.Contains(reroute.RejectedNodes, firstHopNode) { // if the last hop in new route have not been searched before
-			//		originator.RerouteStruct.AddNodeToRejectedNodes(requestResult.AccessFailed, firstHopNode, curEpoch)
-			//	}
-			//}
 		}
 
 		if retryCounter == 0 {

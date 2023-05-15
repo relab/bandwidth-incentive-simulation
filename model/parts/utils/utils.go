@@ -12,7 +12,6 @@ func PrecomputeRespNodes(nodesId []types.NodeId) map[types.ChunkId][4]types.Node
 	numPossibleChunks := config.GetRangeAddress()
 	result := make(map[types.ChunkId][4]types.NodeId)
 	numNodesSearch := config.GetBits()
-	//numNodesSearch := 12
 
 	for chunkId := 0; chunkId < numPossibleChunks; chunkId++ {
 		closestNodes, _ := types.BinarySearchClosest(nodesId, chunkId, numNodesSearch)
@@ -21,12 +20,6 @@ func PrecomputeRespNodes(nodesId []types.NodeId) map[types.ChunkId][4]types.Node
 		for j, nodeId := range closestNodes {
 			distances[j] = nodeId.ToInt() ^ chunkId
 		}
-		//if chunkId%8423 == 0 {
-		//	fmt.Println("chunk is: ", chunkId)
-		//	fmt.Println("mid is: ", mid)
-		//	fmt.Println("closest nodes: ", closestNodes)
-		//	fmt.Println("least distances: ", distances)
-		//}
 
 		sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
 
@@ -36,52 +29,8 @@ func PrecomputeRespNodes(nodesId []types.NodeId) map[types.ChunkId][4]types.Node
 		}
 
 		result[types.ChunkId(chunkId)] = arr
-
-		//if chunkId%8423 == 0 {
-		//	fmt.Println("chosen nodes: ", result[chunkId])
-		//	fmt.Println("with distances: ", distances[0:4])
-		//	fmt.Println(" ")
-		//}
-		//smallestNode := 100000000
-		//biggestNode := 0
-		//for n := 0; n < 4; n++ {
-		//	if result[chunkId][n].ToInt() < smallestNode {
-		//		smallestNode = result[chunkId][n].ToInt()
-		//	}
-		//	if result[chunkId][n].ToInt() > biggestNode {
-		//		biggestNode = result[chunkId][n].ToInt()
-		//	}
-		//}
-		//smallestIndex := 0
-		//biggestIndex := 0
-		//midIndex := 0
-		//for index, node := range closestNodes {
-		//	if node.ToInt() == smallestNode {
-		//		smallestIndex = index
-		//	}
-		//	if node == mid {
-		//		midIndex = index
-		//	}
-		//	if node.ToInt() == biggestNode {
-		//		biggestIndex = index
-		//	}
-		//}
-		//smallestToMid := midIndex - smallestIndex
-		//midToBiggest := biggestIndex - midIndex
-		//
-		//var rangeNumber float64 = 9
-		//if math.Abs(float64(smallestToMid)) > rangeNumber || math.Abs(float64(midToBiggest)) > rangeNumber {
-		//	fmt.Println("chunk is: ", chunkId)
-		//	fmt.Println("mid: ", mid)
-		//	fmt.Println("interval nodes", closestNodes[smallestIndex:biggestIndex+1])
-		//	fmt.Println("chosen nodes: ", result[chunkId])
-		//	fmt.Println("with distances: ", distances[0:4])
-		//	fmt.Println("range of nodes between smallest and mid: ", smallestToMid)
-		//	fmt.Println("range of nodes between mid and biggest: ", midToBiggest)
-		//	fmt.Println(" ")
-		//}
-
 	}
+
 	return result
 }
 
@@ -93,6 +42,10 @@ func SortedKeys(nodeMap map[types.NodeId]*types.Node) []types.NodeId {
 		i++
 	}
 	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+	if keys[0] <= 0 {
+		panic("generated network contains a node with an invalid Id")
+	}
+
 	return keys
 }
 

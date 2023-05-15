@@ -35,7 +35,7 @@ ConfOptions:
   # WriteRoutesToFile: false, writes routes to file for future usage
   WriteRoutesToFile: false
   # WriteStatesToFile: false, writes a subset of states to file for future usage
-  WriteStatesToFile: true
+  WriteStatesToFile: false
   # IterationMeansUniqueChunk: false, if a chunk chosen again by waiting/retry counts as an iteration
   IterationMeansUniqueChunk: false
   # DebugPrints: false, enables some useful prints to terminal during the run
@@ -45,7 +45,7 @@ ConfOptions:
   # NumGoroutines: -1, number of active goroutines, leave at -1 for automatically using numCPU
   NumGoroutines: -1
   # Enabled the outputWorker which handles writing output to file and analysis of results
-  OutputEnabled: true
+  OutputEnabled: false
   # Which logic should be used in the outputWorker
   OutputOptions:
     MeanRewardPerForward: true

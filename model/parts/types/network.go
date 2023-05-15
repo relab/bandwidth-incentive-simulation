@@ -197,7 +197,7 @@ func generateIds(totalNumbers int, maxValue int) []int {
 	rand.Seed(time.Now().UnixNano())
 	generatedNumbers := make(map[int]bool)
 	for len(generatedNumbers) < totalNumbers {
-		num := rand.Intn(maxValue + 1)
+		num := rand.Intn(maxValue-1) + 1
 		generatedNumbers[num] = true
 	}
 
