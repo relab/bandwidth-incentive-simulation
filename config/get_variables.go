@@ -12,6 +12,12 @@ func GetNumRoutingGoroutines() int {
 	if IsOutputEnabled() {
 		num-- // for the outputWorker
 	}
+	if num < 1 {
+		if IsOutputEnabled() {
+			panic("You need at least 3 goroutines for the requestWorker, routingWorker and outputWorker")
+		}
+		panic("You need at least 2 goroutines for the requestWorker and routingWorker")
+	}
 	return num
 }
 

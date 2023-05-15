@@ -8,13 +8,13 @@ import (
 	"sort"
 )
 
-func PrecomputeRespNodes(nodesId []types.NodeId) [][4]types.NodeId {
+func PrecomputeRespNodes(nodesId []types.NodeId) map[types.ChunkId][4]types.NodeId {
 	numPossibleChunks := config.GetRangeAddress()
-	result := make([][4]types.NodeId, numPossibleChunks)
+	result := make(map[types.ChunkId][4]types.NodeId)
 	numNodesSearch := config.GetBits()
 
 	for chunkId := 0; chunkId < numPossibleChunks; chunkId++ {
-		closestNodes := types.BinarySearchClosest(nodesId, chunkId, numNodesSearch)
+		closestNodes, _ := types.BinarySearchClosest(nodesId, chunkId, numNodesSearch)
 		distances := make([]int, len(closestNodes))
 
 		for j, nodeId := range closestNodes {
@@ -23,10 +23,14 @@ func PrecomputeRespNodes(nodesId []types.NodeId) [][4]types.NodeId {
 
 		sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
 
+		arr := [4]types.NodeId{}
 		for k := 0; k < 4; k++ {
-			result[chunkId][k] = types.NodeId(distances[k] ^ chunkId) // this results in the nodeId again
+			arr[k] = types.NodeId(distances[k] ^ chunkId) // this results in the nodeId again
 		}
+
+		result[types.ChunkId(chunkId)] = arr
 	}
+
 	return result
 }
 
@@ -38,6 +42,10 @@ func SortedKeys(nodeMap map[types.NodeId]*types.Node) []types.NodeId {
 		i++
 	}
 	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+	if keys[0] <= 0 {
+		panic("generated network contains a node with an invalid Id")
+	}
+
 	return keys
 }
 
@@ -47,7 +55,8 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 	numNodes := len(net.NodesMap)
 
 	Edges := make(map[types.NodeId]map[types.NodeId]*types.Edge)
-	respNodes := make([][4]types.NodeId, config.GetRangeAddress())
+	//respNodes := make([][4]types.NodeId, config.GetRangeAddress())
+	respNodes := make(map[types.ChunkId][4]types.NodeId, 0)
 	if config.IsPrecomputeRespNodes() {
 		respNodes = PrecomputeRespNodes(sortedNodeIds)
 	}

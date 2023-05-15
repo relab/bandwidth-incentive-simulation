@@ -178,14 +178,14 @@ func (network *Network) Dump(path string) error {
 	return nil
 }
 
-func Choice(nodes []NodeId, k int) []NodeId {
-	if k > len(nodes) {
-		panic("Cannot have more originators than nodes")
-	}
-	rand.Shuffle(len(nodes), func(i, j int) { nodes[i], nodes[j] = nodes[j], nodes[i] })
-
-	return nodes[:k]
-}
+//func Choice(nodes []NodeId, k int) []NodeId {
+//	if k > len(nodes) {
+//		panic("Cannot have more originators than nodes")
+//	}
+//	rand.Shuffle(len(nodes), func(i, j int) { nodes[i], nodes[j] = nodes[j], nodes[i] })
+//
+//	return nodes[:k]
+//}
 
 func shufflePairs(pairs [][2]*Node) {
 	rand.Shuffle(len(pairs), func(i, j int) {
@@ -197,7 +197,7 @@ func generateIds(totalNumbers int, maxValue int) []int {
 	rand.Seed(time.Now().UnixNano())
 	generatedNumbers := make(map[int]bool)
 	for len(generatedNumbers) < totalNumbers {
-		num := rand.Intn(maxValue + 1)
+		num := rand.Intn(maxValue-1) + 1
 		generatedNumbers[num] = true
 	}
 
