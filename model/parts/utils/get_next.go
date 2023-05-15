@@ -27,63 +27,61 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 	bin := config.GetBits() - general.BitLength(firstNodeId.ToInt()^chunkId.ToInt())
 	firstNodeAdjIds := graph.GetNodeAdj(firstNodeId)
 
-	for bin, _ = range firstNodeAdjIds {
-		for _, nodeId := range firstNodeAdjIds[bin] {
-			dist := nodeId.ToInt() ^ chunkId.ToInt()
-			if general.BitLength(dist) >= general.BitLength(lastDistance) {
-				continue
-			}
-			if dist >= currDist {
-				continue
-			}
-			// This means the node is now actively trying to communicate with the other node
-			if config.IsEdgeLock() {
-				graph.LockEdge(firstNodeId, nodeId)
-			}
-			if !isThresholdFailed(firstNodeId, nodeId, graph, request) {
-				thresholdFailed = false
-				if config.IsRetryWithAnotherPeer() {
-					rerouteStruct := graph.GetNode(mainOriginatorId).RerouteStruct
-					if rerouteStruct.Reroute.RejectedNodes != nil {
-						if general.Contains(rerouteStruct.Reroute.RejectedNodes, nodeId) {
-							if config.IsEdgeLock() {
-								graph.UnlockEdge(firstNodeId, nodeId)
-							}
-							continue // skips node that's been part of a failed route before
-						}
-					}
-				}
-
-				if config.IsEdgeLock() {
-					if !nextNodeId.IsNil() {
-						graph.UnlockEdge(firstNodeId, nextNodeId)
-					}
-					if !payNextId.IsNil() {
-						graph.UnlockEdge(firstNodeId, payNextId)
-						payNextId = 0 // IMPORTANT!
-					}
-				}
-				currDist = dist
-				nextNodeId = nodeId
-
-			} else {
-				thresholdFailed = true
-				if config.GetPaymentEnabled() {
-					if dist < payDist && nextNodeId.IsNil() {
-						if config.IsEdgeLock() && !payNextId.IsNil() {
-							graph.UnlockEdge(firstNodeId, payNextId)
-						}
-						payDist = dist
-						payNextId = nodeId
-					} else {
+	for _, nodeId := range firstNodeAdjIds[bin] {
+		dist := nodeId.ToInt() ^ chunkId.ToInt()
+		if general.BitLength(dist) >= general.BitLength(lastDistance) {
+			continue
+		}
+		if dist >= currDist {
+			continue
+		}
+		// This means the node is now actively trying to communicate with the other node
+		if config.IsEdgeLock() {
+			graph.LockEdge(firstNodeId, nodeId)
+		}
+		if !isThresholdFailed(firstNodeId, nodeId, graph, request) {
+			thresholdFailed = false
+			if config.IsRetryWithAnotherPeer() {
+				rerouteStruct := graph.GetNode(mainOriginatorId).RerouteStruct
+				if rerouteStruct.Reroute.RejectedNodes != nil {
+					if general.Contains(rerouteStruct.Reroute.RejectedNodes, nodeId) {
 						if config.IsEdgeLock() {
 							graph.UnlockEdge(firstNodeId, nodeId)
 						}
+						continue // skips node that's been part of a failed route before
 					}
+				}
+			}
+
+			if config.IsEdgeLock() {
+				if !nextNodeId.IsNil() {
+					graph.UnlockEdge(firstNodeId, nextNodeId)
+				}
+				if !payNextId.IsNil() {
+					graph.UnlockEdge(firstNodeId, payNextId)
+					payNextId = 0 // IMPORTANT!
+				}
+			}
+			currDist = dist
+			nextNodeId = nodeId
+
+		} else {
+			thresholdFailed = true
+			if config.GetPaymentEnabled() {
+				if dist < payDist && nextNodeId.IsNil() {
+					if config.IsEdgeLock() && !payNextId.IsNil() {
+						graph.UnlockEdge(firstNodeId, payNextId)
+					}
+					payDist = dist
+					payNextId = nodeId
 				} else {
 					if config.IsEdgeLock() {
 						graph.UnlockEdge(firstNodeId, nodeId)
 					}
+				}
+			} else {
+				if config.IsEdgeLock() {
+					graph.UnlockEdge(firstNodeId, nodeId)
 				}
 			}
 		}

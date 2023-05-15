@@ -83,9 +83,9 @@ CustomExperiment:
   # ForwardersPayForceOriginatorToPay: false, if threshold fails, forces all the nodes in the route to pay for the current request
   ForwardersPayForceOriginatorToPay: false
   # WaitingEnabled: false, when Threshold fails, will wait before trying to traverse same route
-  WaitingEnabled: false
+  WaitingEnabled: true
   # RetryWithAnotherPeer: false, the Route to the chunk will try to take many paths to find the chunk
-  RetryWithAnotherPeer: false
+  RetryWithAnotherPeer: true
   # CacheIsEnabled: false, cache on nodes which stores chunks the node have seen before
   CacheIsEnabled: false
   # PreferredChunks: false, fits well with cache, where some chunks are chosen more often than others
