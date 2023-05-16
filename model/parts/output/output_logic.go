@@ -148,10 +148,6 @@ func MakeRewardFairnessForAllActionsFile() (*os.File, string) {
 }
 
 func MakeFile(filepath string) *os.File {
-	// err := os.Remove(filepath)
-	// if err != nil {
-	// 	fmt.Println("Could not remove the file", filepath)
-	// }
 	file, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)

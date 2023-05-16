@@ -20,7 +20,7 @@ func InitConfigs() {
 
 func InitConfigsWithId(id string) {
 	InitConfigs()
-	Variables.confOptions.OutputOptions.ExpeimentId = id
+	Variables.confOptions.OutputOptions.ExperimentId = id
 }
 
 func ReadYamlFile() Yml {
@@ -90,6 +90,8 @@ func SetConfOptions(configOptions confOptions) {
 	Variables.confOptions.OutputOptions.RewardFairnessForAllActions = configOptions.OutputOptions.RewardFairnessForAllActions
 	Variables.confOptions.OutputOptions.NegativeIncome = configOptions.OutputOptions.NegativeIncome
 	Variables.confOptions.OutputOptions.ComputeWorkFairness = configOptions.OutputOptions.ComputeWorkFairness
+	Variables.confOptions.OutputOptions.ExperimentId = configOptions.OutputOptions.ExperimentId
+	Variables.confOptions.OutputOptions.EvaluateInterval = configOptions.OutputOptions.EvaluateInterval
 
 }
 

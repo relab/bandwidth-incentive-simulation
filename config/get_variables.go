@@ -268,7 +268,15 @@ func GetComputeWorkFairness() bool {
 }
 
 func GetExpeimentId() string {
-	return Variables.confOptions.OutputOptions.ExpeimentId
+	return Variables.confOptions.OutputOptions.ExperimentId
+}
+
+func GetEvaluateInterval() (i int) {
+	i = Variables.confOptions.OutputOptions.EvaluateInterval
+	if i <= 0 {
+		return GetIterations()
+	}
+	return i
 }
 
 func GetExperimentString() (exp string) {

@@ -22,6 +22,7 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 	var rewardFairnessForForwardingAction output.RewardFairnessForForwardingActions
 	var negativeIncome *output.IncomeInfo
 	var workInfo *output.WorkInfo
+	var logInterval = config.GetEvaluateInterval()
 
 	//filePath := "./results/output.txt"
 	//err := os.Remove(filePath)
@@ -166,7 +167,7 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 				meanRewardPerForward.AllRewards = append(meanRewardPerForward.AllRewards, reward)
 				meanRewardPerForward.SumRewards += reward
 			}
-			if counter%100_000 == 0 {
+			if counter%logInterval == 0 {
 				mean := meanRewardPerForward.CalculateMeanRewardPerForward()
 				_, err := meanRewardPerForward.Writer.WriteString(fmt.Sprintf("Mean reward per forward: %f \n", mean))
 				if err != nil {
@@ -178,7 +179,7 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 		if config.GetAverageNumberOfHops() {
 			avgNumberOfHops.TotalNumberOfHops += len(outputStruct.RouteWithPrices)
 			avgNumberOfHops.NumberOfRoutes++
-			if counter%100_000 == 0 {
+			if counter%logInterval == 0 {
 				hops := avgNumberOfHops.CalculateAverageNumberOfHops()
 				_, err := avgNumberOfHops.Writer.WriteString(fmt.Sprintf("Average number of hops: %f \n", hops))
 				if err != nil {
@@ -214,7 +215,7 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 				FractionOfRewardsK16.RouteRewards = nil
 				FractionOfRewardsK16.SumRouteRewards = 0
 			}
-			if counter%100_000 == 0 {
+			if counter%logInterval == 0 {
 				hop1, hop2, hop3 := fractions.CalculateFractionOfRewards()
 				_, err := fractions.Writer.WriteString(fmt.Sprintf("hop 1: %f, hop 2: %f, hop 3: %f \n", hop1, hop2, hop3))
 				if err != nil {
@@ -230,7 +231,7 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 				rewardFairnessForStoringAction.AllStoringRewards = append(rewardFairnessForStoringAction.AllStoringRewards, reward)
 				rewardFairnessForStoringAction.SumAllStoringRewards += reward
 			}
-			if counter == 100_000 {
+			if counter == logInterval {
 				fairness := rewardFairnessForStoringAction.CalculateRewardFairnessForStoringAction()
 				_, err := rewardFairnessForStoringAction.Writer.WriteString(fmt.Sprintf("Reward fairness for storing action: %f \n", fairness))
 				if err != nil {
@@ -274,7 +275,7 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 					rewardFairnessForForwardingAction.AllForwardingRewards = append(rewardFairnessForForwardingAction.AllForwardingRewards, reward)
 					rewardFairnessForForwardingAction.SumAllForwardingRewards += reward
 				}
-				if counter == 100_000 {
+				if counter == logInterval {
 					fairness := rewardFairnessForForwardingAction.CalculateRewardFairnessForForwardingAction()
 					_, err := rewardFairnessForAllActions.Writer.WriteString(fmt.Sprintf("Reward fairness for forwarding action: %f \n", fairness))
 					if err != nil {
@@ -287,7 +288,7 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 		if config.GetComputeWorkFairness() {
 			workInfo.Update(&outputStruct)
 
-			if counter%100_000 == 0 {
+			if counter%logInterval == 0 {
 				workInfo.Log()
 			}
 		}
@@ -297,7 +298,7 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 			negativeIncome.Update(&outputStruct)
 
 			// if counter%500_000==0 or counter==100_000 {
-			if counter%100_000 == 0 {
+			if counter%logInterval == 0 {
 				negativeIncome.Log()
 			}
 		}

@@ -38,7 +38,8 @@ var defaultVariables = VariablesType{
 			RewardFairnessForAllActions:       false,     // false
 			NegativeIncome:                    false,     // false
 			ComputeWorkFairness:               false,     // false
-			ExpeimentId:                       "default", // default
+			ExperimentId:                      "default", // default
+			EvaluateInterval:                  0,         // 0
 		},
 	},
 	experimentOptions: experimentOptions{
