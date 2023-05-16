@@ -18,6 +18,11 @@ func InitConfigs() {
 	SetExperiment(ymlData)
 }
 
+func InitConfigsWithId(id string) {
+	InitConfigs()
+	Variables.confOptions.OutputOptions.ExpeimentId = id
+}
+
 func ReadYamlFile() Yml {
 	yamlFile, err := os.ReadFile("config.yaml")
 

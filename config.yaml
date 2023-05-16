@@ -3,7 +3,7 @@
 # Global configuration options, defaults in comment
 ConfOptions:
   # Iterations: 10_000_000, best in multiples of 100_000
-  Iterations: 5_000_000
+  Iterations: 1_000_000
   # Bits: 16, bits in maximum address
   Bits: 16
   # NetworkSize: 10000, number of nodes in network
@@ -13,19 +13,19 @@ ConfOptions:
   # RangeAddress: 65536, addresses with range from 0 to X
   RangeAddress: 65536
   # Originators: 1000, number of originators initiating requests
-  Originators: 9000
+  Originators: 1000
   # RefreshRate: 8, the rate of which edge dept gets removed per second
-  RefreshRate: 8
+  RefreshRate: 0
   # Threshold: 16, the maximum edge debt a node in an edge can have
-  Threshold: 16
+  Threshold: 0
   # RandomSeed: 123456789, seed for deterministic randomness
   RandomSeed: 123456789
   # MaxProximityOrder: 16, determines how many accounting units is transferred according to distance from chunk.
-  MaxProximityOrder: 30
+  MaxProximityOrder: 16
   # Price: 1, the base unit for prices
   Price: 1
   # RequestsPerSecond: 12500, number of iterations during a second
-  RequestsPerSecond: 12500
+  RequestsPerSecond: 100000
   # EdgeLock: true, keeps edges locked while in use for concurrency
   EdgeLock: true
   # SameOriginator: false, makes the same originator request many times in a row
@@ -35,7 +35,7 @@ ConfOptions:
   # WriteRoutesToFile: false, writes routes to file for future usage
   WriteRoutesToFile: true
   # WriteStatesToFile: false, writes a subset of states to file for future usage
-  WriteStatesToFile: true
+  WriteStatesToFile: false
   # IterationMeansUniqueChunk: false, if a chunk chosen again by waiting/retry counts as an iteration
   IterationMeansUniqueChunk: false
   # DebugPrints: false, enables some useful prints to terminal during the run
@@ -43,7 +43,7 @@ ConfOptions:
   # DebugInterval: 1_000_000, how often these prints should be done
   DebugInterval: 1_000_000
   # NumGoroutines: -1, number of active goroutines, leave at -1 for automatically using numCPU
-  NumGoroutines: -1
+  NumGoroutines: 3
   # Enabled the outputWorker which handles writing output to file and analysis of results
   OutputEnabled: true
   # Which logic should be used in the outputWorker
@@ -56,6 +56,8 @@ ConfOptions:
     RewardFairnessForStoringAction: false
     RewardFairnessForAllActions: false
     NegativeIncome: true
+    ComputeWorkFairness: true
+    ExperimentId: "0"
 
 # Experiments to choose from:
   # omega: maxPoCheckEnabled
@@ -87,7 +89,7 @@ CustomExperiment:
   # RetryWithAnotherPeer: false, the Route to the chunk will try to take many paths to find the chunk
   RetryWithAnotherPeer: false
   # CacheIsEnabled: false, cache on nodes which stores chunks the node have seen before
-  CacheIsEnabled: true
+  CacheIsEnabled: false
   # PreferredChunks: false, fits well with cache, where some chunks are chosen more often than others
   PreferredChunks: false
   # AdjustableThreshold: false, the threshold limit of an edge is determined based on the XOR distance

@@ -267,14 +267,20 @@ func GetComputeWorkFairness() bool {
 	return Variables.confOptions.OutputOptions.ComputeWorkFairness
 }
 
+func GetExpeimentId() string {
+	return Variables.confOptions.OutputOptions.ExpeimentId
+}
+
 func GetExperimentString() (exp string) {
-	exp = fmt.Sprintf("O%dT%dsW%dTh%dFg%dW%d",
+	exp = fmt.Sprintf("O%dT%dsW%dTh%dFg%dW%d-%s",
 		GetOriginators()*100/GetNetworkSize(),
 		GetIterations()/GetRequestsPerSecond(),
 		GetBinSize(),
 		GetThreshold(),
 		GetRefreshRate(),
-		GetMaxProximityOrder())
+		GetMaxProximityOrder(),
+		GetExpeimentId(),
+	)
 	if GetPaymentEnabled() {
 		exp += "Pay"
 	}

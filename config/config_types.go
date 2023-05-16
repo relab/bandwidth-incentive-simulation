@@ -58,13 +58,14 @@ type experimentOptions struct {
 }
 
 type outputOptions struct {
-	MeanRewardPerForward              bool `yaml:"MeanRewardPerForward"`
-	AverageNumberOfHops               bool `yaml:"AverageNumberOfHops"`
-	AverageFractionOfTotalRewardsK8   bool `yaml:"AverageFractionOfTotalRewardsK8"`
-	AverageFractionOfTotalRewardsK16  bool `yaml:"AverageFractionOfTotalRewardsK16"`
-	RewardFairnessForForwardingAction bool `yaml:"RewardFairnessForForwardingAction"`
-	RewardFairnessForStoringAction    bool `yaml:"RewardFairnessForStoringAction"`
-	RewardFairnessForAllActions       bool `yaml:"RewardFairnessForAllActions"`
-	NegativeIncome                    bool `yaml:"NegativeIncome"`
-	ComputeWorkFairness               bool `yaml:"ComputeWorkFairness"`
+	MeanRewardPerForward              bool   `yaml:"MeanRewardPerForward"`
+	AverageNumberOfHops               bool   `yaml:"AverageNumberOfHops"`
+	AverageFractionOfTotalRewardsK8   bool   `yaml:"AverageFractionOfTotalRewardsK8"`
+	AverageFractionOfTotalRewardsK16  bool   `yaml:"AverageFractionOfTotalRewardsK16"`
+	RewardFairnessForForwardingAction bool   `yaml:"RewardFairnessForForwardingAction"`
+	RewardFairnessForStoringAction    bool   `yaml:"RewardFairnessForStoringAction"`
+	RewardFairnessForAllActions       bool   `yaml:"RewardFairnessForAllActions"`
+	NegativeIncome                    bool   `yaml:"NegativeIncome"`
+	ComputeWorkFairness               bool   `yaml:"ComputeWorkFairness"`
+	ExpeimentId                       string `yaml:"ExpeimentId"`
 }

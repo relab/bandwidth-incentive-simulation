@@ -29,15 +29,16 @@ var defaultVariables = VariablesType{
 		NumGoroutines:             -1,         // -1 means gets overwritten by numCPU
 		OutputEnabled:             false,      // false
 		OutputOptions: outputOptions{
-			MeanRewardPerForward:              false, // false
-			AverageNumberOfHops:               false, // false
-			AverageFractionOfTotalRewardsK8:   false, // false
-			AverageFractionOfTotalRewardsK16:  false, // false
-			RewardFairnessForForwardingAction: false, // false
-			RewardFairnessForStoringAction:    false, // false
-			RewardFairnessForAllActions:       false, // false
-			NegativeIncome:                    false, // false
-			ComputeWorkFairness:               false, // false
+			MeanRewardPerForward:              false,     // false
+			AverageNumberOfHops:               false,     // false
+			AverageFractionOfTotalRewardsK8:   false,     // false
+			AverageFractionOfTotalRewardsK16:  false,     // false
+			RewardFairnessForForwardingAction: false,     // false
+			RewardFairnessForStoringAction:    false,     // false
+			RewardFairnessForAllActions:       false,     // false
+			NegativeIncome:                    false,     // false
+			ComputeWorkFairness:               false,     // false
+			ExpeimentId:                       "default", // default
 		},
 	},
 	experimentOptions: experimentOptions{
