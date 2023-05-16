@@ -32,7 +32,7 @@ func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []typ
 	} else {
 	out:
 		for !general.ArrContains(respNodes, curNextNodeId) {
-			//fmt.Printf("\n orig: %d, chunk_id: %d", mainOriginatorId, chunkId)
+			// fmt.Printf("\n orig: %d, chunk_id: %d", mainOriginatorId, chunkId)
 
 			nextNodeId, thresholdFailed, accessFailed, prevNodePaid, payment = getNext(request, curNextNodeId, prevNodePaid, graph)
 

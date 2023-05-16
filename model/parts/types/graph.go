@@ -110,6 +110,10 @@ func (g *Graph) AddNode(node *Node) error {
 }
 
 func (g *Graph) GetNodeAdj(nodeId NodeId) [][]NodeId {
+	n := g.GetNode(nodeId)
+	if n == nil {
+		panic(fmt.Sprintf("Node %d does not exist!", nodeId))
+	}
 	return g.GetNode(nodeId).AdjIds
 }
 
@@ -136,11 +140,19 @@ func (g *Graph) AddEdge(fromNodeId NodeId, toNodeId NodeId, attrs EdgeAttrs) err
 }
 
 func (g *Graph) LockEdge(nodeA NodeId, nodeB NodeId) {
+	// fmt.Printf("\n LockEdge: %d-%d", nodeA, nodeB)
+	if !g.EdgeExists(nodeA, nodeB) {
+		panic(fmt.Sprintf("Trying to lock edge %d-%d that does not exist!", nodeA, nodeB))
+	}
 	edge := g.GetEdge(nodeA, nodeB)
 	edge.Mutex.Lock()
 }
 
 func (g *Graph) UnlockEdge(nodeA NodeId, nodeB NodeId) {
+	// fmt.Printf("\n UnLockEdge: %d-%d", nodeA, nodeB)
+	if !g.EdgeExists(nodeA, nodeB) {
+		panic(fmt.Sprintf("Trying to unlock edge %d-%d that does not exist!", nodeA, nodeB))
+	}
 	edge := g.GetEdge(nodeA, nodeB)
 	edge.Mutex.Unlock()
 }

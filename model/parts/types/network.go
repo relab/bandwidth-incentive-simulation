@@ -23,7 +23,7 @@ func (n NodeId) ToInt() int {
 }
 
 func (n NodeId) IsNil() bool {
-	return n.ToInt() == 0
+	return n.ToInt() == -1
 }
 
 type ChunkId int

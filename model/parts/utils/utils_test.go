@@ -10,7 +10,7 @@ import (
 	"gotest.tools/assert"
 )
 
-const path = "../../../data/nodes_data_8_10000.txt"
+const path = "../../../data/nodes_data_8_10000_0.txt"
 
 func TestCreateGraphNetwork(t *testing.T) {
 	// fileName := "input_test.txt"
@@ -18,9 +18,15 @@ func TestCreateGraphNetwork(t *testing.T) {
 	network.Load(path)
 	graph, err := CreateGraphNetwork(network)
 
+	edge := graph.GetEdge(49584, 0)
+	graph.LockEdge(49584, 0)
+	graph.UnlockEdge(49584, 0)
+	node := graph.GetNode(0)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, len(graph.Nodes), 10000)
 	assert.Equal(t, len(graph.Edges), 10000)
+	assert.Check(t, *edge != types.Edge{})
+	assert.Check(t, node != nil)
 }
 
 // TODO: not working right now

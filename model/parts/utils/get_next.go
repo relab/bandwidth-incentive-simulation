@@ -8,8 +8,8 @@ import (
 
 // returns the next node in the route, which is the closest node to the route in the previous nodes adjacency list
 func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool, graph *types.Graph) (types.NodeId, bool, bool, bool, types.Payment) {
-	var nextNodeId types.NodeId = 0
-	var payNextId types.NodeId = 0
+	var nextNodeId types.NodeId = -1
+	var payNextId types.NodeId = -1
 	var payment types.Payment
 	var thresholdFailed bool
 	var accessFailed bool
@@ -59,7 +59,7 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 				}
 				if !payNextId.IsNil() {
 					graph.UnlockEdge(firstNodeId, payNextId)
-					payNextId = 0 // IMPORTANT!
+					payNextId = -1 // IMPORTANT!
 				}
 			}
 			currDist = dist
@@ -102,7 +102,6 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 		accessFailed = false
 	} else if !thresholdFailed {
 		accessFailed = true
-	} else {
 	}
 
 	if config.GetPaymentEnabled() && !payNextId.IsNil() {
