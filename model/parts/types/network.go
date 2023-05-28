@@ -94,7 +94,7 @@ func (network *Network) node(nodeId NodeId) *Node {
 		Id:      nodeId,
 		AdjIds:  make([][]NodeId, network.Bits),
 		CacheStruct: CacheStruct{
-			Size:       50,
+			Size:       500,
 			CacheMap:   make(CacheMap),
 			CacheList:  make([]ChunkId, 0, 11),
 			CacheMutex: &sync.Mutex{},
@@ -125,8 +125,11 @@ func (network *Network) node(nodeId NodeId) *Node {
 
 }
 
-func (network *Network) Generate(count int) []*Node {
+func (network *Network) Generate(count int, random bool) []*Node {
 	nodeIds := generateIds(count, (1<<network.Bits)-1)
+	if !random {
+		nodeIds = generateIdsEven(count, (1<<network.Bits)-1)
+	}
 	nodes := make([]*Node, 0)
 	for _, i := range nodeIds {
 		node := network.node(NodeId(i))
@@ -208,6 +211,18 @@ func generateIds(totalNumbers int, maxValue int) []int {
 		result = append(result, num)
 	}
 	return result
+}
+
+func generateIdsEven(totalNumbers int, maxValue int) []int {
+	result := make([]int, 0, totalNumbers)
+	step := float64(maxValue) / float64(totalNumbers)
+	for id := 0.0; id < float64(maxValue); id += step {
+		result = append(result, int(id))
+	}
+	if len(result) < totalNumbers {
+		result = append(result, maxValue)
+	}
+	return result[:totalNumbers]
 }
 
 func (node *Node) add(other *Node) bool {

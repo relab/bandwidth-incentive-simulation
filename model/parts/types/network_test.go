@@ -2,10 +2,11 @@ package types
 
 import (
 	"fmt"
-	"gotest.tools/assert"
 	"math/rand"
 	"testing"
 	"time"
+
+	"gotest.tools/assert"
 )
 
 func TestGenerateAndLoad(t *testing.T) {
@@ -14,7 +15,7 @@ func TestGenerateAndLoad(t *testing.T) {
 	bin := 8
 	size := 10000
 	network := &Network{Bits: bits, Bin: bin}
-	nodes := network.Generate(size)
+	nodes := network.Generate(size, true)
 
 	filename := fmt.Sprintf("nodes_data_%d_%d.txt", bin, size)
 	network.Dump(filename)
