@@ -16,23 +16,24 @@ func main() {
 	rSeed := flag.Int("rSeed", -1, "random Seed")
 	id := flag.String("id", "", "an id")
 	count := flag.Int("count", 0, "generate count many networks with ids 0,1,...")
+	random := flag.Bool("random", true, "spread nodes randomly")
 
 	flag.Parse()
 
 	if *count == 0 {
-		generateAndDump(*bits, *binSize, *networkSize, *rSeed, *id)
+		generateAndDump(*bits, *binSize, *networkSize, *rSeed, *id, *random)
 	}
 	for i := *count; i > 0; i-- {
-		generateAndDump(*bits, *binSize, *networkSize, *rSeed, fmt.Sprint(*count-i))
+		generateAndDump(*bits, *binSize, *networkSize, *rSeed, fmt.Sprint(*count-i), *random)
 	}
 }
 
-func generateAndDump(bits, binSize, N, rSeed int, id string) {
+func generateAndDump(bits, binSize, N, rSeed int, id string, random bool) {
 	if rSeed != -1 {
 		rand.Seed(int64(rSeed))
 	}
 	network := types.Network{Bits: bits, Bin: binSize}
-	network.Generate(N)
+	network.Generate(N, random)
 	filename := fmt.Sprintf("nodes_data_%d_%d.txt", binSize, N)
 	if id != "" {
 		filename = fmt.Sprintf("nodes_data_%d_%d_%s.txt", binSize, N, id)
