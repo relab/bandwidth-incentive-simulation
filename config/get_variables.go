@@ -280,14 +280,14 @@ func GetEvaluateInterval() (i int) {
 }
 
 func GetExperimentString() (exp string) {
-	exp = fmt.Sprintf("O%dT%dsW%dTh%dFg%dW%d-%s",
+	exp = fmt.Sprintf("O%dT%dsS%dk%dTh%dFg%dW%d",
 		GetOriginators()*100/GetNetworkSize(),
 		GetIterations()/GetRequestsPerSecond(),
+		GetIterations(),
 		GetBinSize(),
 		GetThreshold(),
 		GetRefreshRate(),
 		GetMaxProximityOrder(),
-		GetExpeimentId(),
 	)
 	if GetPaymentEnabled() {
 		exp += "Pay"
@@ -295,5 +295,13 @@ func GetExperimentString() (exp string) {
 	if IsCacheEnabled() {
 		exp += "Cache"
 	}
+	if IsPreferredChunksEnabled() {
+		exp += "Skew"
+	}
+	if IsAdjustableThreshold() {
+		exp += "FgAdj"
+	}
+
+	exp += "-" + GetExpeimentId()
 	return exp
 }
