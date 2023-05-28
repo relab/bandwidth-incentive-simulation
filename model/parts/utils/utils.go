@@ -8,6 +8,8 @@ import (
 	"sort"
 )
 
+//TODO: most of this should probably go into the types package
+
 func PrecomputeRespNodes(nodesId []types.NodeId) [][4]types.NodeId {
 	numPossibleChunks := config.GetRangeAddress()
 	result := make([][4]types.NodeId, numPossibleChunks)
@@ -93,9 +95,9 @@ func GetNewChunkId() types.ChunkId {
 func GetPreferredChunkId() types.ChunkId {
 	var chunkId types.ChunkId
 	var random float32
-	numPreferredChunks := 1000
+	numPreferredChunks := 1
 	random = rand.Float32()
-	if float32(random) <= 0.5 {
+	if float32(random) <= 0.8 {
 		chunkId = types.ChunkId(rand.Intn(numPreferredChunks))
 	} else {
 		chunkId = types.ChunkId(rand.Intn(config.GetRangeAddress()-numPreferredChunks) + numPreferredChunks)
@@ -117,12 +119,12 @@ func isThresholdFailed(firstNodeId types.NodeId, secondNodeId types.NodeId, grap
 
 		peerPriceChunk := PeerPriceChunk(secondNodeId, request.ChunkId)
 		price := p2pFirst - p2pSecond + peerPriceChunk
+
 		//fmt.Printf("price: %d = p2pFirst: %d - p2pSecond: %d + PeerPriceChunk: %d \n", price, p2pFirst, p2pSecond, peerPriceChunk)
 
 		if price > threshold {
 			if config.IsForgivenessEnabled() {
 				newP2pFirst, forgiven := CheckForgiveness(edgeDataFirst, firstNodeId, secondNodeId, graph, request)
-				//_, _ = CheckForgiveness(edgeDataSecond, secondNodeId, firstNodeId, graph, request)
 				if forgiven {
 					price = newP2pFirst - p2pSecond + peerPriceChunk
 				}
