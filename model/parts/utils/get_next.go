@@ -30,7 +30,7 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 	for _, nodeId := range firstNodeAdjIds[bin] {
 		dist := nodeId.ToInt() ^ chunkId.ToInt()
 		if general.BitLength(dist) >= general.BitLength(lastDistance) {
-			continue
+			panic("Something is wrong. Did try to route to a node that is further from the chunk than myself.")
 		}
 		if dist >= currDist {
 			continue
@@ -86,16 +86,6 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 			}
 		}
 	}
-
-	// unlocks all nodes except the nextNodeId lock
-	//if constants.GetEdgeLock() {
-	//	for _, nodeId := range lockedEdges {
-	//		if nodeId.ToInt32() != nextNodeId.ToInt32() {
-	//			graph.UnlockEdge(firstNodeId, nodeId)
-	//			unlockedEdges = append(unlockedEdges, nodeId)
-	//		}
-	//	}
-	//}
 
 	if !nextNodeId.IsNil() {
 		thresholdFailed = false
