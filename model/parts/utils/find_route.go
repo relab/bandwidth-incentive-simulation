@@ -26,6 +26,7 @@ func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []typ
 	if config.IsPayIfOrigPays() {
 		prevNodePaid = true
 	}
+
 	if general.ArrContains(respNodes, mainOriginatorId) {
 		// originator has the chunk --> chunk is found
 		found = true
@@ -67,31 +68,37 @@ func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []typ
 	if config.IsForwardersPayForceOriginatorToPay() {
 		if !accessFailed && len(paymentList) > 0 {
 
+			newList := make([]types.Payment, 0, len(paymentList))
+
 			for i := 0; i < len(route)-1; i++ {
 				newPayment := types.Payment{
 					FirstNodeId: route[i],
 					PayNextId:   route[i+1],
 					ChunkId:     chunkId}
+				if i == 0 {
+					newPayment.IsOriginator = true
+				}
+				newList = append(newList, newPayment)
 
-				paymentAlreadyExists := false
-				for _, tmp := range paymentList {
+				oldIndex := -1
+				for oi, tmp := range paymentList {
 					if newPayment.FirstNodeId == tmp.FirstNodeId && newPayment.PayNextId == tmp.PayNextId {
-						paymentAlreadyExists = true
+						oldIndex = oi
 						break
 					}
 				}
-				if !paymentAlreadyExists {
-					if i == 0 {
-						newPayment.IsOriginator = true
-					}
-					if i+1 > len(paymentList) {
-						paymentList = append(paymentList, newPayment)
-					} else {
-						paymentList = append(paymentList[:i+1], paymentList[i:]...)
-						paymentList[i] = newPayment
-					}
+
+				if oldIndex > -1 {
+					paymentList = append(paymentList[:oldIndex], paymentList[oldIndex+1:]...)
 				}
+				if len(paymentList) == 0 {
+					break
+				}
+
 			}
+
+			paymentList = newList
+
 		} else {
 			paymentList = []types.Payment{}
 		}
