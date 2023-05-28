@@ -13,24 +13,28 @@ import (
 )
 
 func main() {
+	graphId := flag.String("graphId", "", "an Id for the graph, e.g. even")
 	count := flag.Int("count", 0, "generate count many networks with ids 0,1,...")
 
 	flag.Parse()
 
 	if *count == 0 {
-		run(-1)
+		run(-1, *graphId)
 	}
 	for i := *count; i > 0; i-- {
-		run(*count - i)
+		run(*count-i, "")
 	}
 }
 
-func run(iteration int) {
+func run(iteration int, graphId string) {
 	start := time.Now()
 	if iteration == -1 {
 		config.InitConfigs()
 	}
 	network := fmt.Sprintf("./data/nodes_data_%d_%d.txt", config.GetBinSize(), config.GetNetworkSize())
+	if graphId != "" {
+		network = fmt.Sprintf("./data/nodes_data_%d_%d_%v.txt", config.GetBinSize(), config.GetNetworkSize(), graphId)
+	}
 	if iteration > -1 {
 		config.InitConfigsWithId(fmt.Sprint(iteration))
 		network = fmt.Sprintf("./data/nodes_data_%d_%d_%d.txt", config.GetBinSize(), config.GetNetworkSize(), iteration)
