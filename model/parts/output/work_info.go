@@ -62,6 +62,17 @@ func (o *WorkInfo) CalculateForwardWorkFairness() float64 {
 	return utils.Gini(vals)
 }
 
+func (o *WorkInfo) CalculateStorageWorkFairness() float64 {
+	size := config.GetNetworkSize()
+	vals := make([]int, size)
+	i := 0
+	for id, value := range o.WorkMap {
+		vals[i] = value - o.ForwardMap[id]
+		i++
+	}
+	return utils.Gini(vals)
+}
+
 // calculate the maximum work done,
 // maximum work done by not originator and
 // median work done.
@@ -79,6 +90,9 @@ func (o *WorkInfo) CalculateMaxMedianWork() (int, int, int) {
 	sort.Slice(vals, func(i2, j int) bool {
 		return vals[i2] < vals[j]
 	})
+	if len(vals) == 0 {
+		return -1, -1, -1
+	}
 
 	return vals[len(vals)-1], maxfwd, vals[len(vals)/2]
 }
@@ -111,7 +125,15 @@ func (wi *WorkInfo) Log() {
 	if err != nil {
 		panic(err)
 	}
+	_, err = wi.Writer.WriteString(fmt.Sprintf("Storageworkfairness: %f  \n", wi.CalculateStorageWorkFairness()))
+	if err != nil {
+		panic(err)
+	}
 	_, err = wi.Writer.WriteString(fmt.Sprintf("Max, max by non originator, and median work done: %d, %d, %d \n", max, maxfwd, median))
+	if err != nil {
+		panic(err)
+	}
+	_, err = wi.Writer.WriteString(fmt.Sprintf("Number of peers doing any work at all: %d \n", len(wi.WorkMap)))
 	if err != nil {
 		panic(err)
 	}
