@@ -14,6 +14,12 @@ func GetNumRoutingGoroutines() int {
 	if IsOutputEnabled() {
 		num-- // for the outputWorker
 	}
+	if num < 1 {
+		if IsOutputEnabled() {
+			panic("You need at least 3 goroutines for the requestWorker, routingWorker and outputWorker")
+		}
+		panic("You need at least 2 goroutines for the requestWorker and routingWorker")
+	}
 	return num
 }
 
@@ -176,42 +182,41 @@ func IsOutputEnabled() bool {
 	return Variables.confOptions.OutputEnabled
 }
 
+func JustPrintOutPut() bool {
+	if !Variables.confOptions.OutputOptions.MeanRewardPerForward &&
+		!Variables.confOptions.OutputOptions.AverageNumberOfHops &&
+		!Variables.confOptions.OutputOptions.AverageFractionOfTotalRewardsK16 &&
+		!Variables.confOptions.OutputOptions.RewardFairnessForForwardingAction &&
+		!Variables.confOptions.OutputOptions.RewardFairnessForStoringAction &&
+		!Variables.confOptions.OutputOptions.RewardFairnessForAllActions &&
+		!Variables.confOptions.OutputOptions.NegativeIncome {
+		return true
+	}
+	return false
+}
+
 func GetMeanRewardPerForward() bool {
-	if Variables.experimentOptions.MaxPOCheckEnabled &&
-		!Variables.experimentOptions.ThresholdEnabled &&
-		!Variables.experimentOptions.ForgivenessEnabled &&
-		!Variables.experimentOptions.PaymentEnabled &&
-		!Variables.experimentOptions.WaitingEnabled &&
-		!Variables.experimentOptions.RetryWithAnotherPeer {
+	if Variables.confOptions.OutputEnabled && Variables.experimentOptions.MaxPOCheckEnabled {
 		return Variables.confOptions.OutputOptions.MeanRewardPerForward
 	}
 	return false
 }
 
 func GetAverageNumberOfHops() bool {
-	if Variables.experimentOptions.MaxPOCheckEnabled &&
-		!Variables.experimentOptions.ThresholdEnabled &&
-		!Variables.experimentOptions.ForgivenessEnabled &&
-		!Variables.experimentOptions.PaymentEnabled &&
-		!Variables.experimentOptions.WaitingEnabled &&
-		!Variables.experimentOptions.RetryWithAnotherPeer {
+	if Variables.confOptions.OutputEnabled && Variables.experimentOptions.MaxPOCheckEnabled {
 		return Variables.confOptions.OutputOptions.AverageNumberOfHops
 	}
 	return false
 }
 
 func GetAverageFractionOfTotalRewardsK8() bool {
-	return Variables.confOptions.OutputOptions.AverageFractionOfTotalRewardsK8
+	return false
 }
 
 func GetAverageFractionOfTotalRewardsK16() bool {
-	if Variables.experimentOptions.MaxPOCheckEnabled &&
+	if Variables.confOptions.OutputEnabled &&
 		Variables.confOptions.BinSize == 16 &&
-		!Variables.experimentOptions.ThresholdEnabled &&
-		!Variables.experimentOptions.ForgivenessEnabled &&
-		!Variables.experimentOptions.PaymentEnabled &&
-		!Variables.experimentOptions.WaitingEnabled &&
-		!Variables.experimentOptions.RetryWithAnotherPeer {
+		Variables.experimentOptions.MaxPOCheckEnabled {
 		return Variables.confOptions.OutputOptions.AverageFractionOfTotalRewardsK16
 	}
 	return false
@@ -219,42 +224,26 @@ func GetAverageFractionOfTotalRewardsK16() bool {
 }
 
 func GetRewardFairnessForForwardingAction() bool {
-	if Variables.experimentOptions.MaxPOCheckEnabled &&
-		!Variables.experimentOptions.ThresholdEnabled &&
-		!Variables.experimentOptions.ForgivenessEnabled &&
-		!Variables.experimentOptions.PaymentEnabled &&
-		!Variables.experimentOptions.WaitingEnabled &&
-		!Variables.experimentOptions.RetryWithAnotherPeer {
+	if Variables.confOptions.OutputEnabled && Variables.experimentOptions.MaxPOCheckEnabled {
 		return Variables.confOptions.OutputOptions.RewardFairnessForForwardingAction
 	}
 	return false
 }
 
 func GetRewardFairnessForStoringAction() bool {
-	if Variables.experimentOptions.MaxPOCheckEnabled &&
-		!Variables.experimentOptions.ThresholdEnabled &&
-		!Variables.experimentOptions.ForgivenessEnabled &&
-		!Variables.experimentOptions.PaymentEnabled &&
-		!Variables.experimentOptions.WaitingEnabled &&
-		!Variables.experimentOptions.RetryWithAnotherPeer {
+	if Variables.confOptions.OutputEnabled && Variables.experimentOptions.MaxPOCheckEnabled {
 		return Variables.confOptions.OutputOptions.RewardFairnessForStoringAction
 	}
 	return false
 }
 
 func GetRewardFairnessForAllActions() bool {
-	if Variables.experimentOptions.MaxPOCheckEnabled &&
-		!Variables.experimentOptions.ThresholdEnabled &&
-		!Variables.experimentOptions.ForgivenessEnabled &&
-		!Variables.experimentOptions.PaymentEnabled &&
-		!Variables.experimentOptions.WaitingEnabled &&
-		!Variables.experimentOptions.RetryWithAnotherPeer {
+	if Variables.confOptions.OutputEnabled && Variables.experimentOptions.MaxPOCheckEnabled {
 		return Variables.confOptions.OutputOptions.RewardFairnessForAllActions
 	}
 	return false
 }
 
-// GetNegativeIncome TODO: Kan ver merr det må ver mer checks her
 func GetNegativeIncome() bool {
 	if Variables.experimentOptions.PaymentEnabled &&
 		Variables.experimentOptions.ForgivenessEnabled {

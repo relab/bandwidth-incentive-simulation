@@ -14,7 +14,7 @@ type Graph struct {
 	Nodes     []*Node
 	NodeIds   []NodeId
 	Edges     map[NodeId]map[NodeId]*Edge
-	RespNodes [][4]NodeId
+	RespNodes map[ChunkId][4]NodeId
 	Mutex     sync.Mutex
 }
 
@@ -40,7 +40,7 @@ type EdgeAttrs struct {
 //	return g.RespNodes[chunkId]
 //}
 
-func BinarySearchClosest(arr []NodeId, target int, n int) []NodeId {
+func BinarySearchClosest(arr []NodeId, target int, n int) ([]NodeId, NodeId) {
 	left, right := 0, len(arr)-1
 	mid := 0
 	for left <= right {
@@ -63,24 +63,24 @@ func BinarySearchClosest(arr []NodeId, target int, n int) []NodeId {
 	if right > len(arr) {
 		right = len(arr)
 	}
-	return arr[left:right]
+	return arr[left:right], arr[mid]
 }
 
 func (g *Graph) FindResponsibleNodes(chunkId ChunkId) [4]NodeId {
-	chunkIdInt := chunkId.ToInt()
 	if config.IsPrecomputeRespNodes() {
-		return g.RespNodes[chunkIdInt]
+		return g.RespNodes[chunkId]
 
 	} else {
-		if g.RespNodes[chunkIdInt][0] != 0 {
-			return g.RespNodes[chunkIdInt]
+		if respNodes, ok := g.RespNodes[chunkId]; ok {
+			return respNodes
 
 		} else {
+			chunkIdInt := chunkId.ToInt()
 			numNodesSearch := config.GetBits()
-			closestNodes := BinarySearchClosest(g.NodeIds, chunkIdInt, numNodesSearch)
+
+			closestNodes, _ := BinarySearchClosest(g.NodeIds, chunkIdInt, numNodesSearch)
 
 			distances := make([]int, len(closestNodes))
-			result := [4]NodeId{}
 
 			for i, nodeId := range closestNodes {
 				distances[i] = nodeId.ToInt() ^ chunkIdInt
@@ -88,12 +88,13 @@ func (g *Graph) FindResponsibleNodes(chunkId ChunkId) [4]NodeId {
 
 			sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
 
+			respNodes = [4]NodeId{}
 			for i := 0; i < 4; i++ {
-				result[i] = NodeId(distances[i] ^ chunkIdInt) // this results in the nodeId again
+				respNodes[i] = NodeId(distances[i] ^ chunkIdInt) // this results in the nodeId again
 			}
-			g.RespNodes[chunkId] = result
+			g.RespNodes[chunkId] = respNodes
 
-			return result
+			return respNodes
 		}
 	}
 }

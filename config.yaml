@@ -31,7 +31,7 @@ ConfOptions:
   # SameOriginator: false, makes the same originator request many times in a row
   SameOriginator: false
   # PrecomputeRespNodes: true, precomputes responsible nodes for chunks or ad-hoc during run
-  PrecomputeRespNodes: true
+  PrecomputeRespNodes: false
   # WriteRoutesToFile: false, writes routes to file for future usage
   WriteRoutesToFile: true
   # WriteStatesToFile: false, writes a subset of states to file for future usage
@@ -45,7 +45,7 @@ ConfOptions:
   # NumGoroutines: -1, number of active goroutines, leave at -1 for automatically using numCPU
   NumGoroutines: 3
   # Enabled the outputWorker which handles writing output to file and analysis of results
-  OutputEnabled: true
+  OutputEnabled: false
   # Which logic should be used in the outputWorker
   OutputOptions:
     MeanRewardPerForward: true

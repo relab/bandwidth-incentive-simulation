@@ -24,31 +24,30 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 	var workInfo *output.WorkInfo
 	var logInterval = config.GetEvaluateInterval()
 
-	//filePath := "./results/output.txt"
-	//err := os.Remove(filePath)
-	//if err != nil {
-	//	fmt.Println("Could not remove the file", filePath)
-	//}
-	//file, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//defer func(file *os.File) {
-	//	err1 := file.Close()
-	//	if err1 != nil {
-	//		fmt.Println("Couldn't close the file with filepath: ", filePath)
-	//	}
-	//}(file)
-	//
-	//writer := bufio.NewWriter(file) // default writer size is 4096 bytes
-	////writer = bufio.NewWriterSize(writer, 1048576) // 1MiB
-	//defer func(writer *bufio.Writer) {
-	//	err1 := writer.Flush()
-	//	if err1 != nil {
-	//		fmt.Println("Couldn't flush the remaining buffer in the writer for output")
-	//	}
-	//}(writer)
+	filePath := "./results/output.txt"
+	err := os.Remove(filePath)
+	if err != nil {
+		fmt.Println("Could not remove the file", filePath)
+	}
+	file, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer func(file *os.File) {
+		err1 := file.Close()
+		if err1 != nil {
+			fmt.Println("Couldn't close the file with filepath: ", filePath)
+		}
+	}(file)
 
+	writer := bufio.NewWriter(file) // default writer size is 4096 bytes
+	//writer = bufio.NewWriterSize(writer, 1048576) // 1MiB
+	defer func(writer *bufio.Writer) {
+		err1 := writer.Flush()
+		if err1 != nil {
+			fmt.Println("Couldn't flush the remaining buffer in the writer for output")
+		}
+	}(writer)
 	if config.GetMeanRewardPerForward() {
 		file, filePath := output.MakeMeanRewardPerForwardFile()
 		defer func(file *os.File) {
@@ -157,6 +156,16 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 
 	for outputStruct = range outputChan {
 		counter++
+
+		if config.JustPrintOutPut() {
+			if outputStruct.RouteWithPrices != nil {
+				writer.WriteString(fmt.Sprintf("Route: %v \n", outputStruct.RouteWithPrices))
+			}
+			if outputStruct.PaymentsWithPrices != nil {
+				writer.WriteString(fmt.Sprintf("Payment Route: %v \n", outputStruct.PaymentsWithPrices))
+
+			}
+		}
 
 		if config.GetMeanRewardPerForward() {
 			for i := range outputStruct.RouteWithPrices {
