@@ -10,10 +10,10 @@ ConfOptions:
   NetworkSize: 10000
   # BinSize: 16, number of nodes in each bin/bucket for each node
   BinSize: 8
-  # RangeAddress: 65536, addresses with range from 0 to X
+  # RangeAddress: 65536, addresses with range from 0 to X for 20 its 1048576
   RangeAddress: 65536
   # Originators: 1000, number of originators initiating requests
-  Originators: 1000
+  Originators: 50
   # RefreshRate: 8, the rate of which edge dept gets removed per second
   RefreshRate: 0
   # Threshold: 16, the maximum edge debt a node in an edge can have
@@ -21,11 +21,11 @@ ConfOptions:
   # RandomSeed: 123456789, seed for deterministic randomness
   RandomSeed: 123456789
   # MaxProximityOrder: 16, determines how many accounting units is transferred according to distance from chunk.
-  MaxProximityOrder: 16
+  MaxProximityOrder: 30
   # Price: 1, the base unit for prices
   Price: 1
   # RequestsPerSecond: 12500, number of iterations during a second
-  RequestsPerSecond: 100000
+  RequestsPerSecond: 100_000
   # EdgeLock: true, keeps edges locked while in use for concurrency
   EdgeLock: true
   # SameOriginator: false, makes the same originator request many times in a row
@@ -33,7 +33,7 @@ ConfOptions:
   # PrecomputeRespNodes: true, precomputes responsible nodes for chunks or ad-hoc during run
   PrecomputeRespNodes: false
   # WriteRoutesToFile: false, writes routes to file for future usage
-  WriteRoutesToFile: true
+  WriteRoutesToFile: false
   # WriteStatesToFile: false, writes a subset of states to file for future usage
   WriteStatesToFile: false
   # IterationMeansUniqueChunk: false, if a chunk chosen again by waiting/retry counts as an iteration
@@ -45,7 +45,7 @@ ConfOptions:
   # NumGoroutines: -1, number of active goroutines, leave at -1 for automatically using numCPU
   NumGoroutines: 3
   # Enabled the outputWorker which handles writing output to file and analysis of results
-  OutputEnabled: false
+  OutputEnabled: true
   # Which logic should be used in the outputWorker
   OutputOptions:
     MeanRewardPerForward: true
@@ -58,6 +58,7 @@ ConfOptions:
     NegativeIncome: true
     ComputeWorkFairness: true
     ExperimentId: "0"
+    EvaluateInterval: 0
 
 # Experiments to choose from:
   # omega: maxPoCheckEnabled
@@ -76,7 +77,7 @@ CustomExperiment:
   ForgivenessEnabled: true
   # PaymentEnabled: false, nodes pay if they would get a threshold failure
   PaymentEnabled: true
-  # MaxPOCheckEnabled: false, used to find the proper variable called "omega" in the python paper
+  # MaxPOCheckEnabled: false, causes the output worker.
   MaxPOCheckEnabled: true
   # OnlyOriginatorPays: false, only the originator will pay, others will threshold fail or wait
   OnlyOriginatorPays: false
