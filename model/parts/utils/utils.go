@@ -43,7 +43,7 @@ func SortedKeys(nodeMap map[types.NodeId]*types.Node) []types.NodeId {
 		i++
 	}
 	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
-	if keys[0] <= 0 {
+	if keys[0] < 0 {
 		panic("generated network contains a node with an invalid Id")
 	}
 
