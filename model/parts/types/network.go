@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+	"errors"
 	"go-incentive-simulation/model/general"
 	"math/rand"
 	"os"
@@ -135,16 +136,16 @@ func (network *Network) Generate(count int, random bool) []*Node {
 		node := network.node(NodeId(i))
 		nodes = append(nodes, node)
 	}
-	pairs := make([][2]*Node, 0)
+
 	for i, node1 := range nodes {
-		for j := i + 1; j < len(nodes); j++ {
-			node2 := nodes[j]
-			pairs = append(pairs, [2]*Node{node1, node2})
+		choicenodes := nodes[i:]
+		rand.Shuffle(len(choicenodes), func(i, j int) { choicenodes[i], choicenodes[j] = choicenodes[j], choicenodes[i] })
+		for _, node2 := range choicenodes {
+			_, err := node1.add(node2)
+			if err != nil {
+				panic(err)
+			}
 		}
-	}
-	shufflePairs(pairs)
-	for _, pair := range pairs {
-		pair[0].add(pair[1])
 	}
 	return nodes
 }
@@ -192,12 +193,6 @@ func (network *Network) Dump(path string) error {
 //	return nodes[:k]
 //}
 
-func shufflePairs(pairs [][2]*Node) {
-	rand.Shuffle(len(pairs), func(i, j int) {
-		pairs[i], pairs[j] = pairs[j], pairs[i]
-	})
-}
-
 func generateIds(totalNumbers int, maxValue int) []int {
 	rand.Seed(time.Now().UnixNano())
 	generatedNumbers := make(map[int]bool)
@@ -225,9 +220,12 @@ func generateIdsEven(totalNumbers int, maxValue int) []int {
 	return result[:totalNumbers]
 }
 
-func (node *Node) add(other *Node) bool {
-	if node.Network == nil || node.Network != other.Network || node == other {
-		return false
+func (node *Node) add(other *Node) (bool, error) {
+	if node.Network == nil || node.Network != other.Network {
+		return false, errors.New("Trying to add nodes with different networks")
+	}
+	if node == other {
+		return false, nil
 	}
 	if node.AdjIds == nil {
 		node.AdjIds = make([][]NodeId, node.Network.Bits)
@@ -237,15 +235,15 @@ func (node *Node) add(other *Node) bool {
 	}
 	bit := node.Network.Bits - general.BitLength(node.Id.ToInt()^other.Id.ToInt())
 	if bit < 0 || bit >= node.Network.Bits {
-		return false
+		return false, errors.New("Nodes have distance outside XOr metric")
 	}
 	isDup := general.Contains(node.AdjIds[bit], other.Id) || general.Contains(other.AdjIds[bit], node.Id)
 	if len(node.AdjIds[bit]) < node.Network.Bin && len(other.AdjIds[bit]) < node.Network.Bin && !isDup {
 		node.AdjIds[bit] = append(node.AdjIds[bit], other.Id)
 		other.AdjIds[bit] = append(other.AdjIds[bit], node.Id)
-		return true
+		return true, nil
 	}
-	return false
+	return false, nil
 }
 
 func (node *Node) IsNil() bool {
