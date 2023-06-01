@@ -15,13 +15,14 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 	var outputStruct types.OutputStruct
 	counter := 0
 	var meanRewardPerForward output.MeanRewardPerForward
-	var avgNumberOfHops output.AvgNumberOfHops
+	// var avgNumberOfHops output.AvgNumberOfHops
 	var fractions output.Fractions
 	var rewardFairnessForStoringAction output.RewardFairnessForStoringAction
 	var rewardFairnessForAllActions output.RewardFairnessForAllActions
 	var rewardFairnessForForwardingAction output.RewardFairnessForForwardingActions
 	var negativeIncome *output.IncomeInfo
 	var workInfo *output.WorkInfo
+	var hopInfo *output.HopInfo
 	var logInterval = config.GetEvaluateInterval()
 
 	filePath := "./results/output.txt"
@@ -64,22 +65,22 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 			}
 		}(meanRewardPerForward.Writer)
 	}
-	if config.GetAverageNumberOfHops() {
-		file2, filePath2 := output.MakeAvgNumberOfHopsFile()
-		defer func(file2 *os.File) {
-			err1 := file2.Close()
-			if err1 != nil {
-				fmt.Println("Couldn't close the file with filepath: ", filePath2)
-			}
-		}(file2)
-		avgNumberOfHops.Writer = bufio.NewWriter(file2)
-		defer func(writer *bufio.Writer) {
-			err1 := writer.Flush()
-			if err1 != nil {
-				fmt.Println("Couldn't flush the remaining buffer in the writer for output")
-			}
-		}(avgNumberOfHops.Writer)
-	}
+	// if config.GetAverageNumberOfHops() {
+	// 	file2, filePath2 := output.MakeAvgNumberOfHopsFile()
+	// 	defer func(file2 *os.File) {
+	// 		err1 := file2.Close()
+	// 		if err1 != nil {
+	// 			fmt.Println("Couldn't close the file with filepath: ", filePath2)
+	// 		}
+	// 	}(file2)
+	// 	avgNumberOfHops.Writer = bufio.NewWriter(file2)
+	// 	defer func(writer *bufio.Writer) {
+	// 		err1 := writer.Flush()
+	// 		if err1 != nil {
+	// 			fmt.Println("Couldn't flush the remaining buffer in the writer for output")
+	// 		}
+	// 	}(avgNumberOfHops.Writer)
+	// }
 	if config.GetAverageFractionOfTotalRewardsK16() {
 		file3, filePath3 := output.MakeFractionOfRewardsFile()
 		defer func(file3 *os.File) {
@@ -144,6 +145,12 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 			}
 		}(rewardFairnessForForwardingAction.Writer)
 	}
+
+	if config.GetAverageNumberOfHops() {
+		hopInfo = output.InitHopInfo()
+		defer hopInfo.Close()
+	}
+
 	if config.GetNegativeIncome() {
 		negativeIncome = output.InitIncomeInfo()
 		defer negativeIncome.Close()
@@ -185,17 +192,17 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 			}
 		}
 
-		if config.GetAverageNumberOfHops() {
-			avgNumberOfHops.TotalNumberOfHops += len(outputStruct.RouteWithPrices)
-			avgNumberOfHops.NumberOfRoutes++
-			if counter%logInterval == 0 {
-				hops := avgNumberOfHops.CalculateAverageNumberOfHops()
-				_, err := avgNumberOfHops.Writer.WriteString(fmt.Sprintf("Average number of hops: %f \n", hops))
-				if err != nil {
-					panic(err)
-				}
-			}
-		}
+		// if config.GetAverageNumberOfHops() {
+		// 	avgNumberOfHops.TotalNumberOfHops += len(outputStruct.RouteWithPrices)
+		// 	avgNumberOfHops.NumberOfRoutes++
+		// 	if counter%logInterval == 0 {
+		// 		hops := avgNumberOfHops.CalculateAverageNumberOfHops()
+		// 		_, err := avgNumberOfHops.Writer.WriteString(fmt.Sprintf("Average number of hops: %f \n", hops))
+		// 		if err != nil {
+		// 			panic(err)
+		// 		}
+		// 	}
+		// }
 
 		if config.GetAverageFractionOfTotalRewardsK16() && config.GetMaxProximityOrder() == 16 {
 			var FractionOfRewardsK16 output.FractionOfRewardsK16
@@ -291,6 +298,14 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 						panic(err)
 					}
 				}
+			}
+		}
+
+		if config.GetAverageNumberOfHops() {
+			hopInfo.Update(&outputStruct)
+
+			if counter%logInterval == 0 {
+				hopInfo.Log()
 			}
 		}
 
