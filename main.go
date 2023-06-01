@@ -8,6 +8,8 @@ import (
 	"go-incentive-simulation/model/parts/workers"
 	"go-incentive-simulation/model/state"
 	"math"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -15,28 +17,59 @@ import (
 func main() {
 	graphId := flag.String("graphId", "", "an Id for the graph, e.g. even")
 	count := flag.Int("count", 0, "generate count many networks with ids 0,1,...")
+	maxPOs := flag.String("maxPOs", "", "min:max maxPO value")
 
 	flag.Parse()
 
-	if *count == 0 {
-		run(-1, *graphId)
+	min := -1
+	max := 0
+	if len(strings.Split(*maxPOs, ":")) == 2 {
+		min, err := strconv.Atoi(strings.Split(*maxPOs, ":")[0])
+		if err != nil {
+			fmt.Println("MaxPO must be informat min:max")
+			return
+		}
+		if min < 0 {
+			fmt.Println("MaxPO must be positive")
+			return
+		}
+		max, err = strconv.Atoi(strings.Split(*maxPOs, ":")[1])
+		if err != nil {
+			fmt.Println("MaxPO must be informat min:max")
+			return
+		}
+
 	}
-	for i := *count; i > 0; i-- {
-		run(*count-i, "")
+
+	for maxPO := min; maxPO < max; maxPO++ {
+		if *count == 0 {
+			run(-1, *graphId, maxPO)
+		}
+		for i := *count; i > 0; i-- {
+			run(*count-i, "", maxPO)
+		}
 	}
+
 }
 
-func run(iteration int, graphId string) {
+func run(iteration int, graphId string, maxPO int) {
 	start := time.Now()
 	if iteration == -1 {
 		config.InitConfigs()
+		if maxPO > -1 {
+			config.SetMaxPO(maxPO)
+		}
 	}
+
 	network := fmt.Sprintf("./data/nodes_data_%d_%d.txt", config.GetBinSize(), config.GetNetworkSize())
 	if graphId != "" {
 		network = fmt.Sprintf("./data/nodes_data_%d_%d_%v.txt", config.GetBinSize(), config.GetNetworkSize(), graphId)
 	}
 	if iteration > -1 {
 		config.InitConfigsWithId(fmt.Sprint(iteration))
+		if maxPO > -1 {
+			config.SetMaxPO(maxPO)
+		}
 		network = fmt.Sprintf("./data/nodes_data_%d_%d_%d.txt", config.GetBinSize(), config.GetNetworkSize(), iteration)
 	}
 

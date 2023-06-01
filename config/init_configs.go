@@ -23,6 +23,10 @@ func InitConfigsWithId(id string) {
 	Variables.confOptions.OutputOptions.ExperimentId = id
 }
 
+func SetMaxPO(maxPO int) {
+	Variables.confOptions.MaxProximityOrder = maxPO
+}
+
 func ReadYamlFile() Yml {
 	yamlFile, err := os.ReadFile("config.yaml")
 
