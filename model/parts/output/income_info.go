@@ -22,9 +22,10 @@ func InitIncomeInfo() *IncomeInfo {
 	iinfo := IncomeInfo{}
 	iinfo.IncomeMap = make(map[int]int)
 	iinfo.HopMap = make(map[int][]int)
+	iinfo.Requesters = make(map[int]bool) //This map is currently used to find out who is an originator. This should instead be looked up somewhere else.
+
 	iinfo.File = MakeFile("./results/income.txt")
 	iinfo.Writer = bufio.NewWriter(iinfo.File)
-	iinfo.Requesters = make(map[int]bool) //This map is currently used to find out who is an originator. This should instead be looked up somewhere else.
 	LogExpSting(iinfo.Writer)
 	return &iinfo
 }
