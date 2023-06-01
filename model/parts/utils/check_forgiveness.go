@@ -13,7 +13,7 @@ func CheckForgiveness(edgeData types.EdgeAttrs, firstNodeId types.NodeId, second
 		refreshRate := config.GetRefreshRate()
 		if config.IsAdjustableThreshold() {
 			// TODO: The exponent (6) here should be a configuration parameter.
-			refreshRate = GetAdjustedRefreshrate(edgeData.Threshold, config.GetThreshold(), config.GetRefreshRate(), 6)
+			refreshRate = GetAdjustedRefreshrate(edgeData.Threshold, config.GetThreshold(), config.GetRefreshRate(), 3)
 			//refreshRate = int(math.Ceil(float64(edgeData.Threshold / 2)))
 		}
 		removedDeptAmount := passedTime * refreshRate
