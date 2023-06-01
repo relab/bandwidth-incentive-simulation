@@ -23,8 +23,9 @@ func main() {
 
 	min := -1
 	max := 0
+	var err error
 	if len(strings.Split(*maxPOs, ":")) == 2 {
-		min, err := strconv.Atoi(strings.Split(*maxPOs, ":")[0])
+		min, err = strconv.Atoi(strings.Split(*maxPOs, ":")[0])
 		if err != nil {
 			fmt.Println("MaxPO must be informat min:max")
 			return
