@@ -58,3 +58,37 @@ for (exp, values) in workFairness.items():
 for (exp, values) in workFairness.items():
     if exp[-3:] != "ore" and exp[-3:] != "Fwd":
         print(exp,mean(values), max(values))
+
+print("HOPS:")
+hopsincome = {}
+exp = "undefined"
+
+with open("hops.txt","r") as hops:
+    for line in hops:
+        if line[:2] == " O":
+            exp = line.strip().split("-")[0]
+        if line[:4] == "Hop:":
+            hop = line.strip().split(" ")[1]
+            income = line.strip().split(" ")[-1]
+            hopdict = hopsincome.get(exp,{})
+            values = hopdict.get(hop, [])
+            values.append(float(income))
+            hopdict[hop]=values
+            hopsincome[exp]=hopdict
+
+
+for (exp, hopdict) in hopsincome.items():
+    print(exp, end=", ")
+    incomelist = [-1,-1,-1,-1,-1,-1,-1]
+    total = 0
+    for (hop, values) in hopdict.items():
+        meanv = mean(values)
+        total += meanv
+        if hop == "storer":
+            incomelist[-1]= meanv
+        else:
+            incomelist[int(hop)] = meanv
+
+    for val in incomelist:
+        print("{:4f}".format(val/total), end=", ")
+    print()
