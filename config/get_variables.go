@@ -256,6 +256,10 @@ func GetComputeWorkFairness() bool {
 	return Variables.confOptions.OutputOptions.ComputeWorkFairness
 }
 
+func GetBucketInfo() bool {
+	return Variables.confOptions.OutputOptions.BucketInfo
+}
+
 func GetExpeimentId() string {
 	return Variables.confOptions.OutputOptions.ExperimentId
 }

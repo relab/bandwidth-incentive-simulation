@@ -23,6 +23,8 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 	var negativeIncome *output.IncomeInfo
 	var workInfo *output.WorkInfo
 	var hopInfo *output.HopInfo
+	var hopPaymentInfo *output.HopPaymentInfo
+	var bucketInfo *output.BucketInfo
 	var logInterval = config.GetEvaluateInterval()
 
 	filePath := "./results/output.txt"
@@ -151,6 +153,11 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 		defer hopInfo.Close()
 	}
 
+	if config.GetAverageNumberOfHops() && config.GetPaymentEnabled() {
+		hopPaymentInfo = output.InitHopPaymentInfo()
+		defer hopPaymentInfo.Close()
+	}
+
 	if config.GetNegativeIncome() {
 		negativeIncome = output.InitIncomeInfo()
 		defer negativeIncome.Close()
@@ -159,6 +166,11 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 	if config.GetComputeWorkFairness() {
 		workInfo = output.InitWorkInfo()
 		defer workInfo.Close()
+	}
+
+	if config.GetBucketInfo() {
+		bucketInfo = output.InitBucketInfo()
+		defer bucketInfo.Close()
 	}
 
 	for outputStruct = range outputChan {
@@ -309,6 +321,15 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 			}
 		}
 
+		if config.GetAverageNumberOfHops() && config.GetPaymentEnabled() {
+			hopPaymentInfo.Update(&outputStruct)
+
+			if counter%logInterval == 0 {
+				hopPaymentInfo.Log()
+				hopPaymentInfo.Reset()
+			}
+		}
+
 		if config.GetComputeWorkFairness() {
 			workInfo.Update(&outputStruct)
 
@@ -318,12 +339,13 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 		}
 
 		// payment enabled, forgiveness enabled, threshold enabled, k = 8
-		if config.GetNegativeIncome() && config.GetPaymentEnabled() && config.IsForgivenessEnabled() { //Payment enabled can use output.Payment
+		if config.GetNegativeIncome() && config.GetPaymentEnabled() { //Payment enabled can use output.Payment
 			negativeIncome.Update(&outputStruct)
 
 			// if counter%500_000==0 or counter==100_000 {
 			if counter%logInterval == 0 {
 				negativeIncome.Log()
+				negativeIncome.Reset()
 			}
 		}
 	}

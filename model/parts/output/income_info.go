@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"go-incentive-simulation/config"
+	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/utils"
 	"os"
@@ -28,6 +29,12 @@ func InitIncomeInfo() *IncomeInfo {
 	iinfo.Writer = bufio.NewWriter(iinfo.File)
 	LogExpSting(iinfo.Writer)
 	return &iinfo
+}
+
+func (ii *IncomeInfo) Reset() {
+	ii.IncomeMap = make(map[int]int)
+	ii.HopMap = make(map[int][]int)
+	ii.Requesters = make(map[int]bool) //This map is currently used to find out who is an originator. This should instead be looked up somewhere else.
 }
 
 func (ii *IncomeInfo) Close() {
@@ -201,6 +208,54 @@ func (ii *IncomeInfo) CalculateHopDistribution() (incomeDist, hopDist, workDist 
 	return incomeDist, hopDist, workDist
 }
 
+func (ii *IncomeInfo) CalculateDensenessDistribution() (mean map[int]float64, std map[int]float64) {
+	depth := utils.GetStorageDepth(4)
+
+	regions := make([]int, 0)
+	regiondenseness := make(map[int]int)
+	regionincome := make(map[int][]int)
+
+	totalincome := 0
+
+	for ida, income := range ii.IncomeMap {
+		totalincome += income
+		newregion := true
+		for regionid := range regions {
+			if proximity(ida, regionid) >= depth {
+				newregion = false
+				regiondenseness[regionid]++
+				regionincome[regionid] = append(regionincome[regionid], income)
+				break
+			}
+		}
+		if newregion {
+			regions = append(regions, ida)
+			regiondenseness[ida] = 1
+			regionincome[ida] = []int{income}
+		}
+	}
+
+	densenessincome := make(map[int][]int)
+	for r := range regions {
+		denseness := regiondenseness[r]
+		if _, ok := densenessincome[denseness]; !ok {
+			densenessincome[denseness] = make([]int, 0)
+		}
+		densenessincome[denseness] = append(densenessincome[denseness], regionincome[r]...)
+	}
+	mean = make(map[int]float64)
+	std = make(map[int]float64)
+	for d, incomes := range densenessincome {
+		mean[d] = utils.Mean(incomes)
+		std[d] = utils.Stdev(incomes, mean[d])
+	}
+	return mean, std
+}
+
+func proximity(ida, idb int) int {
+	return config.GetBits() - general.BitLength(ida^idb)
+}
+
 func (ii *IncomeInfo) AvgHopIncome() (income, count map[int]int) {
 	hopincomes := make(map[int][]int, 5)
 	for id, hops := range ii.HopMap {
@@ -308,5 +363,17 @@ func (ii *IncomeInfo) Log() {
 	_, err = ii.Writer.WriteString(fmt.Sprintf("Max, total and nonzero: %d, %d, %d \n", max, total, nonzero))
 	if err != nil {
 		panic(err)
+	}
+
+	_, err = ii.Writer.WriteString("Denseness, mean income, std\n")
+	if err != nil {
+		panic(err)
+	}
+	means, std := ii.CalculateDensenessDistribution()
+	for denseness, mean := range means {
+		_, err = ii.Writer.WriteString(fmt.Sprintf("Denseness, %d, %.4f, %.4f\n", denseness, mean, std[denseness]))
+		if err != nil {
+			panic(err)
+		}
 	}
 }

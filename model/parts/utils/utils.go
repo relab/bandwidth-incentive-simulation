@@ -175,6 +175,16 @@ func CreateDownloadersList(g *types.Graph) []types.NodeId {
 	return downloadersList
 }
 
+func GetStorageDepth(replication int) int {
+	depth := 0
+	n := config.GetNetworkSize()
+	for n/2 >= replication {
+		n = n / 2
+		depth++
+	}
+	return depth
+}
+
 func CreateNodesList(g *types.Graph) []types.NodeId {
 	//fmt.Println("Creating nodes list...")
 	nodesValue := g.NodeIds

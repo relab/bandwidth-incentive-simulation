@@ -38,6 +38,7 @@ var defaultVariables = VariablesType{
 			RewardFairnessForAllActions:       false,     // false
 			NegativeIncome:                    false,     // false
 			ComputeWorkFairness:               false,     // false
+			BucketInfo:                        false,     // false
 			ExperimentId:                      "default", // default
 			EvaluateInterval:                  0,         // 0
 		},

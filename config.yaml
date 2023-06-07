@@ -10,7 +10,7 @@ ConfOptions:
   NetworkSize: 10000
   # BinSize: 16, number of nodes in each bin/bucket for each node
   BinSize: 8
-  # RangeAddress: 65536, addresses with range from 0 to X for 20 its 1048576
+  # RangeAddress: 65536, addresses with range from 0 to X for 20 its 1048576, 24: 16777216
   RangeAddress: 65536
   # Originators: 1000, number of originators initiating requests
   Originators: 50
@@ -43,12 +43,12 @@ ConfOptions:
   # DebugInterval: 1_000_000, how often these prints should be done
   DebugInterval: 1_000_000
   # NumGoroutines: -1, number of active goroutines, leave at -1 for automatically using numCPU
-  NumGoroutines: 3
+  NumGoroutines: -1
   # Enabled the outputWorker which handles writing output to file and analysis of results
   OutputEnabled: true
   # Which logic should be used in the outputWorker
   OutputOptions:
-    MeanRewardPerForward: true
+    MeanRewardPerForward: false
     AverageNumberOfHops: true
     AverageFractionOfTotalRewardsK8: false
     AverageFractionOfTotalRewardsK16: false
@@ -57,6 +57,7 @@ ConfOptions:
     RewardFairnessForAllActions: false
     NegativeIncome: true
     ComputeWorkFairness: true
+    BucketInfo: false
     ExperimentId: "0"
     EvaluateInterval: 0
 

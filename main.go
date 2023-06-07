@@ -74,6 +74,8 @@ func run(iteration int, graphId string, maxPO int) {
 		network = fmt.Sprintf("./data/nodes_data_%d_%d_%d.txt", config.GetBinSize(), config.GetNetworkSize(), iteration)
 	}
 
+	fmt.Println("Running with network: ", network)
+
 	globalState := state.MakeInitialState(network)
 
 	iterations := config.GetIterations()

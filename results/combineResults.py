@@ -3,6 +3,7 @@ from statistics import mean
 incomeFairness = {}
 exp = "undefined"
 
+
 with open("income.txt","r") as income:
     for line in income:
         if line[:2] == " O":
@@ -11,6 +12,7 @@ with open("income.txt","r") as income:
             values = incomeFairness.get(exp,[])
             values.append(float(line.split(":")[1]))
             incomeFairness[exp] = values
+
 
 for (exp, values) in incomeFairness.items():
     print(exp,mean(values), max(values))
@@ -62,6 +64,8 @@ for (exp, values) in workFairness.items():
 print("HOPS:")
 hopsincome = {}
 exp = "undefined"
+avgfwdreward = {}
+stdfwdreward = {}
 
 with open("hops.txt","r") as hops:
     for line in hops:
@@ -75,20 +79,92 @@ with open("hops.txt","r") as hops:
             values.append(float(income))
             hopdict[hop]=values
             hopsincome[exp]=hopdict
+        if line[:12] == "Mean and std":
+            vals = line.strip().split(":")[1].split(",")
+            avg = vals[0]
+            std = vals[1]
+            avgs = avgfwdreward.get(exp,[])
+            avgs.append(float(avg))
+            avgfwdreward[exp] = avgs
+            stds = stdfwdreward.get(exp, [])
+            stds.append(float(std))
+            stdfwdreward[exp] = stds
+
+
 
 
 for (exp, hopdict) in hopsincome.items():
     print(exp, end=", ")
-    incomelist = [-1,-1,-1,-1,-1,-1,-1]
+    incomelist = [-1,-1,-1,-1,-1,-1,-1,-1,-1]
     total = 0
     for (hop, values) in hopdict.items():
         meanv = mean(values)
-        total += meanv
+        
         if hop == "storer":
             incomelist[-1]= meanv
         else:
+            # OUPS does not include storer value in total
+            total += meanv
             incomelist[int(hop)] = meanv
 
     for val in incomelist:
         print("{:4f}".format(val/total), end=", ")
     print()
+
+print("mean forwads reward")
+for exp in avgfwdreward:
+    print("{}, {:5f}, {:5f}".format(exp, mean(avgfwdreward[exp]), mean(stdfwdreward[exp])))
+
+print("PayHOPS:")
+hopsincome = {}
+exp = "undefined"
+avgfwdreward = {}
+stdfwdreward = {}
+
+with open("hopPays.txt","r") as hops:
+    for line in hops:
+        if line[:2] == " O":
+            exp = line.strip().split("-")[0]
+        if line[:4] == "Hop:":
+            hop = line.strip().split(" ")[1]
+            income = line.strip().split(" ")[-1]
+            hopdict = hopsincome.get(exp,{})
+            values = hopdict.get(hop, [])
+            values.append(float(income))
+            hopdict[hop]=values
+            hopsincome[exp]=hopdict
+        if line[:12] == "Mean and std":
+            vals = line.strip().split(":")[1].split(",")
+            avg = vals[0]
+            std = vals[1]
+            avgs = avgfwdreward.get(exp,[])
+            avgs.append(float(avg))
+            avgfwdreward[exp] = avgs
+            stds = stdfwdreward.get(exp, [])
+            stds.append(float(std))
+            stdfwdreward[exp] = stds
+
+
+
+
+for (exp, hopdict) in hopsincome.items():
+    print(exp, end=", ")
+    incomelist = [-1,-1,-1,-1,-1,-1,-1,-1,-1]
+    total = 0
+    for (hop, values) in hopdict.items():
+        meanv = mean(values)
+        
+        if hop == "storer":
+            incomelist[-1]= meanv
+        else:
+            # OUPS does not include storer value in total
+            total += meanv
+            incomelist[int(hop)] = meanv
+
+    for val in incomelist:
+        print("{:4f}".format(val/total), end=", ")
+    print()
+
+print("mean forwar reward")
+for exp in avgfwdreward:
+    print("{}, {:5f}, {:5f}".format(exp, mean(avgfwdreward[exp]), mean(stdfwdreward[exp])))
