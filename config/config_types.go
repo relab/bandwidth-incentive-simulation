@@ -43,6 +43,7 @@ type confOptions struct {
 
 type experimentOptions struct {
 	ThresholdEnabled                  bool `yaml:"ThresholdEnabled"`
+	ReciprocityEnabled                bool `yaml:"ReciprocityEnabled"`
 	ForgivenessEnabled                bool `yaml:"ForgivenessEnabled"`
 	PaymentEnabled                    bool `yaml:"PaymentEnabled"`
 	MaxPOCheckEnabled                 bool `yaml:"MaxPOCheckEnabled"`

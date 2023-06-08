@@ -10,6 +10,7 @@ func OmegaExperiment() {
 
 func CustomExperiment(customExperiment experimentOptions) {
 	Variables.experimentOptions.ThresholdEnabled = customExperiment.ThresholdEnabled
+	Variables.experimentOptions.ReciprocityEnabled = customExperiment.ReciprocityEnabled
 	Variables.experimentOptions.ForgivenessEnabled = customExperiment.ForgivenessEnabled
 	Variables.experimentOptions.PaymentEnabled = customExperiment.PaymentEnabled
 	Variables.experimentOptions.MaxPOCheckEnabled = customExperiment.MaxPOCheckEnabled

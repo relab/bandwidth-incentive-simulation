@@ -46,6 +46,7 @@ var defaultVariables = VariablesType{
 	},
 	experimentOptions: experimentOptions{
 		ThresholdEnabled:                  true,  // true
+		ReciprocityEnabled:                true,  // true
 		ForgivenessEnabled:                true,  // true
 		PaymentEnabled:                    false, // false
 		MaxPOCheckEnabled:                 false, // false

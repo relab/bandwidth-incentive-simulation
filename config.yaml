@@ -75,6 +75,8 @@ Experiment:
 CustomExperiment:
   # ThresholdEnabled: true, enabling the maximum limit of debt an edge can have in one direction
   ThresholdEnabled: true
+  # ReciprocityEnabled: true, if enabled, dept in multiple directions is calculated against each other
+  ReciprocityEnabled: true
   # ForgivenessEnabled: true, edge debt gets forgiven some amount on an interval (amortized)
   ForgivenessEnabled: true
   # PaymentEnabled: false, nodes pay if they would get a threshold failure

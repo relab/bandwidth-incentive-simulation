@@ -83,6 +83,10 @@ func GetThresholdEnabled() bool {
 	return Variables.experimentOptions.ThresholdEnabled
 }
 
+func GetReciprocityEnabled() bool {
+	return Variables.experimentOptions.ReciprocityEnabled
+}
+
 func GetPaymentEnabled() bool {
 	return Variables.experimentOptions.PaymentEnabled
 }
@@ -288,6 +292,9 @@ func GetExperimentString() (exp string) {
 	)
 	if GetPaymentEnabled() {
 		exp += "Pay"
+	}
+	if !GetReciprocityEnabled() {
+		exp += "NoRec"
 	}
 	if IsCacheEnabled() {
 		exp += "Cache"
