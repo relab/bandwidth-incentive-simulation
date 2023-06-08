@@ -4,6 +4,9 @@ import "math"
 
 func Gini(x []int) float64 {
 	total := 0.0
+	if len(x) == 0 {
+		return 0.0
+	}
 	for i, xi := range x[:len(x)-1] {
 		for _, xj := range x[i+1:] {
 			total += math.Abs(float64(xi) - float64(xj))
@@ -22,4 +25,12 @@ func Mean(x []int) float64 {
 		}
 	}
 	return total / float64(len(x))
+}
+
+func Stdev(x []int, mean float64) float64 {
+	sum := 0.0
+	for _, xi := range x {
+		sum += math.Pow(float64(xi)-mean, 2)
+	}
+	return math.Sqrt(sum / float64(len(x)))
 }

@@ -126,7 +126,6 @@ func isThresholdFailed(firstNodeId types.NodeId, secondNodeId types.NodeId, grap
 		}
 
 		peerPriceChunk := PeerPriceChunk(secondNodeId, request.ChunkId)
-		price := p2pFirst - p2pSecond + peerPriceChunk
 
 		price := p2pFirst + peerPriceChunk
 		if config.GetReciprocityEnabled() {
