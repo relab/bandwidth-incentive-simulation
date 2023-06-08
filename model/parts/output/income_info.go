@@ -101,7 +101,28 @@ func (ii *IncomeInfo) Update(output *types.OutputStruct) {
 		}
 		ii.IncomeMap[payee] += payment.Price
 	}
-
+	route := output.RouteWithPrices
+	if len(route) == len(payments) {
+		return
+	}
+	for hop, path := range route {
+		payer := path.RequesterNode.ToInt()
+		payee := path.ProviderNode.ToInt()
+		payed := false
+		for _, payment := range payments {
+			if payment.Payment.FirstNodeId.ToInt() == payer {
+				payed = true
+				break
+			}
+		}
+		if !payed {
+			if _, ok := ii.HopMap[payee]; !ok {
+				ii.HopMap[payee] = []int{hop}
+			} else {
+				ii.HopMap[payee] = append(ii.HopMap[payee], hop)
+			}
+		}
+	}
 }
 
 func (ii *IncomeInfo) MaxNonZeroTotal() (max int, nonzero int, total int) {
