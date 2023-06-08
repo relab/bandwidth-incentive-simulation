@@ -68,6 +68,7 @@ type outputOptions struct {
 	NegativeIncome                    bool   `yaml:"NegativeIncome"`
 	ComputeWorkFairness               bool   `yaml:"ComputeWorkFairness"`
 	BucketInfo                        bool   `yaml:"BucketInfo"`
+	LinkInfo                          bool   `yaml:"LinkInfo"`
 	ExperimentId                      string `yaml:"ExperimentId"`
 	EvaluateInterval                  int    `yaml:"EvaluateInterval"`
 }

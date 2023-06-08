@@ -260,6 +260,10 @@ func GetBucketInfo() bool {
 	return Variables.confOptions.OutputOptions.BucketInfo
 }
 
+func GetLinkInfo() bool {
+	return Variables.confOptions.OutputOptions.LinkInfo
+}
+
 func GetExpeimentId() string {
 	return Variables.confOptions.OutputOptions.ExperimentId
 }

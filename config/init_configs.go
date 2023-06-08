@@ -95,6 +95,7 @@ func SetConfOptions(configOptions confOptions) {
 	Variables.confOptions.OutputOptions.NegativeIncome = configOptions.OutputOptions.NegativeIncome
 	Variables.confOptions.OutputOptions.ComputeWorkFairness = configOptions.OutputOptions.ComputeWorkFairness
 	Variables.confOptions.OutputOptions.BucketInfo = configOptions.OutputOptions.BucketInfo
+	Variables.confOptions.OutputOptions.LinkInfo = configOptions.OutputOptions.LinkInfo
 	Variables.confOptions.OutputOptions.ExperimentId = configOptions.OutputOptions.ExperimentId
 	Variables.confOptions.OutputOptions.EvaluateInterval = configOptions.OutputOptions.EvaluateInterval
 

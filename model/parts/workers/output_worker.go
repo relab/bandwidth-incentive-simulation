@@ -25,6 +25,7 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 	var hopInfo *output.HopInfo
 	var hopPaymentInfo *output.HopPaymentInfo
 	var bucketInfo *output.BucketInfo
+	var linkInfo *output.LinkInfo
 	var logInterval = config.GetEvaluateInterval()
 
 	filePath := "./results/output.txt"
@@ -171,6 +172,11 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 	if config.GetBucketInfo() {
 		bucketInfo = output.InitBucketInfo()
 		defer bucketInfo.Close()
+	}
+
+	if config.GetLinkInfo() {
+		linkInfo = output.InitLinkInfo()
+		defer linkInfo.Close()
 	}
 
 	for outputStruct = range outputChan {
@@ -321,12 +327,30 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 			}
 		}
 
+		if config.GetBucketInfo() {
+			bucketInfo.Update(&outputStruct)
+
+			if counter%logInterval == 0 {
+				bucketInfo.Log()
+				bucketInfo.Reset()
+			}
+		}
+
+		if config.GetLinkInfo() {
+			linkInfo.Update(&outputStruct)
+
+			if counter%logInterval == 0 {
+				linkInfo.Log()
+				linkInfo.Reset()
+			}
+		}
+
 		if config.GetAverageNumberOfHops() && config.GetPaymentEnabled() {
 			hopPaymentInfo.Update(&outputStruct)
 
 			if counter%logInterval == 0 {
 				hopPaymentInfo.Log()
-				hopPaymentInfo.Reset()
+				// hopPaymentInfo.Reset()
 			}
 		}
 
@@ -345,7 +369,7 @@ func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 			// if counter%500_000==0 or counter==100_000 {
 			if counter%logInterval == 0 {
 				negativeIncome.Log()
-				negativeIncome.Reset()
+				// negativeIncome.Reset()
 			}
 		}
 	}

@@ -28,6 +28,7 @@ func InitBucketInfo() *BucketInfo {
 	bi.BucketPayment = make(map[int]int)
 	bi.HopWork = make(map[int]int)
 	bi.HopPayCount = make(map[int]int)
+
 	bi.File = MakeFile("./results/buckets.txt")
 	bi.Writer = bufio.NewWriter(bi.File)
 	LogExpSting(bi.Writer)
@@ -92,7 +93,7 @@ func (bi *BucketInfo) Update(output *types.OutputStruct) {
 }
 
 func (bi *BucketInfo) Log() {
-	_, err := bi.Writer.WriteString(fmt.Sprintf("Current count: %d\n", bi.Count))
+	_, err := bi.Writer.WriteString(fmt.Sprintf("\n Current count: %d\n", bi.Count))
 	if err != nil {
 		panic(err)
 	}
