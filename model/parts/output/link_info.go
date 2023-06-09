@@ -16,6 +16,8 @@ type LinkInfo struct {
 	Count        int
 	HopLinkUsage []map[string]int
 	LinkUsage    map[string]int
+	Paylinks     map[string]int
+	NotPaylinks  map[string]int
 	File         *os.File
 	Writer       *bufio.Writer
 }
@@ -27,6 +29,8 @@ func InitLinkInfo() *LinkInfo {
 	for hop := 0; hop < len(li.HopLinkUsage); hop++ {
 		li.HopLinkUsage[hop] = make(map[string]int)
 	}
+	li.Paylinks = make(map[string]int)
+	li.NotPaylinks = make(map[string]int)
 	li.File = MakeFile("./results/links.txt")
 	li.Writer = bufio.NewWriter(li.File)
 	LogExpSting(li.Writer)
@@ -39,6 +43,8 @@ func (li *LinkInfo) Reset() {
 	for hop := 0; hop < len(li.HopLinkUsage); hop++ {
 		li.HopLinkUsage[hop] = make(map[string]int)
 	}
+	li.Paylinks = make(map[string]int)
+	li.NotPaylinks = make(map[string]int)
 }
 
 func (li *LinkInfo) Close() {
@@ -93,21 +99,35 @@ func (li *LinkInfo) BucketLinkGini() []float64 {
 func (li *LinkInfo) Update(output *types.OutputStruct) {
 	li.Count++
 	route := output.RouteWithPrices
-
+	payments := output.PaymentsWithPrices
 	for h, hop := range route {
 		node1 := hop.RequesterNode.ToInt()
 		node2 := hop.ProviderNode.ToInt()
-		if node2 < node1 {
-			node1, node2 = node2, node1
-		}
 		link := fmt.Sprintf("%d-%d", node1, node2)
 		li.LinkUsage[link]++
 		li.HopLinkUsage[h][link]++
+		found := false
+		for _, payment := range payments {
+			if payment.Payment.FirstNodeId == hop.RequesterNode {
+				delete(li.NotPaylinks, link)
+				li.Paylinks[link] += hop.Price
+				found = true
+				break
+			}
+		}
+		if !found {
+			li.NotPaylinks[link] += hop.Price
+		}
 	}
 }
 
 func (li *LinkInfo) Log() {
 	_, err := li.Writer.WriteString(fmt.Sprintf("\n Current count: %d\n", li.Count))
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = li.Writer.WriteString(fmt.Sprintf("Paylinks number %d and unpayed %d\n", len(li.Paylinks), len(li.NotPaylinks)))
 	if err != nil {
 		panic(err)
 	}
