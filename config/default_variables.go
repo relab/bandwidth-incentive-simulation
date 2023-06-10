@@ -20,7 +20,7 @@ var defaultVariables = VariablesType{
 		RequestsPerSecond:         12500,      // 12500
 		EdgeLock:                  true,       // false
 		SameOriginator:            false,      // false
-		PrecomputeRespNodes:       true,       // false
+		PrecomputeRespNodes:       false,      // false   //changed to depth option
 		WriteRoutesToFile:         false,      // false
 		WriteStatesToFile:         false,      // false
 		IterationMeansUniqueChunk: false,      // false

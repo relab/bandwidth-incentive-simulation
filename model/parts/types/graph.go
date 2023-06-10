@@ -10,12 +10,12 @@ import (
 // Graph structure, node Ids in array and edges in map
 type Graph struct {
 	*Network
-	CurState  State
-	Nodes     []*Node
-	NodeIds   []NodeId
-	Edges     map[NodeId]map[NodeId]*Edge
-	RespNodes map[ChunkId][4]NodeId
-	Mutex     sync.Mutex
+	CurState State
+	Nodes    []*Node
+	NodeIds  []NodeId
+	Edges    map[NodeId]map[NodeId]*Edge
+	// RespNodes map[ChunkId][4]NodeId
+	Mutex sync.Mutex
 }
 
 // Edge that connects to NodesMap with attributes about the connection

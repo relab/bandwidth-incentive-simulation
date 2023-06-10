@@ -8,7 +8,7 @@ import (
 	"sort"
 )
 
-//TODO: most of this should probably go into the types package
+// TODO: most of this should probably go into the types package
 func PrecomputeRespNodes(nodesId []types.NodeId) map[types.ChunkId][4]types.NodeId {
 	numPossibleChunks := config.GetRangeAddress()
 	result := make(map[types.ChunkId][4]types.NodeId)
@@ -57,17 +57,17 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 
 	Edges := make(map[types.NodeId]map[types.NodeId]*types.Edge)
 	//respNodes := make([][4]types.NodeId, config.GetRangeAddress())
-	respNodes := make(map[types.ChunkId][4]types.NodeId, 0)
-	if config.IsPrecomputeRespNodes() {
-		respNodes = PrecomputeRespNodes(sortedNodeIds)
-	}
+	// respNodes := make(map[types.ChunkId][4]types.NodeId, 0)
+	// if config.IsPrecomputeRespNodes() {
+	// 	respNodes = PrecomputeRespNodes(sortedNodeIds)
+	// }
 
 	graph := &types.Graph{
-		Network:   net,
-		Nodes:     make([]*types.Node, 0, numNodes),
-		Edges:     Edges,
-		NodeIds:   sortedNodeIds,
-		RespNodes: respNodes,
+		Network: net,
+		Nodes:   make([]*types.Node, 0, numNodes),
+		Edges:   Edges,
+		NodeIds: sortedNodeIds,
+		// RespNodes: respNodes,
 	}
 
 	for _, nodeId := range sortedNodeIds {

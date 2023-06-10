@@ -16,7 +16,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 	var counter = 0
 	var curEpoch = 0
 	var chunkId types.ChunkId
-	var respNodes [4]types.NodeId
+	// var respNodes [4]types.NodeId
 	iterations := config.GetIterations()
 	numRoutingGoroutines := config.GetNumRoutingGoroutines()
 
@@ -45,7 +45,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 
 				if len(rerouteStruct.Reroute.RejectedNodes) > 0 {
 					chunkId = rerouteStruct.Reroute.ChunkId
-					respNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+					// respNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 				}
 			}
 
@@ -56,7 +56,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 					queuedChunk, ok := pendingStruct.GetChunkFromQueue(curEpoch)
 					if ok {
 						chunkId = queuedChunk.ChunkId
-						respNodes = globalState.Graph.FindResponsibleNodes(queuedChunk.ChunkId)
+						// respNodes = globalState.Graph.FindResponsibleNodes(queuedChunk.ChunkId)
 					}
 				}
 			}
@@ -76,7 +76,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 					chunkId = utils.GetPreferredChunkId()
 				}
 
-				respNodes = globalState.Graph.FindResponsibleNodes(chunkId)
+				// respNodes = globalState.Graph.FindResponsibleNodes(chunkId)
 			}
 
 			if chunkId != -1 { // Should always be true, but just in case
@@ -86,7 +86,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 					OriginatorIndex: originatorIndex,
 					OriginatorId:    originatorId,
 					ChunkId:         chunkId,
-					RespNodes:       respNodes,
+					// RespNodes:       respNodes,
 				}
 				requestChan <- request
 			}
