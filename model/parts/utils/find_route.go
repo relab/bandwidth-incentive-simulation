@@ -2,11 +2,12 @@ package utils
 
 import (
 	"go-incentive-simulation/config"
+	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
 )
 
 func FindDistance(first types.NodeId, second types.ChunkId) int {
-	return first.ToInt() ^ second.ToInt()
+	return config.GetBits() - general.BitLength(first.ToInt()^second.ToInt())
 }
 
 func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []types.Payment, bool, bool, bool, bool) {
@@ -32,11 +33,11 @@ func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []typ
 
 	depth := GetStorageDepth(4)
 
-	if FindDistance(mainOriginatorId, chunkId) <= depth {
+	if FindDistance(mainOriginatorId, chunkId) >= depth {
 		found = true
 	} else {
 	out:
-		for !(FindDistance(curNextNodeId, chunkId) <= depth) {
+		for !(FindDistance(curNextNodeId, chunkId) >= depth) {
 			nextNodeId, thresholdFailed, accessFailed, prevNodePaid, payment = getNext(request, curNextNodeId, prevNodePaid, graph)
 
 			if !payment.IsNil() {
@@ -46,7 +47,7 @@ func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []typ
 				route = append(route, nextNodeId)
 			}
 			if !thresholdFailed && !accessFailed {
-				if FindDistance(nextNodeId, chunkId) <= depth {
+				if FindDistance(nextNodeId, chunkId) >= depth {
 					found = true
 					break out
 				}
