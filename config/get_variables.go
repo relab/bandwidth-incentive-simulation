@@ -249,8 +249,7 @@ func GetRewardFairnessForAllActions() bool {
 }
 
 func GetNegativeIncome() bool {
-	if Variables.experimentOptions.PaymentEnabled &&
-		Variables.experimentOptions.ForgivenessEnabled {
+	if Variables.experimentOptions.PaymentEnabled {
 		return Variables.confOptions.OutputOptions.NegativeIncome
 	}
 	return false
