@@ -2,8 +2,6 @@ package types
 
 import (
 	"fmt"
-	"go-incentive-simulation/config"
-	"sort"
 	"sync"
 )
 
@@ -64,39 +62,6 @@ func BinarySearchClosest(arr []NodeId, target int, n int) ([]NodeId, NodeId) {
 		right = len(arr)
 	}
 	return arr[left:right], arr[mid]
-}
-
-func (g *Graph) FindResponsibleNodes(chunkId ChunkId) [4]NodeId {
-	if config.IsPrecomputeRespNodes() {
-		return g.RespNodes[chunkId]
-
-	} else {
-		if respNodes, ok := g.RespNodes[chunkId]; ok {
-			return respNodes
-
-		} else {
-			chunkIdInt := chunkId.ToInt()
-			numNodesSearch := config.GetBits()
-
-			closestNodes, _ := BinarySearchClosest(g.NodeIds, chunkIdInt, numNodesSearch)
-
-			distances := make([]int, len(closestNodes))
-
-			for i, nodeId := range closestNodes {
-				distances[i] = nodeId.ToInt() ^ chunkIdInt
-			}
-
-			sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
-
-			respNodes = [4]NodeId{}
-			for i := 0; i < 4; i++ {
-				respNodes[i] = NodeId(distances[i] ^ chunkIdInt) // this results in the nodeId again
-			}
-			g.RespNodes[chunkId] = respNodes
-
-			return respNodes
-		}
-	}
 }
 
 // AddNode will add a Node to a graph
