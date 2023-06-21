@@ -5,8 +5,6 @@ import (
 	"math/rand"
 	"testing"
 	"time"
-
-	"gotest.tools/assert"
 )
 
 func TestGenerateAndLoad(t *testing.T) {
