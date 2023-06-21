@@ -61,44 +61,8 @@ func SetExperiment(yml Yml) {
 }
 
 func SetConfOptions(configOptions confOptions) {
-	Variables.confOptions.Iterations = configOptions.Iterations
-	Variables.confOptions.Bits = configOptions.Bits
-	Variables.confOptions.NetworkSize = configOptions.NetworkSize
-	Variables.confOptions.BinSize = configOptions.BinSize
-	Variables.confOptions.RangeAddress = configOptions.RangeAddress
-	Variables.confOptions.Originators = configOptions.Originators
-	Variables.confOptions.RefreshRate = configOptions.RefreshRate
-	Variables.confOptions.Threshold = configOptions.Threshold
-	Variables.confOptions.RandomSeed = configOptions.RandomSeed
-	Variables.confOptions.MaxProximityOrder = configOptions.MaxProximityOrder
-	Variables.confOptions.Price = configOptions.Price
-	Variables.confOptions.RequestsPerSecond = configOptions.RequestsPerSecond
-	Variables.confOptions.EdgeLock = configOptions.EdgeLock
-	Variables.confOptions.SameOriginator = configOptions.SameOriginator
-	Variables.confOptions.PrecomputeRespNodes = configOptions.PrecomputeRespNodes
-	Variables.confOptions.WriteRoutesToFile = configOptions.WriteRoutesToFile
-	Variables.confOptions.WriteStatesToFile = configOptions.WriteStatesToFile
-	Variables.confOptions.IterationMeansUniqueChunk = configOptions.IterationMeansUniqueChunk
-	Variables.confOptions.DebugPrints = configOptions.DebugPrints
-	Variables.confOptions.DebugInterval = configOptions.DebugInterval
-	Variables.confOptions.OutputEnabled = configOptions.OutputEnabled
-
+	Variables.confOptions = configOptions
 	SetNumGoroutines(configOptions.NumGoroutines)
-
-	Variables.confOptions.OutputOptions.MeanRewardPerForward = configOptions.OutputOptions.MeanRewardPerForward
-	Variables.confOptions.OutputOptions.AverageNumberOfHops = configOptions.OutputOptions.AverageNumberOfHops
-	Variables.confOptions.OutputOptions.AverageFractionOfTotalRewardsK8 = configOptions.OutputOptions.AverageFractionOfTotalRewardsK8
-	Variables.confOptions.OutputOptions.AverageFractionOfTotalRewardsK16 = configOptions.OutputOptions.AverageFractionOfTotalRewardsK16
-	Variables.confOptions.OutputOptions.RewardFairnessForForwardingAction = configOptions.OutputOptions.RewardFairnessForForwardingAction
-	Variables.confOptions.OutputOptions.RewardFairnessForStoringAction = configOptions.OutputOptions.RewardFairnessForStoringAction
-	Variables.confOptions.OutputOptions.RewardFairnessForAllActions = configOptions.OutputOptions.RewardFairnessForAllActions
-	Variables.confOptions.OutputOptions.NegativeIncome = configOptions.OutputOptions.NegativeIncome
-	Variables.confOptions.OutputOptions.ComputeWorkFairness = configOptions.OutputOptions.ComputeWorkFairness
-	Variables.confOptions.OutputOptions.BucketInfo = configOptions.OutputOptions.BucketInfo
-	Variables.confOptions.OutputOptions.LinkInfo = configOptions.OutputOptions.LinkInfo
-	Variables.confOptions.OutputOptions.ExperimentId = configOptions.OutputOptions.ExperimentId
-	Variables.confOptions.OutputOptions.Reset = configOptions.OutputOptions.Reset
-	Variables.confOptions.OutputOptions.EvaluateInterval = configOptions.OutputOptions.EvaluateInterval
 }
 
 func SetNumGoroutines(numGoroutines int) {

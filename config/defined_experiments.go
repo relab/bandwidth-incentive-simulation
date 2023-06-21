@@ -9,18 +9,5 @@ func OmegaExperiment() {
 }
 
 func CustomExperiment(customExperiment experimentOptions) {
-	Variables.experimentOptions.ThresholdEnabled = customExperiment.ThresholdEnabled
-	Variables.experimentOptions.ReciprocityEnabled = customExperiment.ReciprocityEnabled
-	Variables.experimentOptions.ForgivenessEnabled = customExperiment.ForgivenessEnabled
-	Variables.experimentOptions.PaymentEnabled = customExperiment.PaymentEnabled
-	Variables.experimentOptions.MaxPOCheckEnabled = customExperiment.MaxPOCheckEnabled
-	Variables.experimentOptions.OnlyOriginatorPays = customExperiment.OnlyOriginatorPays
-	Variables.experimentOptions.PayOnlyForCurrentRequest = customExperiment.PayOnlyForCurrentRequest
-	Variables.experimentOptions.ForwardersPayForceOriginatorToPay = customExperiment.ForwardersPayForceOriginatorToPay
-	Variables.experimentOptions.WaitingEnabled = customExperiment.WaitingEnabled
-	Variables.experimentOptions.RetryWithAnotherPeer = customExperiment.RetryWithAnotherPeer
-	Variables.experimentOptions.CacheIsEnabled = customExperiment.CacheIsEnabled
-	Variables.experimentOptions.PreferredChunks = customExperiment.PreferredChunks
-	Variables.experimentOptions.AdjustableThreshold = customExperiment.AdjustableThreshold
-	Variables.experimentOptions.PayIfOrigPays = customExperiment.PayIfOrigPays
+	Variables.experimentOptions = customExperiment
 }
