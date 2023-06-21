@@ -60,6 +60,9 @@ ConfOptions:
     BucketInfo: true
     LinkInfo: true
     ExperimentId: "0"
+    # Reset output loggers after every output. With false, all outputs will be accumulated
+    Reset: false
+    # Compute and log output every X interations. With 0, output will be computed and logged after finisehd experiment
     EvaluateInterval: 0
 
 # Experiments to choose from:

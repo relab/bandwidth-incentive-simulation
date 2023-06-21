@@ -40,6 +40,12 @@ func (wi *WorkInfo) Close() {
 	}
 }
 
+func (wi *WorkInfo) Reset() {
+	wi.ForwardMap = make(map[int]int)
+	wi.WorkMap = make(map[int]int)
+	wi.Requests = make(map[int]int)
+}
+
 func (o *WorkInfo) CalculateWorkFairness() float64 {
 	size := config.GetNetworkSize()
 	vals := make([]int, size)

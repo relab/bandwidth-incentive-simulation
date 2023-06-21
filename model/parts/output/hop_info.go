@@ -38,6 +38,11 @@ func (hi *HopInfo) Close() {
 	}
 }
 
+func (hi *HopInfo) Reset() {
+	hi.HopIncome = make(map[int]int)
+	hi.RouteLength = make([]int, 0, config.GetIterations())
+}
+
 func (hi *HopInfo) CalculateRouteHopIncome() []int {
 	result := make([]int, len(hi.HopIncome))
 

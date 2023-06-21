@@ -71,5 +71,6 @@ type outputOptions struct {
 	BucketInfo                        bool   `yaml:"BucketInfo"`
 	LinkInfo                          bool   `yaml:"LinkInfo"`
 	ExperimentId                      string `yaml:"ExperimentId"`
+	Reset                             bool   `yaml:"Reset"`
 	EvaluateInterval                  int    `yaml:"EvaluateInterval"`
 }

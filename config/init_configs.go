@@ -97,8 +97,8 @@ func SetConfOptions(configOptions confOptions) {
 	Variables.confOptions.OutputOptions.BucketInfo = configOptions.OutputOptions.BucketInfo
 	Variables.confOptions.OutputOptions.LinkInfo = configOptions.OutputOptions.LinkInfo
 	Variables.confOptions.OutputOptions.ExperimentId = configOptions.OutputOptions.ExperimentId
+	Variables.confOptions.OutputOptions.Reset = configOptions.OutputOptions.Reset
 	Variables.confOptions.OutputOptions.EvaluateInterval = configOptions.OutputOptions.EvaluateInterval
-
 }
 
 func SetNumGoroutines(numGoroutines int) {

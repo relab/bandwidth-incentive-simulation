@@ -41,6 +41,7 @@ var defaultVariables = VariablesType{
 			BucketInfo:                        false,     // false
 			LinkInfo:                          false,     // false
 			ExperimentId:                      "default", // default
+			Reset:                             false,     // false
 			EvaluateInterval:                  0,         // 0
 		},
 	},

@@ -271,6 +271,10 @@ func GetExpeimentId() string {
 	return Variables.confOptions.OutputOptions.ExperimentId
 }
 
+func DoReset() bool {
+	return Variables.confOptions.OutputOptions.Reset
+}
+
 func GetEvaluateInterval() (i int) {
 	i = Variables.confOptions.OutputOptions.EvaluateInterval
 	if i <= 0 {
