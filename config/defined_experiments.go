@@ -3,11 +3,11 @@ package config
 // These functions modify the respective fields based changes from default
 
 func OmegaExperiment() {
-	Variables.experimentOptions.ThresholdEnabled = false
-	Variables.experimentOptions.ForgivenessEnabled = false
-	Variables.experimentOptions.MaxPOCheckEnabled = true
+	variables.experimentOptions.ThresholdEnabled = false
+	variables.experimentOptions.ForgivenessEnabled = false
+	variables.experimentOptions.MaxPOCheckEnabled = true
 }
 
 func CustomExperiment(customExperiment experimentOptions) {
-	Variables.experimentOptions = customExperiment
+	variables.experimentOptions = customExperiment
 }

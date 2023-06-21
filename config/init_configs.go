@@ -9,8 +9,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Variables This is the one that gets changed in setup
-var Variables = GetDefaultVariables()
+// variables This is the one that gets changed in setup
+var variables = GetDefaultVariables()
 
 func InitConfigs() {
 	ymlData := ReadYamlFile()
@@ -20,11 +20,11 @@ func InitConfigs() {
 
 func InitConfigsWithId(id string) {
 	InitConfigs()
-	Variables.confOptions.OutputOptions.ExperimentId = id
+	variables.confOptions.OutputOptions.ExperimentId = id
 }
 
 func SetMaxPO(maxPO int) {
-	Variables.confOptions.MaxProximityOrder = maxPO
+	variables.confOptions.MaxProximityOrder = maxPO
 }
 
 func ReadYamlFile() Yml {
@@ -61,14 +61,14 @@ func SetExperiment(yml Yml) {
 }
 
 func SetConfOptions(configOptions confOptions) {
-	Variables.confOptions = configOptions
+	variables.confOptions = configOptions
 	SetNumGoroutines(configOptions.NumGoroutines)
 }
 
 func SetNumGoroutines(numGoroutines int) {
 	if numGoroutines == -1 {
-		Variables.confOptions.NumGoroutines = runtime.NumCPU()
+		variables.confOptions.NumGoroutines = runtime.NumCPU()
 	} else {
-		Variables.confOptions.NumGoroutines = numGoroutines
+		variables.confOptions.NumGoroutines = numGoroutines
 	}
 }
