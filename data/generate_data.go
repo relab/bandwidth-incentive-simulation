@@ -16,7 +16,7 @@ func main() {
 	networkSize := flag.Int("N", 10000, "network size")
 	rSeed := flag.Int("rSeed", -1, "random Seed")
 	id := flag.String("id", "", "an id")
-	count := flag.Int("count", 0, "generate count many networks with ids 0,1,...")
+	count := flag.Int("count", -1, "generate count many networks with ids i0,i1,...")
 	random := flag.Bool("random", true, "spread nodes randomly")
 	useconfig := flag.Bool("config", false, "use config.yaml to initialize bits, binSize, NetworkSize and randomness")
 
@@ -31,26 +31,37 @@ func main() {
 	}
 
 	if *count == 0 {
-		generateAndDump(*bits, *binSize, *networkSize, *rSeed, *id, *random)
+		filename := GetNetworkDataName(*bits, *binSize, *networkSize, *id, -1)
+		generateAndDump(*bits, *binSize, *networkSize, *rSeed, *random, filename)
 	}
-	for i := *count; i > 0; i-- {
-		generateAndDump(*bits, *binSize, *networkSize, *rSeed, fmt.Sprint(*count-i), *random)
+	for i := 0; i < *count; i++ {
+		filename := GetNetworkDataName(*bits, *binSize, *networkSize, *id, i)
+		generateAndDump(*bits, *binSize, *networkSize, *rSeed, *random, filename)
 	}
 }
 
-func generateAndDump(bits, binSize, N, rSeed int, id string, random bool) {
+func generateAndDump(bits, binSize, N, rSeed int, random bool, filename string) {
 	if rSeed != -1 {
 		rand.Seed(int64(rSeed))
 	}
 	network := types.Network{Bits: bits, Bin: binSize}
 	network.Generate(N, random)
-	filename := fmt.Sprintf("nodes_data_%d_%d.txt", binSize, N)
-	if id != "" {
-		filename = fmt.Sprintf("nodes_data_%d_%d_%s.txt", binSize, N, id)
-	}
 
 	err := network.Dump(filename)
 	if err != nil {
-		return
+		panic(fmt.Sprintf("dumping network to file gives error: %v", err))
 	}
+}
+
+func GetNetworkDataName(bits, binSize, N int, id string, iteration int) string {
+	if iteration >= 0 {
+		iterstr := fmt.Sprintf("i%d", iteration)
+		if len(id) > 0 {
+			id = id + "-" + iterstr
+		} else {
+			id = iterstr
+		}
+	}
+
+	return fmt.Sprintf("nodes_data_b%d_k%d_%d_%s.txt", bits, binSize, N, id)
 }
