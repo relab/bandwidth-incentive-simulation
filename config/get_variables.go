@@ -270,11 +270,7 @@ func DoReset() bool {
 }
 
 func GetEvaluateInterval() (i int) {
-	i = theconfig.BaseOptions.OutputOptions.EvaluateInterval
-	if i <= 0 {
-		return GetIterations()
-	}
-	return i
+	return theconfig.BaseOptions.OutputOptions.EvaluateInterval
 }
 
 func GetExperimentString() (exp string) {

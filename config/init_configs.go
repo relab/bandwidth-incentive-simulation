@@ -14,7 +14,7 @@ var theconfig Config
 
 func InitConfigs() {
 	theconfig := ReadYamlFile("config.yaml")
-	ValidateConfOptions(theconfig.BaseOptions)
+	ValidateBaseOptions(theconfig.BaseOptions)
 	SetExperiment(theconfig)
 }
 
@@ -58,12 +58,19 @@ func SetExperiment(yml Config) {
 	}
 }
 
-func ValidateConfOptions(configOptions baseOptions) {
+func ValidateBaseOptions(configOptions baseOptions) {
 	SetNumGoroutines(configOptions.NumGoroutines)
+	SetEvaluateInterval(configOptions.OutputOptions.EvaluateInterval)
 }
 
 func SetNumGoroutines(numGoroutines int) {
 	if numGoroutines == -1 {
 		theconfig.BaseOptions.NumGoroutines = runtime.NumCPU()
+	}
+}
+
+func SetEvaluateInterval(interval int) {
+	if interval <= 0 {
+		theconfig.BaseOptions.OutputOptions.EvaluateInterval = theconfig.BaseOptions.Iterations
 	}
 }
