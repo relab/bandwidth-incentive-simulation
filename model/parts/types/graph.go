@@ -12,8 +12,7 @@ type Graph struct {
 	Nodes    []*Node
 	NodeIds  []NodeId
 	Edges    map[NodeId]map[NodeId]*Edge
-	// RespNodes map[ChunkId][4]NodeId
-	Mutex sync.Mutex
+	Mutex    sync.Mutex
 }
 
 // Edge that connects to NodesMap with attributes about the connection
@@ -33,10 +32,6 @@ type EdgeAttrs struct {
 	LastEpoch int
 	Threshold int
 }
-
-//func (g *Graph) FindResponsibleNodes(chunkId int) [4]int {
-//	return g.RespNodes[chunkId]
-//}
 
 func BinarySearchClosest(arr []NodeId, target int, n int) ([]NodeId, NodeId) {
 	left, right := 0, len(arr)-1

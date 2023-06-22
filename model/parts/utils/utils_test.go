@@ -94,27 +94,6 @@ func TestTimePrecomputeRespNodes(t *testing.T) {
 	fmt.Println(time.Since(start).Seconds())
 }
 
-func TestDistributionRespNodes(t *testing.T) {
-	network := &types.Network{}
-	network.Load(path)
-	sortedNodeIds := SortedKeys(network.NodesMap)
-	responsibilities := PrecomputeRespNodes(sortedNodeIds)
-	respmap := make(map[types.NodeId]int, len(sortedNodeIds))
-	for _, ids := range responsibilities {
-		for _, id := range ids {
-			respmap[id]++
-		}
-	}
-	storageSize := make([]int, len(sortedNodeIds))
-	i := 0
-	for _, responsibility := range respmap {
-		storageSize[i] = responsibility
-		i++
-	}
-
-	fmt.Printf("Gini stored chunks: %f", Gini(storageSize))
-}
-
 func TestDistributionRespNodeswithStorageDepth(t *testing.T) {
 	network := &types.Network{}
 	network.Load(path)
