@@ -13,7 +13,10 @@ import (
 var theconfig Config
 
 func InitConfigs() {
-	theconfig := ReadYamlFile("config.yaml")
+	theconfig, err := ReadYamlFile("config.yaml")
+	if err != nil {
+		log.Fatalln("Unable to read config file: config.yaml")
+	}
 	ValidateBaseOptions(theconfig.BaseOptions)
 	SetExperiment(theconfig)
 }
@@ -27,19 +30,20 @@ func SetMaxPO(maxPO int) {
 	theconfig.BaseOptions.MaxProximityOrder = maxPO
 }
 
-func ReadYamlFile(filename string) Config {
+func ReadYamlFile(filename string) (Config, error) {
 	yamlFile, err := os.ReadFile(filename)
 
 	var yamlData Config
 
 	if err != nil {
 		log.Printf("yamlFile.Get err   #%v ", err)
+		return yamlData, err
 	}
 	err = yaml.Unmarshal(yamlFile, &yamlData)
 	if err != nil {
 		log.Fatalf("Unmarshal: %v", err)
 	}
-	return yamlData
+	return yamlData, nil
 }
 
 func SetExperiment(yml Config) {

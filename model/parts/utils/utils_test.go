@@ -11,7 +11,7 @@ import (
 	"gotest.tools/assert"
 )
 
-const path = "../../../data/nodes_data_16_10000_0.txt"
+const path = "testdata/nodes_data_8_10000_0.txt"
 
 func TestCreateGraphNetwork(t *testing.T) {
 	// fileName := "input_test.txt"
@@ -59,6 +59,8 @@ func TestCreateDowloaderList(t *testing.T) {
 	// Creates graph
 	graph, _ := CreateGraphNetwork(network)
 	// Get number of originators used in the func
+	config.SetDefaultConfig()
+
 	c := config.GetOriginators()
 
 	// Create a list of downloaders
