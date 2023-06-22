@@ -8,7 +8,7 @@ import (
 )
 
 func TestReadDefaultConfig(t *testing.T) {
-	fileconfig, _ := ReadYamlFile("./default_config.yaml")
+	fileconfig, _ := ReadYamlFile("testdata/default_config.yaml")
 	defaultconfig := getDefaultConfig()
 	assert.DeepEqual(t, fileconfig, defaultconfig)
 }
