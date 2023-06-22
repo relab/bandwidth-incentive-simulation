@@ -3,13 +3,7 @@ package config
 import "fmt"
 
 func GetNumRoutingGoroutines() int {
-	num := variables.confOptions.NumGoroutines
-	//if IsWriteStatesToFile() {
-	//	num--
-	//}
-	//if IsWriteRoutesToFile() {
-	//	num--
-	//}
+	num := theconfig.BaseOptions.NumGoroutines
 	num-- // for the requestWorker
 	if IsOutputEnabled() {
 		num-- // for the outputWorker
@@ -24,7 +18,7 @@ func GetNumRoutingGoroutines() int {
 }
 
 func GetNumGoroutines() int {
-	return variables.confOptions.NumGoroutines
+	return theconfig.BaseOptions.NumGoroutines
 }
 
 // func CreateRangeAddress(c *constant){
@@ -36,139 +30,139 @@ func GetNumGoroutines() int {
 // }
 
 func IsAdjustableThreshold() bool {
-	return variables.experimentOptions.AdjustableThreshold
+	return theconfig.ExperimentOptions.AdjustableThreshold
 }
 
 func IsForgivenessEnabled() bool {
-	return variables.experimentOptions.ForgivenessEnabled
+	return theconfig.ExperimentOptions.ForgivenessEnabled
 }
 
 func IsCacheEnabled() bool {
-	return variables.experimentOptions.CacheIsEnabled
+	return theconfig.ExperimentOptions.CacheIsEnabled
 }
 
 func IsPreferredChunksEnabled() bool {
-	return variables.experimentOptions.PreferredChunks
+	return theconfig.ExperimentOptions.PreferredChunks
 }
 
 func IsRetryWithAnotherPeer() bool {
-	return variables.experimentOptions.RetryWithAnotherPeer
+	return theconfig.ExperimentOptions.RetryWithAnotherPeer
 }
 
 func IsForwardersPayForceOriginatorToPay() bool {
-	return variables.experimentOptions.ForwardersPayForceOriginatorToPay
+	return theconfig.ExperimentOptions.ForwardersPayForceOriginatorToPay
 }
 
 func IsPayIfOrigPays() bool {
-	return variables.experimentOptions.PayIfOrigPays
+	return theconfig.ExperimentOptions.PayIfOrigPays
 }
 
 func IsPayOnlyForCurrentRequest() bool {
-	return variables.experimentOptions.PayOnlyForCurrentRequest
+	return theconfig.ExperimentOptions.PayOnlyForCurrentRequest
 }
 
 func IsOnlyOriginatorPays() bool {
-	return variables.experimentOptions.OnlyOriginatorPays
+	return theconfig.ExperimentOptions.OnlyOriginatorPays
 }
 
 func IsWaitingEnabled() bool {
-	return variables.experimentOptions.WaitingEnabled
+	return theconfig.ExperimentOptions.WaitingEnabled
 }
 
 func GetMaxPOCheckEnabled() bool {
-	return variables.experimentOptions.MaxPOCheckEnabled
+	return theconfig.ExperimentOptions.MaxPOCheckEnabled
 }
 
 func GetThresholdEnabled() bool {
-	return variables.experimentOptions.ThresholdEnabled
+	return theconfig.ExperimentOptions.ThresholdEnabled
 }
 
 func GetReciprocityEnabled() bool {
-	return variables.experimentOptions.ReciprocityEnabled
+	return theconfig.ExperimentOptions.ReciprocityEnabled
 }
 
 func GetPaymentEnabled() bool {
-	return variables.experimentOptions.PaymentEnabled
+	return theconfig.ExperimentOptions.PaymentEnabled
 }
 
 func GetRequestsPerSecond() int {
-	return variables.confOptions.RequestsPerSecond
+	return theconfig.BaseOptions.RequestsPerSecond
 }
 
 func GetIterations() int {
-	return variables.confOptions.Iterations
+	return theconfig.BaseOptions.Iterations
 }
 
 func GetBits() int {
-	return variables.confOptions.Bits
+	return theconfig.BaseOptions.Bits
 }
 
 func GetNetworkSize() int {
-	return variables.confOptions.NetworkSize
+	return theconfig.BaseOptions.NetworkSize
 }
 
 func GetBinSize() int {
-	return variables.confOptions.BinSize
+	return theconfig.BaseOptions.BinSize
 }
 
 func GetRangeAddress() int {
-	return variables.confOptions.RangeAddress
+	return theconfig.BaseOptions.RangeAddress
 }
 
 func GetOriginators() int {
-	return variables.confOptions.Originators
+	return theconfig.BaseOptions.Originators
 }
 
 func GetRefreshRate() int {
-	return variables.confOptions.RefreshRate
+	return theconfig.BaseOptions.RefreshRate
 }
 
 func GetThreshold() int {
-	return variables.confOptions.Threshold
+	return theconfig.BaseOptions.Threshold
 }
 
 func GetRandomSeed() int64 {
-	return variables.confOptions.RandomSeed
+	return theconfig.BaseOptions.RandomSeed
 }
 
 func GetMaxProximityOrder() int {
-	return variables.confOptions.MaxProximityOrder
+	return theconfig.BaseOptions.MaxProximityOrder
 }
 
 func GetPrice() int {
-	return variables.confOptions.Price
+	return theconfig.BaseOptions.Price
 }
 
 func GetSameOriginator() bool {
-	return variables.confOptions.SameOriginator
+	return theconfig.BaseOptions.SameOriginator
 }
 
 func IsEdgeLock() bool {
-	return variables.confOptions.EdgeLock
+	return theconfig.BaseOptions.EdgeLock
 }
 
 func IsPrecomputeRespNodes() bool {
-	return variables.confOptions.PrecomputeRespNodes
+	return theconfig.BaseOptions.PrecomputeRespNodes
 }
 
 func IsWriteRoutesToFile() bool {
-	return variables.confOptions.WriteRoutesToFile
+	return theconfig.BaseOptions.WriteRoutesToFile
 }
 
 func IsWriteStatesToFile() bool {
-	return variables.confOptions.WriteStatesToFile
+	return theconfig.BaseOptions.WriteStatesToFile
 }
 
 func IsIterationMeansUniqueChunk() bool {
-	return variables.confOptions.IterationMeansUniqueChunk
+	return theconfig.BaseOptions.IterationMeansUniqueChunk
 }
 
 func IsDebugPrints() bool {
-	return variables.confOptions.DebugPrints
+	return theconfig.BaseOptions.DebugPrints
 }
 
 func GetDebugInterval() int {
-	return variables.confOptions.DebugInterval
+	return theconfig.BaseOptions.DebugInterval
 }
 
 func TimeForDebugPrints(timeStep int) bool {
@@ -183,32 +177,32 @@ func TimeForNewEpoch(timeStep int) bool {
 }
 
 func IsOutputEnabled() bool {
-	return variables.confOptions.OutputEnabled
+	return theconfig.BaseOptions.OutputEnabled
 }
 
 func JustPrintOutPut() bool {
-	if !variables.confOptions.OutputOptions.MeanRewardPerForward &&
-		!variables.confOptions.OutputOptions.AverageNumberOfHops &&
-		!variables.confOptions.OutputOptions.AverageFractionOfTotalRewardsK16 &&
-		!variables.confOptions.OutputOptions.RewardFairnessForForwardingAction &&
-		!variables.confOptions.OutputOptions.RewardFairnessForStoringAction &&
-		!variables.confOptions.OutputOptions.RewardFairnessForAllActions &&
-		!variables.confOptions.OutputOptions.NegativeIncome {
+	if !theconfig.BaseOptions.OutputOptions.MeanRewardPerForward &&
+		!theconfig.BaseOptions.OutputOptions.AverageNumberOfHops &&
+		!theconfig.BaseOptions.OutputOptions.AverageFractionOfTotalRewardsK16 &&
+		!theconfig.BaseOptions.OutputOptions.RewardFairnessForForwardingAction &&
+		!theconfig.BaseOptions.OutputOptions.RewardFairnessForStoringAction &&
+		!theconfig.BaseOptions.OutputOptions.RewardFairnessForAllActions &&
+		!theconfig.BaseOptions.OutputOptions.NegativeIncome {
 		return true
 	}
 	return false
 }
 
 func GetMeanRewardPerForward() bool {
-	if variables.confOptions.OutputEnabled && variables.experimentOptions.MaxPOCheckEnabled {
-		return variables.confOptions.OutputOptions.MeanRewardPerForward
+	if theconfig.BaseOptions.OutputEnabled && theconfig.ExperimentOptions.MaxPOCheckEnabled {
+		return theconfig.BaseOptions.OutputOptions.MeanRewardPerForward
 	}
 	return false
 }
 
 func GetAverageNumberOfHops() bool {
-	if variables.confOptions.OutputEnabled && variables.experimentOptions.MaxPOCheckEnabled {
-		return variables.confOptions.OutputOptions.AverageNumberOfHops
+	if theconfig.BaseOptions.OutputEnabled && theconfig.ExperimentOptions.MaxPOCheckEnabled {
+		return theconfig.BaseOptions.OutputOptions.AverageNumberOfHops
 	}
 	return false
 }
@@ -218,65 +212,65 @@ func GetAverageFractionOfTotalRewardsK8() bool {
 }
 
 func GetAverageFractionOfTotalRewardsK16() bool {
-	if variables.confOptions.OutputEnabled &&
-		variables.confOptions.BinSize == 16 &&
-		variables.experimentOptions.MaxPOCheckEnabled {
-		return variables.confOptions.OutputOptions.AverageFractionOfTotalRewardsK16
+	if theconfig.BaseOptions.OutputEnabled &&
+		theconfig.BaseOptions.BinSize == 16 &&
+		theconfig.ExperimentOptions.MaxPOCheckEnabled {
+		return theconfig.BaseOptions.OutputOptions.AverageFractionOfTotalRewardsK16
 	}
 	return false
 
 }
 
 func GetRewardFairnessForForwardingAction() bool {
-	if variables.confOptions.OutputEnabled && variables.experimentOptions.MaxPOCheckEnabled {
-		return variables.confOptions.OutputOptions.RewardFairnessForForwardingAction
+	if theconfig.BaseOptions.OutputEnabled && theconfig.ExperimentOptions.MaxPOCheckEnabled {
+		return theconfig.BaseOptions.OutputOptions.RewardFairnessForForwardingAction
 	}
 	return false
 }
 
 func GetRewardFairnessForStoringAction() bool {
-	if variables.confOptions.OutputEnabled && variables.experimentOptions.MaxPOCheckEnabled {
-		return variables.confOptions.OutputOptions.RewardFairnessForStoringAction
+	if theconfig.BaseOptions.OutputEnabled && theconfig.ExperimentOptions.MaxPOCheckEnabled {
+		return theconfig.BaseOptions.OutputOptions.RewardFairnessForStoringAction
 	}
 	return false
 }
 
 func GetRewardFairnessForAllActions() bool {
-	if variables.confOptions.OutputEnabled && variables.experimentOptions.MaxPOCheckEnabled {
-		return variables.confOptions.OutputOptions.RewardFairnessForAllActions
+	if theconfig.BaseOptions.OutputEnabled && theconfig.ExperimentOptions.MaxPOCheckEnabled {
+		return theconfig.BaseOptions.OutputOptions.RewardFairnessForAllActions
 	}
 	return false
 }
 
 func GetNegativeIncome() bool {
-	if variables.experimentOptions.PaymentEnabled {
-		return variables.confOptions.OutputOptions.NegativeIncome
+	if theconfig.ExperimentOptions.PaymentEnabled {
+		return theconfig.BaseOptions.OutputOptions.NegativeIncome
 	}
 	return false
 }
 
 func GetComputeWorkFairness() bool {
-	return variables.confOptions.OutputOptions.ComputeWorkFairness
+	return theconfig.BaseOptions.OutputOptions.ComputeWorkFairness
 }
 
 func GetBucketInfo() bool {
-	return variables.confOptions.OutputOptions.BucketInfo
+	return theconfig.BaseOptions.OutputOptions.BucketInfo
 }
 
 func GetLinkInfo() bool {
-	return variables.confOptions.OutputOptions.LinkInfo
+	return theconfig.BaseOptions.OutputOptions.LinkInfo
 }
 
 func GetExpeimentId() string {
-	return variables.confOptions.OutputOptions.ExperimentId
+	return theconfig.BaseOptions.OutputOptions.ExperimentId
 }
 
 func DoReset() bool {
-	return variables.confOptions.OutputOptions.Reset
+	return theconfig.BaseOptions.OutputOptions.Reset
 }
 
 func GetEvaluateInterval() (i int) {
-	i = variables.confOptions.OutputOptions.EvaluateInterval
+	i = theconfig.BaseOptions.OutputOptions.EvaluateInterval
 	if i <= 0 {
 		return GetIterations()
 	}

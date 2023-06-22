@@ -1,21 +1,16 @@
 package config
 
-type Yml struct {
-	ConfOptions      confOptions       `yaml:"ConfOptions"`
-	Experiment       experiment        `yaml:"Experiment"`
-	CustomExperiment experimentOptions `yaml:"CustomExperiment"`
+type Config struct {
+	BaseOptions       baseOptions       `yaml:"BaseOptions"`
+	Experiment        experiment        `yaml:"Experiment"`
+	ExperimentOptions experimentOptions `yaml:"CustomExperiment"`
 }
 
 type experiment struct {
 	Name string `yaml:"Name"`
 }
 
-type VariablesType struct {
-	confOptions       confOptions
-	experimentOptions experimentOptions
-}
-
-type confOptions struct {
+type baseOptions struct {
 	Iterations                int           `yaml:"Iterations"`
 	Bits                      int           `yaml:"Bits"`
 	NetworkSize               int           `yaml:"NetworkSize"`

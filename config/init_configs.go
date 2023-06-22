@@ -9,28 +9,28 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// variables This is the one that gets changed in setup
-var variables = GetDefaultVariables()
+// theconfig This is the current configuration.
+var theconfig Config
 
 func InitConfigs() {
-	ymlData := ReadYamlFile()
-	SetConfOptions(ymlData.ConfOptions)
-	SetExperiment(ymlData)
+	theconfig := ReadYamlFile("config.yaml")
+	ValidateConfOptions(theconfig.BaseOptions)
+	SetExperiment(theconfig)
 }
 
 func InitConfigsWithId(id string) {
 	InitConfigs()
-	variables.confOptions.OutputOptions.ExperimentId = id
+	theconfig.BaseOptions.OutputOptions.ExperimentId = id
 }
 
 func SetMaxPO(maxPO int) {
-	variables.confOptions.MaxProximityOrder = maxPO
+	theconfig.BaseOptions.MaxProximityOrder = maxPO
 }
 
-func ReadYamlFile() Yml {
-	yamlFile, err := os.ReadFile("config.yaml")
+func ReadYamlFile(filename string) Config {
+	yamlFile, err := os.ReadFile(filename)
 
-	var yamlData Yml
+	var yamlData Config
 
 	if err != nil {
 		log.Printf("yamlFile.Get err   #%v ", err)
@@ -42,33 +42,28 @@ func ReadYamlFile() Yml {
 	return yamlData
 }
 
-func SetExperiment(yml Yml) {
+func SetExperiment(yml Config) {
 
 	switch yml.Experiment.Name {
 	case "omega":
 		fmt.Println("omega experiment chosen")
 		OmegaExperiment()
 
-		// TODO: Add more experiments here
-
 	case "custom":
 		fmt.Println("custom experiment chosen")
-		CustomExperiment(yml.CustomExperiment)
+		CustomExperiment(yml.ExperimentOptions)
 
 	default:
 		fmt.Println("default experiment chosen")
 	}
 }
 
-func SetConfOptions(configOptions confOptions) {
-	variables.confOptions = configOptions
+func ValidateConfOptions(configOptions baseOptions) {
 	SetNumGoroutines(configOptions.NumGoroutines)
 }
 
 func SetNumGoroutines(numGoroutines int) {
 	if numGoroutines == -1 {
-		variables.confOptions.NumGoroutines = runtime.NumCPU()
-	} else {
-		variables.confOptions.NumGoroutines = numGoroutines
+		theconfig.BaseOptions.NumGoroutines = runtime.NumCPU()
 	}
 }
