@@ -12,8 +12,7 @@ type Graph struct {
 	Nodes    []*Node
 	NodeIds  []NodeId
 	Edges    map[NodeId]map[NodeId]*Edge
-	// RespNodes map[ChunkId][4]NodeId
-	Mutex sync.Mutex
+	Mutex    sync.Mutex
 }
 
 // Edge that connects to NodesMap with attributes about the connection
@@ -32,36 +31,6 @@ type EdgeAttrs struct {
 	A2B       int
 	LastEpoch int
 	Threshold int
-}
-
-//func (g *Graph) FindResponsibleNodes(chunkId int) [4]int {
-//	return g.RespNodes[chunkId]
-//}
-
-func BinarySearchClosest(arr []NodeId, target int, n int) ([]NodeId, NodeId) {
-	left, right := 0, len(arr)-1
-	mid := 0
-	for left <= right {
-		mid = (left + right) / 2
-		curNodeId := arr[mid].ToInt()
-		if curNodeId == target {
-			//if curNodeId > target-(n/2) && curNodeId < target+(n/2) {
-			break
-		} else if curNodeId < target {
-			left = mid + 1
-		} else {
-			right = mid - 1
-		}
-	}
-	left = mid - n
-	if left < 0 {
-		left = 0
-	}
-	right = mid + n
-	if right > len(arr) {
-		right = len(arr)
-	}
-	return arr[left:right], arr[mid]
 }
 
 // AddNode will add a Node to a graph

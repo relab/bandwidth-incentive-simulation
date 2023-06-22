@@ -8,33 +8,6 @@ import (
 	"sort"
 )
 
-// TODO: most of this should probably go into the types package
-func PrecomputeRespNodes(nodesId []types.NodeId) map[types.ChunkId][4]types.NodeId {
-	numPossibleChunks := config.GetRangeAddress()
-	result := make(map[types.ChunkId][4]types.NodeId)
-	numNodesSearch := config.GetBits()
-
-	for chunkId := 0; chunkId < numPossibleChunks; chunkId++ {
-		closestNodes, _ := types.BinarySearchClosest(nodesId, chunkId, numNodesSearch)
-		distances := make([]int, len(closestNodes))
-
-		for j, nodeId := range closestNodes {
-			distances[j] = nodeId.ToInt() ^ chunkId
-		}
-
-		sort.Slice(distances, func(i, j int) bool { return distances[i] < distances[j] })
-
-		arr := [4]types.NodeId{}
-		for k := 0; k < 4; k++ {
-			arr[k] = types.NodeId(distances[k] ^ chunkId) // this results in the nodeId again
-		}
-
-		result[types.ChunkId(chunkId)] = arr
-	}
-
-	return result
-}
-
 func SortedKeys(nodeMap map[types.NodeId]*types.Node) []types.NodeId {
 	keys := make([]types.NodeId, len(nodeMap))
 	i := 0
@@ -56,18 +29,12 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 	numNodes := len(net.NodesMap)
 
 	Edges := make(map[types.NodeId]map[types.NodeId]*types.Edge)
-	//respNodes := make([][4]types.NodeId, config.GetRangeAddress())
-	// respNodes := make(map[types.ChunkId][4]types.NodeId, 0)
-	// if config.IsPrecomputeRespNodes() {
-	// 	respNodes = PrecomputeRespNodes(sortedNodeIds)
-	// }
 
 	graph := &types.Graph{
 		Network: net,
 		Nodes:   make([]*types.Node, 0, numNodes),
 		Edges:   Edges,
 		NodeIds: sortedNodeIds,
-		// RespNodes: respNodes,
 	}
 
 	for _, nodeId := range sortedNodeIds {
@@ -194,55 +161,3 @@ func CreateNodesList(g *types.Graph) []types.NodeId {
 	//fmt.Println("NodesMap list create...!")
 	return nodesValue
 }
-
-// TODO: Not used in original
-//func getBin(src int, dest int, index int) int {
-//	distance := src ^ dest
-//	result := index
-//	for distance > 0 {
-//		distance >>= 1
-//		result -= 1
-//	}
-//	return result
-//}
-
-// TODO: Not used in original
-//func whichPowerTwo(rangeAddress int) int {
-//	return BitLength(rangeAddress) - 1
-//}
-
-// TODO: Not used in original
-//func MakeFiles() []int {
-//	fmt.Println("Making files...")
-//	var filesList []int
-//
-//	for i := 0; i <= ct.constants.GetOriginators(); i++ {
-//		// chunksList := choice(ct.constants.GetChunks(), ct.constants.GetRangeAddress())
-//		// filesList = append(chunksList)
-//		fmt.Println(i)
-//	}
-//	// Gets all constants
-//	consts := ct.constants
-//
-//	for i := 0; i <= consts.GetOriginators(); i++ {
-//		chunksList := rand.Perm(consts.GetChunks())
-//		filesList = append(chunksList)
-//	}
-//	fmt.Println("Files made!")
-//	return filesList
-//}
-
-// TODO: Not used in original
-//func (net *Network) PushSync(fileName string, files []string) {
-//	fmt.Println("Pushing sync...")
-//	if net == nil {
-//		fmt.Println("Network is nil!")
-//		return
-//	}
-//	nodes := net.nodes
-//	for i := range nodes {
-//		fmt.Println(nodes[i].id)
-//	}
-//
-//	fmt.Println("Pushing sync finished...")
-//}
