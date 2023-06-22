@@ -1,7 +1,7 @@
 #### Global Configurations ####
 
 # Global configuration options, defaults in comment
-ConfOptions:
+BaseOptions:
   # Iterations: 10_000_000, best in multiples of 100_000
   Iterations: 1_000_000
   # Bits: 16, bits in maximum address
