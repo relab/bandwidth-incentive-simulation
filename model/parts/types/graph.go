@@ -33,32 +33,6 @@ type EdgeAttrs struct {
 	Threshold int
 }
 
-func BinarySearchClosest(arr []NodeId, target int, n int) ([]NodeId, NodeId) {
-	left, right := 0, len(arr)-1
-	mid := 0
-	for left <= right {
-		mid = (left + right) / 2
-		curNodeId := arr[mid].ToInt()
-		if curNodeId == target {
-			//if curNodeId > target-(n/2) && curNodeId < target+(n/2) {
-			break
-		} else if curNodeId < target {
-			left = mid + 1
-		} else {
-			right = mid - 1
-		}
-	}
-	left = mid - n
-	if left < 0 {
-		left = 0
-	}
-	right = mid + n
-	if right > len(arr) {
-		right = len(arr)
-	}
-	return arr[left:right], arr[mid]
-}
-
 // AddNode will add a Node to a graph
 func (g *Graph) AddNode(node *Node) error {
 	if ContainsNode(g.Nodes, node) {
