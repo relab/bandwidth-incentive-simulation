@@ -12,7 +12,7 @@ import (
 	"gotest.tools/assert"
 )
 
-const path = "../../../data/nodes_data_8_10000_0.txt"
+const path = "testdata/nodes_data_8_10000_0.txt"
 
 func TestCreateGraphNetwork(t *testing.T) {
 	// fileName := "input_test.txt"
