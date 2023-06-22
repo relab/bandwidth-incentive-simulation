@@ -8,7 +8,10 @@ import (
 )
 
 func TestReadDefaultConfig(t *testing.T) {
-	fileconfig := ReadYamlFile("default_config.yaml")
+	fileconfig, err := ReadYamlFile("default_config.yaml")
+	if err != nil {
+		fileconfig, _ = ReadYamlFile("config/default_config.yaml")
+	}
 	defaultconfig := getDefaultConfig()
 	assert.DeepEqual(t, fileconfig, defaultconfig)
 }
