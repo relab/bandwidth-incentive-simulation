@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"go-incentive-simulation/model/general"
 	"math/rand"
 	"os"
@@ -56,7 +57,11 @@ type jsonFormat struct {
 }
 
 func (network *Network) Load(path string) (int, int, map[NodeId]*Node) {
-	file, _ := os.Open(path)
+	file, err := os.Open(path)
+	if err != nil {
+		fmt.Printf("Error opening file %v", err)
+		panic("Unable to open network file")
+	}
 	defer func(file *os.File) {
 		err := file.Close()
 		if err != nil {
@@ -65,9 +70,10 @@ func (network *Network) Load(path string) (int, int, map[NodeId]*Node) {
 	decoder := json.NewDecoder(file)
 
 	var test jsonFormat
-	err := decoder.Decode(&test)
+	err = decoder.Decode(&test)
 	if err != nil {
-		return 0, 0, nil
+		fmt.Printf("Error decoding file %v: %v", path, err)
+		panic("Unable to decode network file")
 	}
 
 	network.Bits = test.Bits

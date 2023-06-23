@@ -7,6 +7,7 @@ import (
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/workers"
 	"go-incentive-simulation/model/state"
+	networkdata "go-incentive-simulation/network_data"
 	"math"
 	"strconv"
 	"strings"
@@ -16,7 +17,7 @@ import (
 
 func main() {
 	graphId := flag.String("graphId", "", "an Id for the graph, e.g. even")
-	count := flag.Int("count", 0, "generate count many networks with ids 0,1,...")
+	count := flag.Int("count", -1, "run for different networks with ids i0,i1,...")
 	maxPOs := flag.String("maxPOs", "", "min:max maxPO value")
 
 	flag.Parse()
@@ -43,11 +44,11 @@ func main() {
 	}
 
 	for maxPO := min; maxPO < max; maxPO++ {
-		if *count == 0 {
+		if *count < 0 {
 			run(-1, *graphId, maxPO)
 		}
-		for i := *count; i > 0; i-- {
-			run(*count-i, "", maxPO)
+		for i := 0; i < *count; i++ {
+			run(i, *graphId, maxPO)
 		}
 	}
 
@@ -55,24 +56,13 @@ func main() {
 
 func run(iteration int, graphId string, maxPO int) {
 	start := time.Now()
-	if iteration == -1 {
-		config.InitConfigs()
-		if maxPO > -1 {
-			config.SetMaxPO(maxPO)
-		}
+	config.InitConfig()
+	if maxPO > -1 {
+		config.SetMaxPO(maxPO)
 	}
+	config.SetExperimentId(networkdata.CombineIdIteration(graphId, iteration))
 
-	network := fmt.Sprintf("./data/nodes_data_%d_%d.txt", config.GetBinSize(), config.GetNetworkSize())
-	if graphId != "" {
-		network = fmt.Sprintf("./data/nodes_data_%d_%d_%v.txt", config.GetBinSize(), config.GetNetworkSize(), graphId)
-	}
-	if iteration > -1 {
-		config.InitConfigsWithId(fmt.Sprint(iteration))
-		if maxPO > -1 {
-			config.SetMaxPO(maxPO)
-		}
-		network = fmt.Sprintf("./data/nodes_data_%d_%d_%d.txt", config.GetBinSize(), config.GetNetworkSize(), iteration)
-	}
+	network := "./network_data/" + networkdata.GetNetworkDataName(config.GetBits(), config.GetBinSize(), config.GetNetworkSize(), graphId, iteration)
 
 	fmt.Println("Running with network: ", network)
 
