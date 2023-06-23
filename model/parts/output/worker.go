@@ -11,6 +11,27 @@ func Worker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 	var outputStruct types.OutputStruct
 	counter := 0
 
+	loggers := CreateLoggers()
+	logInterval := config.GetEvaluateInterval()
+	reset := config.DoReset()
+
+	for outputStruct = range outputChan {
+		counter++
+
+		for _, logger := range loggers {
+			logger.Update(&outputStruct)
+
+			if counter%logInterval == 0 {
+				logger.Log()
+				if reset {
+					logger.Reset()
+				}
+			}
+		}
+	}
+}
+
+func CreateLoggers() []LogResetUpdater {
 	loggers := make([]LogResetUpdater, 0)
 
 	if config.GetAverageNumberOfHops() {
@@ -54,22 +75,5 @@ func Worker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 		defer outputWriter.Close()
 		loggers = append(loggers, outputWriter)
 	}
-
-	logInterval := config.GetEvaluateInterval()
-	reset := config.DoReset()
-
-	for outputStruct = range outputChan {
-		counter++
-
-		for _, logger := range loggers {
-			logger.Update(&outputStruct)
-
-			if counter%logInterval == 0 {
-				logger.Log()
-				if reset {
-					logger.Reset()
-				}
-			}
-		}
-	}
+	return loggers
 }
