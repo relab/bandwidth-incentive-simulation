@@ -1,57 +1,56 @@
-package workers
+package output
 
 import (
 	"go-incentive-simulation/config"
-	"go-incentive-simulation/model/parts/output"
 	"go-incentive-simulation/model/parts/types"
 	"sync"
 )
 
-func OutputWorker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
+func Worker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var outputStruct types.OutputStruct
 	counter := 0
 
-	loggers := make([]output.LogResetUpdater, 0)
+	loggers := make([]LogResetUpdater, 0)
 
 	if config.GetAverageNumberOfHops() {
-		hopInfo := output.InitHopInfo()
+		hopInfo := InitHopInfo()
 		defer hopInfo.Close()
 		loggers = append(loggers, hopInfo)
 	}
 
 	if config.GetAverageNumberOfHops() && config.GetPaymentEnabled() {
-		hopPaymentInfo := output.InitHopPaymentInfo()
+		hopPaymentInfo := InitHopPaymentInfo()
 		defer hopPaymentInfo.Close()
 		loggers = append(loggers, hopPaymentInfo)
 	}
 
 	if config.GetNegativeIncome() {
-		incomeInfo := output.InitIncomeInfo()
+		incomeInfo := InitIncomeInfo()
 		defer incomeInfo.Close()
 		loggers = append(loggers, incomeInfo)
 	}
 
 	if config.GetComputeWorkFairness() {
-		workInfo := output.InitWorkInfo()
+		workInfo := InitWorkInfo()
 		defer workInfo.Close()
 		loggers = append(loggers, workInfo)
 	}
 
 	if config.GetBucketInfo() {
-		bucketInfo := output.InitBucketInfo()
+		bucketInfo := InitBucketInfo()
 		defer bucketInfo.Close()
 		loggers = append(loggers, bucketInfo)
 	}
 
 	if config.GetLinkInfo() {
-		linkInfo := output.InitLinkInfo()
+		linkInfo := InitLinkInfo()
 		defer linkInfo.Close()
 		loggers = append(loggers, linkInfo)
 	}
 
 	if config.JustPrintOutPut() {
-		outputWriter := output.InitOutputWriter()
+		outputWriter := InitOutputWriter()
 		defer outputWriter.Close()
 		loggers = append(loggers, outputWriter)
 	}

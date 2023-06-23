@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"go-incentive-simulation/config"
+	"go-incentive-simulation/model/parts/output"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/workers"
 	"go-incentive-simulation/model/state"
@@ -104,7 +105,7 @@ func run(iteration int, graphId string, maxPO int) {
 	wgMain.Add(1)
 
 	if config.IsOutputEnabled() {
-		go workers.OutputWorker(outputChan, wgOutput)
+		go output.Worker(outputChan, wgOutput)
 		wgOutput.Add(1)
 	}
 
