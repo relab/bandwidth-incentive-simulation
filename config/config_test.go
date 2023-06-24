@@ -19,3 +19,9 @@ func TestValidateBaseOptions(t *testing.T) {
 	assert.Equal(t, theconfig.BaseOptions.NumGoroutines, runtime.NumCPU())
 	assert.Equal(t, theconfig.BaseOptions.OutputOptions.EvaluateInterval, theconfig.BaseOptions.Iterations)
 }
+
+func TestGetters(t *testing.T) {
+	SetDefaultConfig()
+
+	assert.Equal(t, GetBinSize(), 16)
+}

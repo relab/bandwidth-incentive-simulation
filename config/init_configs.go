@@ -12,17 +12,17 @@ import (
 // theconfig This is the current configuration.
 var theconfig Config
 
-func InitConfigs() {
-	theconfig, err := ReadYamlFile("config.yaml")
+func InitConfig() {
+	config, err := ReadYamlFile("config.yaml")
 	if err != nil {
-		log.Fatalln("Unable to read config file: config.yaml")
+		log.Panicln("Unable to read config file: config.yaml")
 	}
+	theconfig = config
 	ValidateBaseOptions(theconfig.BaseOptions)
 	SetExperiment(theconfig)
 }
 
-func InitConfigsWithId(id string) {
-	InitConfigs()
+func SetExperimentId(id string) {
 	theconfig.BaseOptions.OutputOptions.ExperimentId = id
 }
 
@@ -36,12 +36,12 @@ func ReadYamlFile(filename string) (Config, error) {
 	var yamlData Config
 
 	if err != nil {
-		log.Printf("yamlFile.Get err   #%v ", err)
+		log.Printf("yamlFile.Get err :%v ", err)
 		return yamlData, err
 	}
 	err = yaml.Unmarshal(yamlFile, &yamlData)
 	if err != nil {
-		log.Fatalf("Unmarshal: %v", err)
+		log.Panicf("Unmarshal: %v", err)
 	}
 	return yamlData, nil
 }

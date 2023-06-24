@@ -6,7 +6,9 @@
 *.dylib
 *.yaml
 *.py
-data/*.txt
+network_data/*.txt
+*-incentive-simulation
+generate_network_data/generate_network_data
 
 # Test binary, built with `go test -c`
 *.test
