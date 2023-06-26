@@ -141,10 +141,6 @@ func IsEdgeLock() bool {
 	return theconfig.BaseOptions.EdgeLock
 }
 
-func IsPrecomputeRespNodes() bool {
-	return theconfig.BaseOptions.PrecomputeRespNodes
-}
-
 func IsWriteRoutesToFile() bool {
 	return theconfig.BaseOptions.WriteRoutesToFile
 }

@@ -6,7 +6,6 @@ type Request struct {
 	OriginatorIndex int
 	OriginatorId    NodeId
 	ChunkId         ChunkId
-	// RespNodes       [4]NodeId
 }
 
 type RequestResult struct {

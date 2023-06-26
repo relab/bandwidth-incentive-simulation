@@ -25,7 +25,6 @@ type baseOptions struct {
 	RequestsPerSecond         int           `yaml:"RequestsPerSecond"`
 	EdgeLock                  bool          `yaml:"EdgeLock"`
 	SameOriginator            bool          `yaml:"SameOriginator"`
-	PrecomputeRespNodes       bool          `yaml:"PrecomputeRespNodes"`
 	WriteRoutesToFile         bool          `yaml:"WriteRoutesToFile"`
 	WriteStatesToFile         bool          `yaml:"WriteStatesToFile"`
 	IterationMeansUniqueChunk bool          `yaml:"IterationMeansUniqueChunk"`

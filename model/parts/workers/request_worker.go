@@ -16,7 +16,6 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 	var counter = 0
 	var curEpoch = 0
 	var chunkId types.ChunkId
-	// var respNodes [4]types.NodeId
 	iterations := config.GetIterations()
 	numRoutingGoroutines := config.GetNumRoutingGoroutines()
 
@@ -82,7 +81,6 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 					OriginatorIndex: originatorIndex,
 					OriginatorId:    originatorId,
 					ChunkId:         chunkId,
-					// RespNodes:       respNodes,
 				}
 				requestChan <- request
 			}
