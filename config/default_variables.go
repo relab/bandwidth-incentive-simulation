@@ -11,7 +11,6 @@ func getDefaultConfig() Config {
 			Bits:                      16,        // 16
 			NetworkSize:               10000,     // 10000
 			BinSize:                   16,        // 16
-			RangeAddress:              65536,     // 2 ** Bits
 			Originators:               1000,      // 0.01 * NetworkSize
 			RefreshRate:               8,         // 8
 			Threshold:                 16,        // 16

@@ -15,7 +15,6 @@ type baseOptions struct {
 	Bits                      int           `yaml:"Bits"`
 	NetworkSize               int           `yaml:"NetworkSize"`
 	BinSize                   int           `yaml:"BinSize"`
-	RangeAddress              int           `yaml:"RangeAddress"`
 	Originators               int           `yaml:"Originators"`
 	RefreshRate               int           `yaml:"RefreshRate"`
 	Threshold                 int           `yaml:"Threshold"`
