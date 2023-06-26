@@ -12,7 +12,6 @@ func FindDistance(first types.NodeId, second types.ChunkId) int {
 
 func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []types.Payment, bool, bool, bool, bool) {
 	chunkId := request.ChunkId
-	// respNodes := request.RespNodes
 	mainOriginatorId := request.OriginatorId
 	curNextNodeId := request.OriginatorId
 	route := []types.NodeId{
@@ -51,11 +50,6 @@ func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []typ
 					found = true
 					break out
 				}
-				// if general.ArrContains(respNodes, nextNodeId) {
-				// 	//fmt.Println("is not in cache")
-				// 	found = true
-				// 	break out
-				// }
 				if config.IsCacheEnabled() {
 					node := graph.GetNode(nextNodeId)
 					if node.CacheStruct.Contains(chunkId) {
@@ -71,44 +65,6 @@ func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []typ
 			}
 		}
 	}
-
-	// if general.ArrContains(respNodes, mainOriginatorId) {
-	// 	// originator has the chunk --> chunk is found
-	// 	found = true
-	// } else {
-	// out:
-	// 	for !general.ArrContains(respNodes, curNextNodeId) {
-	// 		// fmt.Printf("\n orig: %d, chunk_id: %d", mainOriginatorId, chunkId)
-
-	// 		nextNodeId, thresholdFailed, accessFailed, prevNodePaid, payment = getNext(request, curNextNodeId, prevNodePaid, graph)
-
-	// 		if !payment.IsNil() {
-	// 			paymentList = append(paymentList, payment)
-	// 		}
-	// 		if !nextNodeId.IsNil() {
-	// 			route = append(route, nextNodeId)
-	// 		}
-	// 		if !thresholdFailed && !accessFailed {
-	// 			if general.ArrContains(respNodes, nextNodeId) {
-	// 				//fmt.Println("is not in cache")
-	// 				found = true
-	// 				break out
-	// 			}
-	// 			if config.IsCacheEnabled() {
-	// 				node := graph.GetNode(nextNodeId)
-	// 				if node.CacheStruct.Contains(chunkId) {
-	// 					foundByCaching = true
-	// 					found = true
-	// 					break out
-	// 				}
-	// 			}
-	// 			// NOTE !
-	// 			curNextNodeId = nextNodeId
-	// 		} else {
-	// 			break out
-	// 		}
-	// 	}
-	// }
 
 	if config.IsForwardersPayForceOriginatorToPay() {
 		if !accessFailed && len(paymentList) > 0 {

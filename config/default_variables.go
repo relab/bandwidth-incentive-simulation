@@ -21,7 +21,6 @@ func getDefaultConfig() Config {
 			RequestsPerSecond:         100_000,   // 100_000
 			EdgeLock:                  true,      // false
 			SameOriginator:            false,     // false
-			PrecomputeRespNodes:       false,     // false   //changed to depth option
 			WriteRoutesToFile:         false,     // false
 			WriteStatesToFile:         false,     // false
 			IterationMeansUniqueChunk: false,     // false
