@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"runtime"
 
@@ -65,6 +66,7 @@ func SetExperiment(yml Config) {
 func ValidateBaseOptions(configOptions baseOptions) {
 	SetNumGoroutines(configOptions.NumGoroutines)
 	SetEvaluateInterval(configOptions.OutputOptions.EvaluateInterval)
+	SetAddressRange(configOptions.Bits)
 }
 
 func SetNumGoroutines(numGoroutines int) {
@@ -76,5 +78,13 @@ func SetNumGoroutines(numGoroutines int) {
 func SetEvaluateInterval(interval int) {
 	if interval <= 0 {
 		theconfig.BaseOptions.OutputOptions.EvaluateInterval = theconfig.BaseOptions.Iterations
+	}
+}
+
+func SetAddressRange(numBits int) {
+	if numBits <= 0 {
+		theconfig.BaseOptions.AddressRange = int(math.Pow(2, float64(theconfig.BaseOptions.Bits)))
+	} else {
+		theconfig.BaseOptions.AddressRange = int(math.Pow(2, float64(numBits)))
 	}
 }

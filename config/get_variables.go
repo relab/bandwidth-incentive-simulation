@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"math"
 )
 
 func GetNumRoutingGoroutines() int {
@@ -104,8 +103,8 @@ func GetBinSize() int {
 	return theconfig.BaseOptions.BinSize
 }
 
-func GetRangeAddress() int {
-	return int(math.Pow(2, float64(theconfig.BaseOptions.Bits)))
+func GetAddressRange() int {
+	return theconfig.BaseOptions.AddressRange
 }
 
 func GetOriginators() int {
