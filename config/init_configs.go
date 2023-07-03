@@ -67,6 +67,7 @@ func ValidateBaseOptions(configOptions baseOptions) {
 	SetNumGoroutines(configOptions.NumGoroutines)
 	SetEvaluateInterval(configOptions.OutputOptions.EvaluateInterval)
 	SetAddressRange(configOptions.Bits)
+	SetStorageDepth(configOptions.ReplicationFactor)
 }
 
 func SetNumGoroutines(numGoroutines int) {
@@ -87,4 +88,17 @@ func SetAddressRange(numBits int) {
 	} else {
 		theconfig.BaseOptions.AddressRange = int(math.Pow(2, float64(numBits)))
 	}
+}
+
+func SetStorageDepth(replicationFactor int) {
+	if replicationFactor <= 0 {
+		replicationFactor = 4
+	}
+	depth := 0
+	n := GetNetworkSize()
+	for n/2 >= replicationFactor {
+		n = n / 2
+		depth++
+	}
+	theconfig.BaseOptions.StorageDepth = depth
 }

@@ -42,6 +42,8 @@ BaseOptions:
   NumGoroutines: -1
   # OutputEnabled: true - Enabled the outputWorker which handles writing output to file and analysis of results
   OutputEnabled: false
+  # How many nodes are responsible to store a chunk, if possible
+  ReplicationFactor: 4
   # Which logic should be used in the outputWorker
   OutputOptions:
     MeanRewardPerForward: false

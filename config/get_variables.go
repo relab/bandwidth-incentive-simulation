@@ -107,6 +107,10 @@ func GetAddressRange() int {
 	return theconfig.BaseOptions.AddressRange
 }
 
+func GetStorageDepth() int {
+	return theconfig.BaseOptions.StorageDepth
+}
+
 func GetOriginators() int {
 	return theconfig.BaseOptions.Originators
 }
@@ -168,6 +172,10 @@ func TimeForDebugPrints(timeStep int) bool {
 
 func TimeForNewEpoch(timeStep int) bool {
 	return timeStep%GetRequestsPerSecond() == 0
+}
+
+func GetReplicationFactor() int {
+	return theconfig.BaseOptions.ReplicationFactor
 }
 
 func IsOutputEnabled() bool {
