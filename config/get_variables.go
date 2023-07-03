@@ -1,6 +1,8 @@
 package config
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func GetNumRoutingGoroutines() int {
 	num := theconfig.BaseOptions.NumGoroutines
@@ -20,10 +22,6 @@ func GetNumRoutingGoroutines() int {
 func GetNumGoroutines() int {
 	return theconfig.BaseOptions.NumGoroutines
 }
-
-// func CreateRangeAddress(c *constant){
-// 	c.rangeAddress = 2 * c.bits
-// }
 
 // func (c *constant) CreateOriginators(){
 // 	c.originators = int(0.001 * float64(c.networkSize))
@@ -105,8 +103,8 @@ func GetBinSize() int {
 	return theconfig.BaseOptions.BinSize
 }
 
-func GetRangeAddress() int {
-	return theconfig.BaseOptions.RangeAddress
+func GetAddressRange() int {
+	return theconfig.BaseOptions.AddressRange
 }
 
 func GetOriginators() int {

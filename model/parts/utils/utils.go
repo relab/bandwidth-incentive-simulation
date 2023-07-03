@@ -64,7 +64,7 @@ func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 }
 
 func GetNewChunkId() types.ChunkId {
-	return types.ChunkId(rand.Intn(config.GetRangeAddress()-1) + 1)
+	return types.ChunkId(rand.Intn(config.GetAddressRange()-1) + 1)
 }
 
 func GetPreferredChunkId() types.ChunkId {
@@ -75,7 +75,7 @@ func GetPreferredChunkId() types.ChunkId {
 	if float32(random) <= 0.8 {
 		chunkId = types.ChunkId(rand.Intn(numPreferredChunks))
 	} else {
-		chunkId = types.ChunkId(rand.Intn(config.GetRangeAddress()-numPreferredChunks) + numPreferredChunks)
+		chunkId = types.ChunkId(rand.Intn(config.GetAddressRange()-numPreferredChunks) + numPreferredChunks)
 	}
 	return chunkId
 }

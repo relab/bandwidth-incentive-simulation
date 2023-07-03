@@ -10,8 +10,6 @@ BaseOptions:
   NetworkSize: 10000
   # BinSize: 16, number of nodes in each bin/bucket for each node
   BinSize: 16
-  # RangeAddress: 65536, addresses with range from 0 to X for 20 its 1048576, 24: 16777216
-  RangeAddress: 65536
   # Originators: 1000, number of originators initiating requests
   Originators: 1000
   # RefreshRate: 8, the rate of which edge dept gets removed per second

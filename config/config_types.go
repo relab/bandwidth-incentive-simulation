@@ -15,7 +15,6 @@ type baseOptions struct {
 	Bits                      int           `yaml:"Bits"`
 	NetworkSize               int           `yaml:"NetworkSize"`
 	BinSize                   int           `yaml:"BinSize"`
-	RangeAddress              int           `yaml:"RangeAddress"`
 	Originators               int           `yaml:"Originators"`
 	RefreshRate               int           `yaml:"RefreshRate"`
 	Threshold                 int           `yaml:"Threshold"`
@@ -33,6 +32,7 @@ type baseOptions struct {
 	NumGoroutines             int           `yaml:"NumGoroutines"`
 	OutputEnabled             bool          `yaml:"OutputEnabled"`
 	OutputOptions             outputOptions `yaml:"OutputOptions"`
+	AddressRange              int
 }
 
 type experimentOptions struct {
