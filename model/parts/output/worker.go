@@ -5,9 +5,9 @@ import (
 	"sync"
 )
 
-func Worker(outputChan chan OutputStruct, wg *sync.WaitGroup) {
+func Worker(outputChan chan Route, wg *sync.WaitGroup) {
 	defer wg.Done()
-	var outputStruct OutputStruct
+	var outputStruct Route
 	counter := 0
 
 	loggers := CreateLoggers()

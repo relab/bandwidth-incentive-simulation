@@ -11,10 +11,10 @@ import (
 type LogResetUpdater interface {
 	Log()
 	Reset()
-	Update(output *OutputStruct)
+	Update(output *Route)
 }
 
-type OutputStruct struct {
+type Route struct {
 	RouteWithPrices    []types.NodePairWithPrice
 	PaymentsWithPrices []types.PaymentWithPrice
 	Found              bool
@@ -23,7 +23,7 @@ type OutputStruct struct {
 	FoundByCaching     bool
 }
 
-func (o *OutputStruct) failed() bool {
+func (o *Route) failed() bool {
 	return o.ThresholdFailed || o.AccessFailed
 }
 

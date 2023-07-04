@@ -60,7 +60,7 @@ func (hi *HopInfo) CalculateAvgRouteLength() float64 {
 	return utils.Mean(hi.RouteLength)
 }
 
-func (hi *HopInfo) Update(output *OutputStruct) {
+func (hi *HopInfo) Update(output *Route) {
 	if output.failed() {
 		return
 	}

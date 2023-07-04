@@ -95,7 +95,7 @@ func (li *LinkInfo) BucketLinkGini() []float64 {
 	return result
 }
 
-func (li *LinkInfo) Update(output *OutputStruct) {
+func (li *LinkInfo) Update(output *Route) {
 	li.Count++
 	if output.failed() {
 		return

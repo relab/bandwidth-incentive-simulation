@@ -80,7 +80,7 @@ func (hpi *HopPaymentInfo) CalculateAvgRouteLength() float64 {
 	return utils.Mean(hpi.RouteLength)
 }
 
-func (hpi *HopPaymentInfo) Update(output *OutputStruct) {
+func (hpi *HopPaymentInfo) Update(output *Route) {
 	if output.failed() {
 		return
 	}

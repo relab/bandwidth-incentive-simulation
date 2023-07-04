@@ -102,7 +102,7 @@ func (o *WorkInfo) CalculateMaxMedianWork() (int, int, int) {
 	return vals[len(vals)-1], maxfwd, vals[len(vals)/2]
 }
 
-func (wi *WorkInfo) Update(output *OutputStruct) {
+func (wi *WorkInfo) Update(output *Route) {
 	if output.failed() {
 		return
 	}

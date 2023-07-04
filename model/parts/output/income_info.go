@@ -79,7 +79,7 @@ func (o *IncomeInfo) CalculateNegativeIncome() float64 {
 	return float64(totalNegativeIncomeCounter) / float64(config.GetNetworkSize())
 }
 
-func (ii *IncomeInfo) Update(output *OutputStruct) {
+func (ii *IncomeInfo) Update(output *Route) {
 	if output.failed() {
 		return
 	}

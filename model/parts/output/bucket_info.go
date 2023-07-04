@@ -73,7 +73,7 @@ func (bi *BucketInfo) HopPayRatio() []float64 {
 	return result
 }
 
-func (bi *BucketInfo) Update(output *OutputStruct) {
+func (bi *BucketInfo) Update(output *Route) {
 	bi.Count++
 	if output.failed() {
 		return

@@ -8,14 +8,14 @@ import (
 )
 
 type OutputWriter struct {
-	Outputs []OutputStruct
+	Outputs []Route
 	File    *os.File
 	Writer  *bufio.Writer
 }
 
 func InitOutputWriter() *OutputWriter {
 	ow := OutputWriter{}
-	ow.Outputs = make([]OutputStruct, 0, config.GetEvaluateInterval())
+	ow.Outputs = make([]Route, 0, config.GetEvaluateInterval())
 	ow.File = MakeFile("./results/outputs.txt")
 	ow.Writer = bufio.NewWriter(ow.File)
 	LogExpSting(ow.Writer)
@@ -37,7 +37,7 @@ func (ow *OutputWriter) Close() {
 	}
 }
 
-func (ow *OutputWriter) Update(output *OutputStruct) {
+func (ow *OutputWriter) Update(output *Route) {
 	ow.Outputs = append(ow.Outputs, *output)
 }
 
@@ -64,5 +64,5 @@ func (ow *OutputWriter) Log() {
 		}
 	}
 
-	ow.Outputs = make([]OutputStruct, 0, config.GetEvaluateInterval())
+	ow.Outputs = make([]Route, 0, config.GetEvaluateInterval())
 }
