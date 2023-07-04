@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
-	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/utils"
 	"os"
 	"sort"
@@ -80,7 +79,10 @@ func (o *IncomeInfo) CalculateNegativeIncome() float64 {
 	return float64(totalNegativeIncomeCounter) / float64(config.GetNetworkSize())
 }
 
-func (ii *IncomeInfo) Update(output *types.OutputStruct) {
+func (ii *IncomeInfo) Update(output *OutputStruct) {
+	if output.failed() {
+		return
+	}
 	payments := output.PaymentsWithPrices
 	for hop, payment := range payments {
 		payer := int(payment.Payment.FirstNodeId)

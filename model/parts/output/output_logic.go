@@ -11,7 +11,20 @@ import (
 type LogResetUpdater interface {
 	Log()
 	Reset()
-	Update(output *types.OutputStruct)
+	Update(output *OutputStruct)
+}
+
+type OutputStruct struct {
+	RouteWithPrices    []types.NodePairWithPrice
+	PaymentsWithPrices []types.PaymentWithPrice
+	Found              bool
+	AccessFailed       bool
+	ThresholdFailed    bool
+	FoundByCaching     bool
+}
+
+func (o *OutputStruct) failed() bool {
+	return o.ThresholdFailed || o.AccessFailed
 }
 
 func MakeFile(filepath string) *os.File {

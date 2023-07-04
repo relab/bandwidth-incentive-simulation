@@ -2,17 +2,18 @@ package update
 
 import (
 	"go-incentive-simulation/config"
+	"go-incentive-simulation/model/parts/output"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/utils"
 )
 
-func Graph(state *types.State, requestResult types.RequestResult, curTimeStep int) types.OutputStruct {
+func Graph(state *types.State, requestResult types.RequestResult, curTimeStep int) output.OutputStruct {
 	chunkId := requestResult.ChunkId
 	route := requestResult.Route
 	paymentsList := requestResult.PaymentList
 	var nodePairWithPrice types.NodePairWithPrice
 	var paymentWithPrice types.PaymentWithPrice
-	var output types.OutputStruct
+	var output output.OutputStruct
 
 	if config.GetPaymentEnabled() && requestResult.Found {
 		for _, payment := range paymentsList {
