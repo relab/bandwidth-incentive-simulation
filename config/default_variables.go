@@ -29,20 +29,19 @@ func getDefaultConfig() Config {
 			OutputEnabled:             false,     // false
 			ReplicationFactor:         4,
 			OutputOptions: outputOptions{
-				MeanRewardPerForward:              false,     // false
-				AverageNumberOfHops:               false,     // false
-				AverageFractionOfTotalRewardsK8:   false,     // false
-				AverageFractionOfTotalRewardsK16:  false,     // false
-				RewardFairnessForForwardingAction: false,     // false
-				RewardFairnessForStoringAction:    false,     // false
-				RewardFairnessForAllActions:       false,     // false
-				NegativeIncome:                    false,     // false
-				ComputeWorkFairness:               false,     // false
-				BucketInfo:                        false,     // false
-				LinkInfo:                          false,     // false
-				ExperimentId:                      "default", // default
-				Reset:                             false,     // false
-				EvaluateInterval:                  0,         // 0
+				MeanRewardPerForward:      false,     // false
+				AverageNumberOfHops:       false,     // false
+				HopFractionOfTotalRewards: false,     //false
+				NegativeIncome:            false,     // false
+				IncomeGini:                false,     // false
+				HopIncome:                 false,     // false
+				DensenessIncome:           false,     // false
+				WorkInfo:                  false,     // false
+				BucketInfo:                false,     // false
+				LinkInfo:                  false,     // false
+				ExperimentId:              "default", // default
+				Reset:                     false,     // false
+				EvaluateInterval:          0,         // 0
 			},
 		},
 		Experiment: experiment{Name: "default"},

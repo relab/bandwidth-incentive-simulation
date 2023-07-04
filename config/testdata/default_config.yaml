@@ -48,13 +48,12 @@ BaseOptions:
   OutputOptions:
     MeanRewardPerForward: false
     AverageNumberOfHops: false
-    AverageFractionOfTotalRewardsK8: false
-    AverageFractionOfTotalRewardsK16: false
-    RewardFairnessForForwardingAction: false
-    RewardFairnessForStoringAction: false
-    RewardFairnessForAllActions: false
-    NegativeIncome: false
-    ComputeWorkFairness: false
+    HopFractionOfTotalRewards: false
+    NegaticeIncome: false
+    IncomeGini: false
+    HopIncome: false
+    DensenessIncome: false
+    WorkInfo: false
     BucketInfo: false
     LinkInfo: false
     ExperimentId: "default"

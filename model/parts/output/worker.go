@@ -34,25 +34,33 @@ func Worker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
 func CreateLoggers() []LogResetUpdater {
 	loggers := make([]LogResetUpdater, 0)
 
-	if config.GetAverageNumberOfHops() {
+	if config.GetAverageNumberOfHops() ||
+		config.GetHopFractionOfRewards() ||
+		config.GetMeanRewardPerForward() {
 		hopInfo := InitHopInfo()
 		defer hopInfo.Close()
 		loggers = append(loggers, hopInfo)
 	}
 
-	if config.GetAverageNumberOfHops() && config.GetPaymentEnabled() {
+	if config.GetPaymentEnabled() &&
+		(config.GetAverageNumberOfHops() ||
+			config.GetHopFractionOfRewards() ||
+			config.GetMeanRewardPerForward()) {
 		hopPaymentInfo := InitHopPaymentInfo()
 		defer hopPaymentInfo.Close()
 		loggers = append(loggers, hopPaymentInfo)
 	}
 
-	if config.GetNegativeIncome() {
+	if config.GetNegativeIncome() ||
+		config.GetIncomeGini() ||
+		config.GetHopIncome() ||
+		config.GetDensnessIncome() {
 		incomeInfo := InitIncomeInfo()
 		defer incomeInfo.Close()
 		loggers = append(loggers, incomeInfo)
 	}
 
-	if config.GetComputeWorkFairness() {
+	if config.GetWorkInfo() {
 		workInfo := InitWorkInfo()
 		defer workInfo.Close()
 		loggers = append(loggers, workInfo)

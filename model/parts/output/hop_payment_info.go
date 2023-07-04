@@ -98,29 +98,38 @@ func (hpi *HopPaymentInfo) Update(output *types.OutputStruct) {
 		fwdreward = hop.Price
 	}
 
-	hpi.RouteLength = append(hpi.RouteLength, len(payments))
+	if config.GetAverageNumberOfHops() {
+		hpi.RouteLength = append(hpi.RouteLength, len(payments))
+	}
 }
 
 func (hpi *HopPaymentInfo) Log() {
-	_, err := hpi.Writer.WriteString(fmt.Sprintf("Avg route length: %.2f\n", hpi.CalculateAvgRouteLength()))
-	if err != nil {
-		panic(err)
-	}
-
-	routeHopIncome := hpi.CalculateRouteHopIncome()
-	_, err = hpi.Writer.WriteString("RouteHop distribution: \n")
-	if err != nil {
-		panic(err)
-	}
-	for hop, income := range routeHopIncome {
-		_, err = hpi.Writer.WriteString(fmt.Sprintf("Hop: %d has income fraction %d\n", hop, income))
+	if config.GetAverageNumberOfHops() {
+		_, err := hpi.Writer.WriteString(fmt.Sprintf("Avg payment length: %.2f\n", hpi.CalculateAvgRouteLength()))
 		if err != nil {
 			panic(err)
 		}
 	}
-	mean, std := hpi.CalculateMeanStdForwardReward()
-	_, err = hpi.Writer.WriteString(fmt.Sprintf("Mean and stddevc forward reward: %.5f, %.5f \n", mean, std))
-	if err != nil {
-		panic(err)
+
+	if config.GetHopFractionOfRewards() {
+		routeHopIncome := hpi.CalculateRouteHopIncome()
+		_, err := hpi.Writer.WriteString("RouteHop distribution: \n")
+		if err != nil {
+			panic(err)
+		}
+		for hop, income := range routeHopIncome {
+			_, err = hpi.Writer.WriteString(fmt.Sprintf("Hop: %d has income fraction %d\n", hop, income))
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+
+	if config.GetMeanRewardPerForward() {
+		mean, std := hpi.CalculateMeanStdForwardReward()
+		_, err := hpi.Writer.WriteString(fmt.Sprintf("Mean and stddevc forward reward: %.5f, %.5f \n", mean, std))
+		if err != nil {
+			panic(err)
+		}
 	}
 }

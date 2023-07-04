@@ -47,14 +47,13 @@ BaseOptions:
   # Which logic should be used in the outputWorker
   OutputOptions:
     MeanRewardPerForward: false
-    AverageNumberOfHops: true
-    AverageFractionOfTotalRewardsK8: false
-    AverageFractionOfTotalRewardsK16: false
-    RewardFairnessForForwardingAction: false
-    RewardFairnessForStoringAction: false
-    RewardFairnessForAllActions: false
-    NegativeIncome: true
-    ComputeWorkFairness: false
+    AverageNumberOfHops: false
+    HopFractionOfTotalRewards: false
+    NegaticeIncome: false
+    IncomeGini: true
+    HopIncome: false
+    DensenessIncome: false
+    WorkInfo: false
     BucketInfo: true
     LinkInfo: true
     ExperimentId: "0"

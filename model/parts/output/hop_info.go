@@ -63,40 +63,48 @@ func (hi *HopInfo) CalculateAvgRouteLength() float64 {
 
 func (hi *HopInfo) Update(output *types.OutputStruct) {
 	route := output.RouteWithPrices
-	for i, hop := range route {
-		if i < len(route)-1 {
-			hi.HopIncome[i+1] += hop.Price
-		} else {
-			// payment to storer
-			hi.HopIncome[-1] += hop.Price
-		}
-		if i > 0 {
-			hi.HopIncome[i] -= hop.Price
+	if config.GetHopFractionOfRewards() {
+		for i, hop := range route {
+			if i < len(route)-1 {
+				hi.HopIncome[i+1] += hop.Price
+			} else {
+				// payment to storer
+				hi.HopIncome[-1] += hop.Price
+			}
+			if i > 0 {
+				hi.HopIncome[i] -= hop.Price
+			}
 		}
 	}
 
-	hi.RouteLength = append(hi.RouteLength, len(route))
+	if config.GetAverageNumberOfHops() {
+		hi.RouteLength = append(hi.RouteLength, len(route))
+	}
 }
 
 func (hi *HopInfo) Log() {
-	_, err := hi.Writer.WriteString(fmt.Sprintf("Avg route length: %.2f\n", hi.CalculateAvgRouteLength()))
-	if err != nil {
-		panic(err)
-	}
-
-	routeHopIncome := hi.CalculateRouteHopIncome()
-	_, err = hi.Writer.WriteString("RouteHop distribution: \n")
-	if err != nil {
-		panic(err)
-	}
-	for hop, income := range routeHopIncome {
-		if hop == len(routeHopIncome)-1 {
-			_, err = hi.Writer.WriteString(fmt.Sprintf("Hop: storer have income fraction %d\n", income))
-		} else {
-			_, err = hi.Writer.WriteString(fmt.Sprintf("Hop: %d has income fraction %d\n", hop, income))
-		}
+	if config.GetAverageNumberOfHops() {
+		_, err := hi.Writer.WriteString(fmt.Sprintf("Avg route length: %.2f\n", hi.CalculateAvgRouteLength()))
 		if err != nil {
 			panic(err)
+		}
+	}
+
+	if config.GetHopFractionOfRewards() {
+		routeHopIncome := hi.CalculateRouteHopIncome()
+		_, err := hi.Writer.WriteString("RouteHop distribution: \n")
+		if err != nil {
+			panic(err)
+		}
+		for hop, income := range routeHopIncome {
+			if hop == len(routeHopIncome)-1 {
+				_, err = hi.Writer.WriteString(fmt.Sprintf("Hop: storer have income fraction %d\n", income))
+			} else {
+				_, err = hi.Writer.WriteString(fmt.Sprintf("Hop: %d has income fraction %d\n", hop, income))
+			}
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 }
