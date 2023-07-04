@@ -37,6 +37,9 @@ func getDefaultConfig() Config {
 				RewardFairnessForStoringAction:    false,     // false
 				RewardFairnessForAllActions:       false,     // false
 				NegativeIncome:                    false,     // false
+				IncomeGini:                        false,     // false
+				HopIncome:                         false,     // false
+				DensenessIncome:                   false,     // false
 				ComputeWorkFairness:               false,     // false
 				BucketInfo:                        false,     // false
 				LinkInfo:                          false,     // false

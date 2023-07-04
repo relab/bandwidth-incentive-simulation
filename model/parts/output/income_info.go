@@ -86,11 +86,6 @@ func (ii *IncomeInfo) Update(output *types.OutputStruct) {
 		payer := int(payment.Payment.FirstNodeId)
 		payee := int(payment.Payment.PayNextId)
 
-		if _, ok := ii.HopMap[payee]; !ok {
-			ii.HopMap[payee] = []int{hop}
-		} else {
-			ii.HopMap[payee] = append(ii.HopMap[payee], hop)
-		}
 		if !(payment.Payment.IsOriginator) {
 			ii.IncomeMap[payer] -= payment.Price
 		} else {
@@ -102,25 +97,16 @@ func (ii *IncomeInfo) Update(output *types.OutputStruct) {
 		ii.IncomeMap[payee] += payment.Price
 	}
 	route := output.RouteWithPrices
-	if len(route) == len(payments) {
+	if !config.GetHopIncome() {
 		return
 	}
 	for hop, path := range route {
-		payer := path.RequesterNode.ToInt()
 		payee := path.ProviderNode.ToInt()
-		payed := false
-		for _, payment := range payments {
-			if payment.Payment.FirstNodeId.ToInt() == payer {
-				payed = true
-				break
-			}
-		}
-		if !payed {
-			if _, ok := ii.HopMap[payee]; !ok {
-				ii.HopMap[payee] = []int{hop}
-			} else {
-				ii.HopMap[payee] = append(ii.HopMap[payee], hop)
-			}
+
+		if _, ok := ii.HopMap[payee]; !ok {
+			ii.HopMap[payee] = []int{hop}
+		} else {
+			ii.HopMap[payee] = append(ii.HopMap[payee], hop)
 		}
 	}
 }
@@ -297,104 +283,116 @@ func (ii *IncomeInfo) AvgHopIncome() (income, count map[int]int) {
 }
 
 func (ii *IncomeInfo) Log() {
-	negativeIncomeRes := ii.CalculateNegativeIncome()
-	incomeFaireness := ii.CalculateIncomeFairness()
-	avgHopIncome, avgHopCount := ii.AvgHopIncome()
-	for hop, income := range avgHopIncome {
-		_, err := ii.Writer.WriteString(fmt.Sprintf("Hop: %d has income %d and count %d\n", hop, income, avgHopCount[hop]))
+
+	if config.GetHopIncome() {
+		avgHopIncome, avgHopCount := ii.AvgHopIncome()
+		for hop, income := range avgHopIncome {
+			_, err := ii.Writer.WriteString(fmt.Sprintf("Hop: %d has income %d and count %d\n", hop, income, avgHopCount[hop]))
+			if err != nil {
+				panic(err)
+			}
+		}
+		_, err := ii.Writer.WriteString("Distribution is: ")
 		if err != nil {
 			panic(err)
 		}
-	}
-	_, err := ii.Writer.WriteString("Distribution is: ")
-	if err != nil {
-		panic(err)
-	}
-	for _, avg := range ii.CalculateDistribution() {
-		_, err = ii.Writer.WriteString(fmt.Sprintf(", %.2f%%", avg*100))
+		for _, avg := range ii.CalculateDistribution() {
+			_, err = ii.Writer.WriteString(fmt.Sprintf(", %.2f%%", avg*100))
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		_, err = ii.Writer.WriteString("\n")
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = ii.Writer.WriteString("Hop distribution is: ")
+		if err != nil {
+			panic(err)
+		}
+		income, hops, work := ii.CalculateHopDistribution()
+		for _, avg := range hops {
+			_, err = ii.Writer.WriteString(fmt.Sprintf(", %.6f", avg))
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		_, err = ii.Writer.WriteString("\n")
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = ii.Writer.WriteString("Hop ordered income distribution is: ")
+		if err != nil {
+			panic(err)
+		}
+		for _, avg := range income {
+			_, err = ii.Writer.WriteString(fmt.Sprintf(", %.2f", avg))
+			if err != nil {
+				panic(err)
+			}
+		}
+		_, err = ii.Writer.WriteString("\n")
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = ii.Writer.WriteString("Hop ordered work distribution is: ")
+		if err != nil {
+			panic(err)
+		}
+		for _, avg := range work {
+			_, err = ii.Writer.WriteString(fmt.Sprintf(", %.2f", avg))
+			if err != nil {
+				panic(err)
+			}
+		}
+		_, err = ii.Writer.WriteString("\n")
 		if err != nil {
 			panic(err)
 		}
 	}
 
-	_, err = ii.Writer.WriteString("\n")
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = ii.Writer.WriteString("Hop distribution is: ")
-	if err != nil {
-		panic(err)
-	}
-	income, hops, work := ii.CalculateHopDistribution()
-	for _, avg := range hops {
-		_, err = ii.Writer.WriteString(fmt.Sprintf(", %.6f", avg))
+	if config.GetNegativeIncome() {
+		negativeIncomeRes := ii.CalculateNegativeIncome()
+		_, err := ii.Writer.WriteString(fmt.Sprintf("Negative income: %f %% \n", negativeIncomeRes*100))
 		if err != nil {
 			panic(err)
 		}
 	}
 
-	_, err = ii.Writer.WriteString("\n")
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = ii.Writer.WriteString("Hop ordered income distribution is: ")
-	if err != nil {
-		panic(err)
-	}
-	for _, avg := range income {
-		_, err = ii.Writer.WriteString(fmt.Sprintf(", %.2f", avg))
+	if config.GetIncomeGini() {
+		incomeFaireness := ii.CalculateIncomeFairness()
+		_, err := ii.Writer.WriteString(fmt.Sprintf("Income fairness: %f \n", incomeFaireness))
+		if err != nil {
+			panic(err)
+		}
+		_, err = ii.Writer.WriteString(fmt.Sprintf("Non Org Income fairness: %f \n", ii.CalculateNonOIncomeFairness()))
+		if err != nil {
+			panic(err)
+		}
+		max, nonzero, total := ii.MaxNonZeroTotal()
+		_, err = ii.Writer.WriteString(fmt.Sprintf("Max, total and nonzero: %d, %d, %d \n", max, total, nonzero))
 		if err != nil {
 			panic(err)
 		}
 	}
-	_, err = ii.Writer.WriteString("\n")
-	if err != nil {
-		panic(err)
-	}
 
-	_, err = ii.Writer.WriteString("Hop ordered work distribution is: ")
-	if err != nil {
-		panic(err)
-	}
-	for _, avg := range work {
-		_, err = ii.Writer.WriteString(fmt.Sprintf(", %.2f", avg))
+	if config.GetDensnessIncome() {
+		_, err := ii.Writer.WriteString("Denseness, mean income, std\n")
 		if err != nil {
 			panic(err)
 		}
-	}
-	_, err = ii.Writer.WriteString("\n")
-	if err != nil {
-		panic(err)
-	}
-	_, err = ii.Writer.WriteString(fmt.Sprintf("Negative income: %f %% \n", negativeIncomeRes*100))
-	if err != nil {
-		panic(err)
-	}
-	_, err = ii.Writer.WriteString(fmt.Sprintf("Income fairness: %f \n", incomeFaireness))
-	if err != nil {
-		panic(err)
-	}
-	_, err = ii.Writer.WriteString(fmt.Sprintf("Non Org Income fairness: %f \n", ii.CalculateNonOIncomeFairness()))
-	if err != nil {
-		panic(err)
-	}
-	max, nonzero, total := ii.MaxNonZeroTotal()
-	_, err = ii.Writer.WriteString(fmt.Sprintf("Max, total and nonzero: %d, %d, %d \n", max, total, nonzero))
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = ii.Writer.WriteString("Denseness, mean income, std\n")
-	if err != nil {
-		panic(err)
-	}
-	means, std := ii.CalculateDensenessDistribution()
-	for denseness, mean := range means {
-		_, err = ii.Writer.WriteString(fmt.Sprintf("Denseness, %d, %.4f, %.4f\n", denseness, mean, std[denseness]))
-		if err != nil {
-			panic(err)
+		means, std := ii.CalculateDensenessDistribution()
+		for denseness, mean := range means {
+			_, err = ii.Writer.WriteString(fmt.Sprintf("Denseness, %d, %.4f, %.4f\n", denseness, mean, std[denseness]))
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
+
 }

@@ -53,7 +53,10 @@ BaseOptions:
     RewardFairnessForForwardingAction: false
     RewardFairnessForStoringAction: false
     RewardFairnessForAllActions: false
-    NegativeIncome: true
+    NegativeIncome: false
+    IncomeGini: true
+    HopIncome: false
+    DensenessIncome: false
     ComputeWorkFairness: false
     BucketInfo: true
     LinkInfo: true

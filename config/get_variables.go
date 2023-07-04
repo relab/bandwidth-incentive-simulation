@@ -251,6 +251,27 @@ func GetNegativeIncome() bool {
 	return false
 }
 
+func GetIncomeGini() bool {
+	if theconfig.ExperimentOptions.PaymentEnabled {
+		return theconfig.BaseOptions.OutputOptions.IncomeGini
+	}
+	return false
+}
+
+func GetHopIncome() bool {
+	if theconfig.ExperimentOptions.PaymentEnabled {
+		return theconfig.BaseOptions.OutputOptions.HopIncome
+	}
+	return false
+}
+
+func GetDensnessIncome() bool {
+	if theconfig.ExperimentOptions.PaymentEnabled {
+		return theconfig.BaseOptions.OutputOptions.DensenessIncome
+	}
+	return false
+}
+
 func GetComputeWorkFairness() bool {
 	return theconfig.BaseOptions.OutputOptions.ComputeWorkFairness
 }
