@@ -55,22 +55,17 @@ type experimentOptions struct {
 }
 
 type outputOptions struct {
-	MeanRewardPerForward              bool   `yaml:"MeanRewardPerForward"`
-	AverageNumberOfHops               bool   `yaml:"AverageNumberOfHops"`
-	HopFractionOfTotalRewards         bool   `yaml:"HopFractionOfTotalRewards"`
-	AverageFractionOfTotalRewardsK8   bool   `yaml:"AverageFractionOfTotalRewardsK8"`
-	AverageFractionOfTotalRewardsK16  bool   `yaml:"AverageFractionOfTotalRewardsK16"`
-	RewardFairnessForForwardingAction bool   `yaml:"RewardFairnessForForwardingAction"`
-	RewardFairnessForStoringAction    bool   `yaml:"RewardFairnessForStoringAction"`
-	RewardFairnessForAllActions       bool   `yaml:"RewardFairnessForAllActions"`
-	NegativeIncome                    bool   `yaml:"NegativeIncome"`
-	IncomeGini                        bool   `yaml:"IncomeGini"`
-	HopIncome                         bool   `yaml:"HopIncome"`
-	DensenessIncome                   bool   `yaml:"DensenessIncome"`
-	WorkInfo                          bool   `yaml:"WorkInfo"`
-	BucketInfo                        bool   `yaml:"BucketInfo"`
-	LinkInfo                          bool   `yaml:"LinkInfo"`
-	ExperimentId                      string `yaml:"ExperimentId"`
-	Reset                             bool   `yaml:"Reset"`
-	EvaluateInterval                  int    `yaml:"EvaluateInterval"`
+	MeanRewardPerForward      bool   `yaml:"MeanRewardPerForward"`
+	AverageNumberOfHops       bool   `yaml:"AverageNumberOfHops"`
+	HopFractionOfTotalRewards bool   `yaml:"HopFractionOfTotalRewards"`
+	NegativeIncome            bool   `yaml:"NegativeIncome"`
+	IncomeGini                bool   `yaml:"IncomeGini"`
+	HopIncome                 bool   `yaml:"HopIncome"`
+	DensenessIncome           bool   `yaml:"DensenessIncome"`
+	WorkInfo                  bool   `yaml:"WorkInfo"`
+	BucketInfo                bool   `yaml:"BucketInfo"`
+	LinkInfo                  bool   `yaml:"LinkInfo"`
+	ExperimentId              string `yaml:"ExperimentId"`
+	Reset                     bool   `yaml:"Reset"`
+	EvaluateInterval          int    `yaml:"EvaluateInterval"`
 }

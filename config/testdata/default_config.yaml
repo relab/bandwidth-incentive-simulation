@@ -48,11 +48,7 @@ BaseOptions:
   OutputOptions:
     MeanRewardPerForward: false
     AverageNumberOfHops: false
-    AverageFractionOfTotalRewardsK8: false
-    AverageFractionOfTotalRewardsK16: false
-    RewardFairnessForForwardingAction: false
-    RewardFairnessForStoringAction: false
-    RewardFairnessForAllActions: false
+    HopFractionOfTotalRewards: false
     NegaticeIncome: false
     IncomeGini: false
     HopIncome: false

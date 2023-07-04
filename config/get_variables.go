@@ -183,13 +183,17 @@ func IsOutputEnabled() bool {
 }
 
 func JustPrintOutPut() bool {
-	if !theconfig.BaseOptions.OutputOptions.MeanRewardPerForward &&
+	if theconfig.BaseOptions.OutputEnabled &&
+		!theconfig.BaseOptions.OutputOptions.MeanRewardPerForward &&
 		!theconfig.BaseOptions.OutputOptions.AverageNumberOfHops &&
-		!theconfig.BaseOptions.OutputOptions.AverageFractionOfTotalRewardsK16 &&
-		!theconfig.BaseOptions.OutputOptions.RewardFairnessForForwardingAction &&
-		!theconfig.BaseOptions.OutputOptions.RewardFairnessForStoringAction &&
-		!theconfig.BaseOptions.OutputOptions.RewardFairnessForAllActions &&
-		!theconfig.BaseOptions.OutputOptions.NegativeIncome {
+		!theconfig.BaseOptions.OutputOptions.HopFractionOfTotalRewards &&
+		!theconfig.BaseOptions.OutputOptions.NegativeIncome &&
+		!theconfig.BaseOptions.OutputOptions.IncomeGini &&
+		!theconfig.BaseOptions.OutputOptions.HopIncome &&
+		!theconfig.BaseOptions.OutputOptions.DensenessIncome &&
+		!theconfig.BaseOptions.OutputOptions.WorkInfo &&
+		!theconfig.BaseOptions.OutputOptions.BucketInfo &&
+		!theconfig.BaseOptions.OutputOptions.LinkInfo {
 		return true
 	}
 	return false
@@ -211,41 +215,6 @@ func GetAverageNumberOfHops() bool {
 
 func GetHopFractionOfRewards() bool {
 	return theconfig.BaseOptions.OutputOptions.HopFractionOfTotalRewards
-}
-
-func GetAverageFractionOfTotalRewardsK8() bool {
-	return false
-}
-
-func GetAverageFractionOfTotalRewardsK16() bool {
-	if theconfig.BaseOptions.OutputEnabled &&
-		theconfig.BaseOptions.BinSize == 16 &&
-		theconfig.ExperimentOptions.MaxPOCheckEnabled {
-		return theconfig.BaseOptions.OutputOptions.AverageFractionOfTotalRewardsK16
-	}
-	return false
-
-}
-
-func GetRewardFairnessForForwardingAction() bool {
-	if theconfig.BaseOptions.OutputEnabled && theconfig.ExperimentOptions.MaxPOCheckEnabled {
-		return theconfig.BaseOptions.OutputOptions.RewardFairnessForForwardingAction
-	}
-	return false
-}
-
-func GetRewardFairnessForStoringAction() bool {
-	if theconfig.BaseOptions.OutputEnabled && theconfig.ExperimentOptions.MaxPOCheckEnabled {
-		return theconfig.BaseOptions.OutputOptions.RewardFairnessForStoringAction
-	}
-	return false
-}
-
-func GetRewardFairnessForAllActions() bool {
-	if theconfig.BaseOptions.OutputEnabled && theconfig.ExperimentOptions.MaxPOCheckEnabled {
-		return theconfig.BaseOptions.OutputOptions.RewardFairnessForAllActions
-	}
-	return false
 }
 
 func GetNegativeIncome() bool {
