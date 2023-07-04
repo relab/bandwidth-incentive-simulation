@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"go-incentive-simulation/config"
-	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/utils"
 	"os"
 	"sort"
@@ -103,7 +102,10 @@ func (o *WorkInfo) CalculateMaxMedianWork() (int, int, int) {
 	return vals[len(vals)-1], maxfwd, vals[len(vals)/2]
 }
 
-func (wi *WorkInfo) Update(output *types.OutputStruct) {
+func (wi *WorkInfo) Update(output *Route) {
+	if output.failed() {
+		return
+	}
 	route := output.RouteWithPrices
 	for i, hop := range route {
 		requester := int(hop.RequesterNode)

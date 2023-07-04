@@ -2,13 +2,12 @@ package output
 
 import (
 	"go-incentive-simulation/config"
-	"go-incentive-simulation/model/parts/types"
 	"sync"
 )
 
-func Worker(outputChan chan types.OutputStruct, wg *sync.WaitGroup) {
+func Worker(outputChan chan Route, wg *sync.WaitGroup) {
 	defer wg.Done()
-	var outputStruct types.OutputStruct
+	var outputStruct Route
 	counter := 0
 
 	loggers := CreateLoggers()

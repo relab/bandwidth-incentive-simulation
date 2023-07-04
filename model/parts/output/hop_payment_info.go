@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"go-incentive-simulation/config"
-	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/utils"
 	"os"
 )
@@ -81,7 +80,10 @@ func (hpi *HopPaymentInfo) CalculateAvgRouteLength() float64 {
 	return utils.Mean(hpi.RouteLength)
 }
 
-func (hpi *HopPaymentInfo) Update(output *types.OutputStruct) {
+func (hpi *HopPaymentInfo) Update(output *Route) {
+	if output.failed() {
+		return
+	}
 	payments := output.PaymentsWithPrices
 	fwdreward := 0
 	for i, hop := range payments {

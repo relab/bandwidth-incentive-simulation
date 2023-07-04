@@ -76,16 +76,12 @@ func run(iteration int, graphId string, maxPO int) {
 	wgMain := &sync.WaitGroup{}
 	wgOutput := &sync.WaitGroup{}
 	requestChan := make(chan types.Request, numRoutingGoroutines)
-	outputChan := make(chan types.OutputStruct, 100000)
+	outputChan := make(chan output.Route, 100000)
 	routeChan := make(chan types.RouteData, 100000)
 	stateChan := make(chan types.StateSubset, 100000)
 	pauseChan := make(chan bool, numRoutingGoroutines)
 	continueChan := make(chan bool, numRoutingGoroutines)
 
-	if config.IsWriteRoutesToFile() {
-		wgOutput.Add(1)
-		go workers.RouteFlushWorker(routeChan, wgOutput)
-	}
 	if config.IsWriteStatesToFile() {
 		wgOutput.Add(1)
 		go workers.StateFlushWorker(stateChan, wgOutput)

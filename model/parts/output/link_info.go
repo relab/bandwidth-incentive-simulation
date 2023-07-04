@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
-	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/utils"
 	"os"
 	"strconv"
@@ -96,8 +95,11 @@ func (li *LinkInfo) BucketLinkGini() []float64 {
 	return result
 }
 
-func (li *LinkInfo) Update(output *types.OutputStruct) {
+func (li *LinkInfo) Update(output *Route) {
 	li.Count++
+	if output.failed() {
+		return
+	}
 	route := output.RouteWithPrices
 	payments := output.PaymentsWithPrices
 	for h, hop := range route {

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
-	"go-incentive-simulation/model/parts/types"
 	"os"
 )
 
@@ -74,8 +73,11 @@ func (bi *BucketInfo) HopPayRatio() []float64 {
 	return result
 }
 
-func (bi *BucketInfo) Update(output *types.OutputStruct) {
+func (bi *BucketInfo) Update(output *Route) {
 	bi.Count++
+	if output.failed() {
+		return
+	}
 	route := output.RouteWithPrices
 	payments := output.PaymentsWithPrices
 	for h, hop := range route {

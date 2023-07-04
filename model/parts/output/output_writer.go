@@ -4,19 +4,18 @@ import (
 	"bufio"
 	"fmt"
 	"go-incentive-simulation/config"
-	"go-incentive-simulation/model/parts/types"
 	"os"
 )
 
 type OutputWriter struct {
-	Outputs []types.OutputStruct
+	Outputs []Route
 	File    *os.File
 	Writer  *bufio.Writer
 }
 
 func InitOutputWriter() *OutputWriter {
 	ow := OutputWriter{}
-	ow.Outputs = make([]types.OutputStruct, 0, config.GetEvaluateInterval())
+	ow.Outputs = make([]Route, 0, config.GetEvaluateInterval())
 	ow.File = MakeFile("./results/outputs.txt")
 	ow.Writer = bufio.NewWriter(ow.File)
 	LogExpSting(ow.Writer)
@@ -38,7 +37,7 @@ func (ow *OutputWriter) Close() {
 	}
 }
 
-func (ow *OutputWriter) Update(output *types.OutputStruct) {
+func (ow *OutputWriter) Update(output *Route) {
 	ow.Outputs = append(ow.Outputs, *output)
 }
 
@@ -52,7 +51,18 @@ func (ow *OutputWriter) Log() {
 			ow.Writer.WriteString(fmt.Sprintf("Payment Route: %v \n", o.PaymentsWithPrices))
 
 		}
+		if o.FoundByCaching {
+			ow.Writer.WriteString(fmt.Sprint("Found from Cache! \n"))
+		} else if o.Found {
+			ow.Writer.WriteString(fmt.Sprint("Found! \n"))
+		}
+		if o.AccessFailed {
+			ow.Writer.WriteString(fmt.Sprint("Access Failue! \n"))
+		}
+		if o.ThresholdFailed {
+			ow.Writer.WriteString(fmt.Sprint("Threshold Failue! \n"))
+		}
 	}
 
-	ow.Outputs = make([]types.OutputStruct, 0, config.GetEvaluateInterval())
+	ow.Outputs = make([]Route, 0, config.GetEvaluateInterval())
 }

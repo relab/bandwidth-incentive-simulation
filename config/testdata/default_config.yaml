@@ -28,8 +28,6 @@ BaseOptions:
   EdgeLock: true
   # SameOriginator: false, makes the same originator request many times in a row
   SameOriginator: false
-  # WriteRoutesToFile: false, writes routes to file for future usage
-  WriteRoutesToFile: false
   # WriteStatesToFile: false, writes a subset of states to file for future usage
   WriteStatesToFile: false
   # IterationMeansUniqueChunk: false, if a chunk chosen again by waiting/retry counts as an iteration
