@@ -57,6 +57,7 @@ type experimentOptions struct {
 type outputOptions struct {
 	MeanRewardPerForward              bool   `yaml:"MeanRewardPerForward"`
 	AverageNumberOfHops               bool   `yaml:"AverageNumberOfHops"`
+	HopFractionOfTotalRewards         bool   `yaml:"HopFractionOfTotalRewards"`
 	AverageFractionOfTotalRewardsK8   bool   `yaml:"AverageFractionOfTotalRewardsK8"`
 	AverageFractionOfTotalRewardsK16  bool   `yaml:"AverageFractionOfTotalRewardsK16"`
 	RewardFairnessForForwardingAction bool   `yaml:"RewardFairnessForForwardingAction"`

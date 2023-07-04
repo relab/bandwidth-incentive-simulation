@@ -209,6 +209,10 @@ func GetAverageNumberOfHops() bool {
 	return false
 }
 
+func GetHopFractionOfRewards() bool {
+	return theconfig.BaseOptions.OutputOptions.HopFractionOfTotalRewards
+}
+
 func GetAverageFractionOfTotalRewardsK8() bool {
 	return false
 }

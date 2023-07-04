@@ -48,6 +48,7 @@ BaseOptions:
   OutputOptions:
     MeanRewardPerForward: false
     AverageNumberOfHops: true
+    HopFractionOfTotalRewards: false
     AverageFractionOfTotalRewardsK8: false
     AverageFractionOfTotalRewardsK16: false
     RewardFairnessForForwardingAction: false

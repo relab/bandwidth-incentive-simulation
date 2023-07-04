@@ -31,6 +31,7 @@ func getDefaultConfig() Config {
 			OutputOptions: outputOptions{
 				MeanRewardPerForward:              false,     // false
 				AverageNumberOfHops:               false,     // false
+				HopFractionOfTotalRewards:         false,     //false
 				AverageFractionOfTotalRewardsK8:   false,     // false
 				AverageFractionOfTotalRewardsK16:  false,     // false
 				RewardFairnessForForwardingAction: false,     // false
