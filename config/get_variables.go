@@ -143,10 +143,6 @@ func IsEdgeLock() bool {
 	return theconfig.BaseOptions.EdgeLock
 }
 
-func IsWriteRoutesToFile() bool {
-	return theconfig.BaseOptions.WriteRoutesToFile
-}
-
 func IsWriteStatesToFile() bool {
 	return theconfig.BaseOptions.WriteStatesToFile
 }

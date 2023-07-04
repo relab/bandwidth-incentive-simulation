@@ -82,10 +82,6 @@ func run(iteration int, graphId string, maxPO int) {
 	pauseChan := make(chan bool, numRoutingGoroutines)
 	continueChan := make(chan bool, numRoutingGoroutines)
 
-	if config.IsWriteRoutesToFile() {
-		wgOutput.Add(1)
-		go workers.RouteFlushWorker(routeChan, wgOutput)
-	}
 	if config.IsWriteStatesToFile() {
 		wgOutput.Add(1)
 		go workers.StateFlushWorker(stateChan, wgOutput)

@@ -65,20 +65,6 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 				outputChan <- output
 			}
 
-			if config.IsWriteRoutesToFile() {
-				if config.IsDebugPrints() && config.TimeForDebugPrints(curTimeStep) {
-					fmt.Println("routeChan length: ", len(routeChan))
-				}
-				routeChan <- types.RouteData{
-					Epoch:           request.Epoch,
-					Route:           route,
-					ChunkId:         request.ChunkId,
-					Found:           found,
-					ThresholdFailed: thresholdFailed,
-					AccessFailed:    accessFailed,
-				}
-			}
-
 			if config.IsWriteStatesToFile() {
 				if config.IsDebugPrints() && config.TimeForDebugPrints(curTimeStep) {
 					fmt.Println("stateChan length: ", len(stateChan))
