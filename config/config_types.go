@@ -32,7 +32,9 @@ type baseOptions struct {
 	NumGoroutines             int           `yaml:"NumGoroutines"`
 	OutputEnabled             bool          `yaml:"OutputEnabled"`
 	OutputOptions             outputOptions `yaml:"OutputOptions"`
+	ReplicationFactor         int           `yaml:"ReplicationFactor"`
 	AddressRange              int
+	StorageDepth              int
 }
 
 type experimentOptions struct {

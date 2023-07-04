@@ -30,7 +30,7 @@ func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []typ
 		prevNodePaid = true
 	}
 
-	depth := GetStorageDepth(4)
+	depth := config.GetStorageDepth()
 
 	if FindDistance(mainOriginatorId, chunkId) >= depth {
 		found = true

@@ -27,6 +27,7 @@ func getDefaultConfig() Config {
 			DebugInterval:             1000000,   // 1000000
 			NumGoroutines:             -1,        // -1 means gets overwritten by numCPU
 			OutputEnabled:             false,     // false
+			ReplicationFactor:         4,
 			OutputOptions: outputOptions{
 				MeanRewardPerForward:              false,     // false
 				AverageNumberOfHops:               false,     // false

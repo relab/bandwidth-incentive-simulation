@@ -230,7 +230,7 @@ func (ii *IncomeInfo) CalculateHopDistribution() (incomeDist, hopDist, workDist 
 }
 
 func (ii *IncomeInfo) CalculateDensenessDistribution() (mean map[int]float64, std map[int]float64) {
-	depth := utils.GetStorageDepth(4)
+	depth := config.GetStorageDepth()
 
 	regions := make([]int, 0)
 	regiondenseness := make(map[int]int)
