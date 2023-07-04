@@ -97,7 +97,3 @@ type OutputStruct struct {
 	RouteWithPrices    []NodePairWithPrice
 	PaymentsWithPrices []PaymentWithPrice
 }
-
-type Outputs struct {
-	Outputs []OutputStruct
-}
