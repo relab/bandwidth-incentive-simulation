@@ -40,7 +40,7 @@ func getDefaultConfig() Config {
 				IncomeGini:                        false,     // false
 				HopIncome:                         false,     // false
 				DensenessIncome:                   false,     // false
-				ComputeWorkFairness:               false,     // false
+				WorkInfo:                          false,     // false
 				BucketInfo:                        false,     // false
 				LinkInfo:                          false,     // false
 				ExperimentId:                      "default", // default

@@ -55,7 +55,7 @@ func CreateLoggers() []LogResetUpdater {
 		loggers = append(loggers, incomeInfo)
 	}
 
-	if config.GetComputeWorkFairness() {
+	if config.GetWorkInfo() {
 		workInfo := InitWorkInfo()
 		defer workInfo.Close()
 		loggers = append(loggers, workInfo)

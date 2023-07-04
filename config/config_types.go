@@ -66,7 +66,7 @@ type outputOptions struct {
 	IncomeGini                        bool   `yaml:"IncomeGini"`
 	HopIncome                         bool   `yaml:"HopIncome"`
 	DensenessIncome                   bool   `yaml:"DensenessIncome"`
-	ComputeWorkFairness               bool   `yaml:"ComputeWorkFairness"`
+	WorkInfo                          bool   `yaml:"WorkInfo"`
 	BucketInfo                        bool   `yaml:"BucketInfo"`
 	LinkInfo                          bool   `yaml:"LinkInfo"`
 	ExperimentId                      string `yaml:"ExperimentId"`

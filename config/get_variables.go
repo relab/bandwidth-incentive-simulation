@@ -272,8 +272,8 @@ func GetDensnessIncome() bool {
 	return false
 }
 
-func GetComputeWorkFairness() bool {
-	return theconfig.BaseOptions.OutputOptions.ComputeWorkFairness
+func GetWorkInfo() bool {
+	return theconfig.BaseOptions.OutputOptions.WorkInfo
 }
 
 func GetBucketInfo() bool {

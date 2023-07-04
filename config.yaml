@@ -57,7 +57,7 @@ BaseOptions:
     IncomeGini: true
     HopIncome: false
     DensenessIncome: false
-    ComputeWorkFairness: false
+    WorkInfo: false
     BucketInfo: true
     LinkInfo: true
     ExperimentId: "0"
