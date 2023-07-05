@@ -5,22 +5,22 @@ This repository contains implementation of the swarm bandwidth incentive simulat
 Ensure Golang, preferably version 1.19.5 or later, is installed on the computer.
 
 Clone the GitHub repository:
-```$ git clone git@github.com:Swarm-Bachelor/go-incentive-simulation.git```
+```$ git clone git@github.com:relab/bandwidth-incentive-simulation.git```
 
-Change directory to ./go-incentive-simulation:
-```$ cd go-incentive-simulation```
+Change directory to `bandwidth-incentive-simulation`:
+```$ cd bandwidth-incentive-simulation```
 
-Configure the settings for the simulation by editing the config.yaml file:
+Configure the settings for the simulation by editing the `config.yaml` file:
 ```$ nano config.yaml```
 
 Run the program:
 ```$ go run main.go```
 
-View output in terminal and in ./results folder:
+View output in terminal and in `results` folder:
 ```$ cd results```
 ```$ cat *fileName*.*extension*```
 
-Generate new network files, using config.yaml for settings:
+Generate new network files, using `config.yaml` for settings:
 ```$ cd data```
 ```$ go run generate_data.go```
 
