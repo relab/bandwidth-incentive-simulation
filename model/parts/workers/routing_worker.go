@@ -52,13 +52,6 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			update.Reroute(globalState, requestResult, request.Epoch)
 			update.Cache(globalState, requestResult)
 
-			// sending the "output" to the outputWorker
-			update.SuccessfulFound(globalState, requestResult)
-			update.FailedRequestsThreshold(globalState, requestResult)
-			update.FailedRequestsAccess(globalState, requestResult)
-
-			// sending the "output" to the outputWorker
-
 			if config.IsOutputEnabled() {
 				if config.IsDebugPrints() && config.TimeForDebugPrints(curTimeStep) {
 					fmt.Println("outputChan length: ", len(outputChan))

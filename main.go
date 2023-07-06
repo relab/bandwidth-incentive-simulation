@@ -9,7 +9,6 @@ import (
 	"go-incentive-simulation/model/parts/workers"
 	"go-incentive-simulation/model/state"
 	networkdata "go-incentive-simulation/network_data"
-	"math"
 	"strconv"
 	"strings"
 	"sync"
@@ -109,13 +108,8 @@ func run(iteration int, graphId string, maxPO int) {
 }
 
 func PrintState(state types.State) {
-	total := float64(state.SuccessfulFound + state.FailedRequestsThreshold + state.FailedRequestsAccess)
-	fmt.Println("SuccessfulFound: ", state.SuccessfulFound, "-->", math.Round(float64(state.SuccessfulFound)/total*1000000)/10000, "%")
-	fmt.Println("ThresholdFail: ", state.FailedRequestsThreshold, "-->", math.Round(float64(state.FailedRequestsThreshold)/total*1000000)/10000, "%")
-	fmt.Println("AccessFail: ", state.FailedRequestsAccess, "-->", math.Round(float64(state.FailedRequestsAccess)/total*1000000)/10000, "%")
 	fmt.Println("TimeStep: ", state.TimeStep)
 	fmt.Println("OriginatorIndex: ", state.OriginatorIndex)
-	fmt.Println("CacheHits:", state.CacheHits)
 	fmt.Println("UniqueRetryCounter: ", state.UniqueRetryCounter)
 	fmt.Println("UniqueWaitingCounter: ", state.UniqueWaitingCounter)
 }

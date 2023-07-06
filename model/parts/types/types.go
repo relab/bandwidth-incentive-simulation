@@ -41,19 +41,15 @@ type Threshold [2]NodeId
 //}
 
 type State struct {
-	Graph                   *Graph
-	Originators             []NodeId
-	NodesId                 []NodeId
-	RouteLists              []RequestResult
-	UniqueWaitingCounter    int64
-	UniqueRetryCounter      int64
-	CacheHits               int64
-	OriginatorIndex         int64
-	SuccessfulFound         int64
-	FailedRequestsThreshold int64
-	FailedRequestsAccess    int64
-	TimeStep                int64
-	Epoch                   int
+	Graph                *Graph
+	Originators          []NodeId
+	NodesId              []NodeId
+	RouteLists           []RequestResult
+	UniqueWaitingCounter int64
+	UniqueRetryCounter   int64
+	OriginatorIndex      int64
+	TimeStep             int64
+	Epoch                int
 }
 
 func (s *State) GetOriginatorId(originatorIndex int) NodeId {
