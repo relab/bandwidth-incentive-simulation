@@ -33,6 +33,10 @@ func Worker(outputChan chan Route, wg *sync.WaitGroup) {
 func CreateLoggers() []LogResetUpdater {
 	loggers := make([]LogResetUpdater, 0)
 
+	successInfo := InitSuccessInfo()
+	defer successInfo.Close()
+	loggers = append(loggers, successInfo)
+
 	if config.GetAverageNumberOfHops() ||
 		config.GetHopFractionOfRewards() ||
 		config.GetMeanRewardPerForward() {
