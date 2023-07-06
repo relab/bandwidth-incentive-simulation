@@ -1,9 +1,11 @@
-package utils
+package routing
 
 import (
 	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
+	"go-incentive-simulation/model/parts/threshold"
 	"go-incentive-simulation/model/parts/types"
+	"go-incentive-simulation/model/parts/utils"
 )
 
 // returns the next node in the route, which is the closest node to the route in the previous nodes adjacency list
@@ -24,7 +26,8 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 
 	//var lockedEdges []types.NodeId
 
-	bin := config.GetBits() - general.BitLength(firstNodeId.ToInt()^chunkId.ToInt())
+	// bin := config.GetBits() - general.BitLength(firstNodeId.ToInt()^chunkId.ToInt())
+	bin := config.GetBits() - general.BitLength(lastDistance)
 	firstNodeAdjIds := graph.GetNodeAdj(firstNodeId)
 
 	for _, nodeId := range firstNodeAdjIds[bin] {
@@ -39,7 +42,7 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 		if config.IsEdgeLock() {
 			graph.LockEdge(firstNodeId, nodeId)
 		}
-		if !isThresholdFailed(firstNodeId, nodeId, graph, request) {
+		if !threshold.IsThresholdFailed(firstNodeId, nodeId, graph, request) {
 			thresholdFailed = false
 			if config.IsRetryWithAnotherPeer() {
 				rerouteStruct := graph.GetNode(mainOriginatorId).RerouteStruct
@@ -139,9 +142,103 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 		prevNodePaid = false
 	}
 
-	if !nextNodeId.IsNil() {
-		// fmt.Println("Next node is: ", nextNodeId)
+	return nextNodeId, thresholdFailed, accessFailed, prevNodePaid, payment
+}
+
+func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []types.Payment, bool, bool, bool, bool) {
+	chunkId := request.ChunkId
+	mainOriginatorId := request.OriginatorId
+	curNextNodeId := request.OriginatorId
+	route := []types.NodeId{
+		mainOriginatorId,
+	}
+	found := false
+	accessFailed := false
+	thresholdFailed := false
+	foundByCaching := false
+	prevNodePaid := false
+	var paymentList []types.Payment
+	var payment types.Payment
+	var nextNodeId types.NodeId
+
+	if config.IsPayIfOrigPays() {
+		prevNodePaid = true
 	}
 
-	return nextNodeId, thresholdFailed, accessFailed, prevNodePaid, payment
+	depth := config.GetStorageDepth()
+
+	if utils.FindDistance(mainOriginatorId, chunkId) >= depth {
+		found = true
+	} else {
+	out:
+		for !(utils.FindDistance(curNextNodeId, chunkId) >= depth) {
+			nextNodeId, thresholdFailed, accessFailed, prevNodePaid, payment = getNext(request, curNextNodeId, prevNodePaid, graph)
+
+			if !payment.IsNil() {
+				paymentList = append(paymentList, payment)
+			}
+			if !nextNodeId.IsNil() {
+				route = append(route, nextNodeId)
+			}
+			if !thresholdFailed && !accessFailed {
+				if utils.FindDistance(nextNodeId, chunkId) >= depth {
+					found = true
+					break out
+				}
+				if config.IsCacheEnabled() {
+					node := graph.GetNode(nextNodeId)
+					if node.CacheStruct.Contains(chunkId) {
+						foundByCaching = true
+						found = true
+						break out
+					}
+				}
+				// NOTE !
+				curNextNodeId = nextNodeId
+			} else {
+				break out
+			}
+		}
+	}
+
+	if config.IsForwardersPayForceOriginatorToPay() {
+		if !accessFailed && len(paymentList) > 0 {
+
+			newList := make([]types.Payment, 0, len(paymentList))
+
+			for i := 0; i < len(route)-1; i++ {
+				newPayment := types.Payment{
+					FirstNodeId: route[i],
+					PayNextId:   route[i+1],
+					ChunkId:     chunkId}
+				if i == 0 {
+					newPayment.IsOriginator = true
+				}
+				newList = append(newList, newPayment)
+
+				oldIndex := -1
+				for oi, tmp := range paymentList {
+					if newPayment.FirstNodeId == tmp.FirstNodeId && newPayment.PayNextId == tmp.PayNextId {
+						oldIndex = oi
+						break
+					}
+				}
+
+				if oldIndex > -1 {
+					paymentList = append(paymentList[:oldIndex], paymentList[oldIndex+1:]...)
+				}
+				if len(paymentList) == 0 {
+					break
+				}
+
+			}
+
+			paymentList = newList
+
+		} else {
+			paymentList = []types.Payment{}
+		}
+	}
+
+	return route, paymentList, found, accessFailed, thresholdFailed, foundByCaching
 }

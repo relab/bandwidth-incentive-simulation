@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/parts/output"
+	"go-incentive-simulation/model/parts/routing"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/update"
-	"go-incentive-simulation/model/parts/utils"
 	"sync"
 )
 
@@ -33,7 +33,7 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 				return
 			}
 
-			route, paymentList, found, accessFailed, thresholdFailed, foundByCaching = utils.FindRoute(request, globalState.Graph)
+			route, paymentList, found, accessFailed, thresholdFailed, foundByCaching = routing.FindRoute(request, globalState.Graph)
 
 			requestResult = types.RequestResult{
 				Route:           route,

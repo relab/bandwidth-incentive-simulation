@@ -1,4 +1,4 @@
-package utils
+package forgiveness
 
 import (
 	"go-incentive-simulation/config"
