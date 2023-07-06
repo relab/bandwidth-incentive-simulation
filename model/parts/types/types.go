@@ -35,47 +35,21 @@ func (p Payment) IsNil() bool {
 
 type Threshold [2]NodeId
 
-type StateSubset struct {
-	WaitingCounter          int `json:"waitingCounter,omitempty"`
-	RetryCounter            int `json:"retryCounter,omitempty"`
-	CacheHits               int `json:"cacheHits,omitempty"`
-	ChunkId                 int `json:"chunkId,omitempty"`
-	OriginatorIndex         int `json:"originatorIndex"`
-	SuccessfulFound         int `json:"successfulFound"`
-	FailedRequestsThreshold int `json:"failedRequestsThreshold"`
-	FailedRequestsAccess    int `json:"failedRequestsAccess"`
-	TimeStep                int `json:"timeStep"`
-	Epoch                   int `json:"epoch"`
-}
-
-type RouteData struct {
-	Epoch           int      `json:"e"`
-	Route           []NodeId `json:"r"`
-	ChunkId         ChunkId  `json:"c"`
-	Found           bool     `json:"f"`
-	ThresholdFailed bool     `json:"t"`
-	AccessFailed    bool     `json:"a"`
-}
-
 //type StateData struct {
 //	TimeStep int         `json:"t"`
 //	State    StateSubset `json:"s"`
 //}
 
 type State struct {
-	Graph                   *Graph
-	Originators             []NodeId
-	NodesId                 []NodeId
-	RouteLists              []RequestResult
-	UniqueWaitingCounter    int64
-	UniqueRetryCounter      int64
-	CacheHits               int64
-	OriginatorIndex         int64
-	SuccessfulFound         int64
-	FailedRequestsThreshold int64
-	FailedRequestsAccess    int64
-	TimeStep                int64
-	Epoch                   int
+	Graph                *Graph
+	Originators          []NodeId
+	NodesId              []NodeId
+	RouteLists           []RequestResult
+	UniqueWaitingCounter int64
+	UniqueRetryCounter   int64
+	OriginatorIndex      int64
+	TimeStep             int64
+	Epoch                int
 }
 
 func (s *State) GetOriginatorId(originatorIndex int) NodeId {

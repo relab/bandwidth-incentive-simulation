@@ -52,15 +52,15 @@ func (ow *OutputWriter) Log() {
 
 		}
 		if o.FoundByCaching {
-			ow.Writer.WriteString(fmt.Sprint("Found from Cache! \n"))
+			ow.Writer.WriteString("Found from Cache! \n")
 		} else if o.Found {
-			ow.Writer.WriteString(fmt.Sprint("Found! \n"))
+			ow.Writer.WriteString("Found! \n")
 		}
 		if o.AccessFailed {
-			ow.Writer.WriteString(fmt.Sprint("Access Failue! \n"))
+			ow.Writer.WriteString("Access Failue! \n")
 		}
 		if o.ThresholdFailed {
-			ow.Writer.WriteString(fmt.Sprint("Threshold Failue! \n"))
+			ow.Writer.WriteString("Threshold Failue! \n")
 		}
 	}
 

@@ -3,11 +3,9 @@ package update
 import (
 	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/parts/types"
-	"sync/atomic"
 )
 
-func Cache(state *types.State, requestResult types.RequestResult) int64 {
-	var cacheHits int64 = 0
+func Cache(state *types.State, requestResult types.RequestResult) bool {
 	if config.IsCacheEnabled() {
 		route := requestResult.Route
 		chunkId := requestResult.ChunkId
@@ -23,17 +21,11 @@ func Cache(state *types.State, requestResult types.RequestResult) int64 {
 				// }
 				node := state.Graph.GetNode(nodeId)
 				node.CacheStruct.AddToCache(chunkId)
+				return true
 			}
 
-			if requestResult.FoundByCaching {
-				cacheHits = atomic.AddInt64(&state.CacheHits, 1)
-			}
-		}
-
-		if cacheHits == 0 {
-			cacheHits = atomic.LoadInt64(&state.CacheHits)
 		}
 
 	}
-	return cacheHits
+	return false
 }

@@ -23,19 +23,15 @@ func MakeInitialState(path string) types.State {
 	//cacheStruct := types.CacheStruct{CacheHits: 0, CacheMap: make(types.CacheMap), CacheMutex: &sync.Mutex{}}
 
 	initialState := types.State{
-		Graph:                   graph,
-		Originators:             utils.CreateDownloadersList(graph),
-		NodesId:                 utils.CreateNodesList(graph),
-		RouteLists:              make([]types.RequestResult, 10000),
-		CacheHits:               0,
-		UniqueWaitingCounter:    0,
-		UniqueRetryCounter:      0,
-		OriginatorIndex:         0,
-		SuccessfulFound:         0,
-		FailedRequestsThreshold: 0,
-		FailedRequestsAccess:    0,
-		TimeStep:                0,
-		Epoch:                   0,
+		Graph:                graph,
+		Originators:          utils.CreateDownloadersList(graph),
+		NodesId:              utils.CreateNodesList(graph),
+		RouteLists:           make([]types.RequestResult, 10000),
+		UniqueWaitingCounter: 0,
+		UniqueRetryCounter:   0,
+		OriginatorIndex:      0,
+		TimeStep:             0,
+		Epoch:                0,
 	}
 	return initialState
 }

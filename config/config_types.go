@@ -24,7 +24,6 @@ type baseOptions struct {
 	RequestsPerSecond         int           `yaml:"RequestsPerSecond"`
 	EdgeLock                  bool          `yaml:"EdgeLock"`
 	SameOriginator            bool          `yaml:"SameOriginator"`
-	WriteStatesToFile         bool          `yaml:"WriteStatesToFile"`
 	IterationMeansUniqueChunk bool          `yaml:"IterationMeansUniqueChunk"`
 	DebugPrints               bool          `yaml:"DebugPrints"`
 	DebugInterval             int           `yaml:"DebugInterval"`
