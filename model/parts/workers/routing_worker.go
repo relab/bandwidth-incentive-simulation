@@ -10,7 +10,7 @@ import (
 	"sync"
 )
 
-func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan types.Request, outputChan chan output.Route, routeChan chan types.RouteData, stateChan chan types.StateSubset, globalState *types.State, wg *sync.WaitGroup) {
+func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan types.Request, outputChan chan output.Route, globalState *types.State, wg *sync.WaitGroup) {
 
 	defer wg.Done()
 	openChannel := true
@@ -48,14 +48,14 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			curTimeStep := request.TimeStep
 			output := update.Graph(globalState, requestResult, curTimeStep)
 
-			waitingCounter := update.Pending(globalState, requestResult, request.Epoch)
-			retryCounter := update.Reroute(globalState, requestResult, request.Epoch)
-			cacheHits := update.Cache(globalState, requestResult)
+			update.Pending(globalState, requestResult, request.Epoch)
+			update.Reroute(globalState, requestResult, request.Epoch)
+			update.Cache(globalState, requestResult)
 
 			// sending the "output" to the outputWorker
-			successfulFound := update.SuccessfulFound(globalState, requestResult)
-			failedRequestThreshold := update.FailedRequestsThreshold(globalState, requestResult)
-			failedRequestAccess := update.FailedRequestsAccess(globalState, requestResult)
+			update.SuccessfulFound(globalState, requestResult)
+			update.FailedRequestsThreshold(globalState, requestResult)
+			update.FailedRequestsAccess(globalState, requestResult)
 
 			// sending the "output" to the outputWorker
 
@@ -68,25 +68,6 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 				output.AccessFailed = accessFailed
 				output.FoundByCaching = foundByCaching
 				outputChan <- output
-			}
-
-			if config.IsWriteStatesToFile() {
-				if config.IsDebugPrints() && config.TimeForDebugPrints(curTimeStep) {
-					fmt.Println("stateChan length: ", len(stateChan))
-				}
-				// TODO: Decide on what subset of values we actually would like to store
-				stateChan <- types.StateSubset{
-					WaitingCounter:          int(waitingCounter),
-					RetryCounter:            int(retryCounter),
-					CacheHits:               int(cacheHits),
-					ChunkId:                 int(request.ChunkId),
-					OriginatorIndex:         request.OriginatorIndex,
-					SuccessfulFound:         int(successfulFound),
-					FailedRequestsThreshold: int(failedRequestThreshold),
-					FailedRequestsAccess:    int(failedRequestAccess),
-					TimeStep:                curTimeStep,
-					Epoch:                   request.Epoch,
-				}
 			}
 		}
 	}

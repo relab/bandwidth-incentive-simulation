@@ -143,10 +143,6 @@ func IsEdgeLock() bool {
 	return theconfig.BaseOptions.EdgeLock
 }
 
-func IsWriteStatesToFile() bool {
-	return theconfig.BaseOptions.WriteStatesToFile
-}
-
 func IsIterationMeansUniqueChunk() bool {
 	return theconfig.BaseOptions.IterationMeansUniqueChunk
 }

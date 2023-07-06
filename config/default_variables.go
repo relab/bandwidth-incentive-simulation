@@ -20,7 +20,6 @@ func getDefaultConfig() Config {
 			RequestsPerSecond:         100_000,   // 100_000
 			EdgeLock:                  true,      // false
 			SameOriginator:            false,     // false
-			WriteStatesToFile:         false,     // false
 			IterationMeansUniqueChunk: false,     // false
 			DebugPrints:               false,     // false
 			DebugInterval:             1000000,   // 1000000
