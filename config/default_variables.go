@@ -7,25 +7,26 @@ func SetDefaultConfig() {
 func getDefaultConfig() Config {
 	return Config{
 		BaseOptions: baseOptions{
-			Iterations:                100_000,   // 100_000
-			Bits:                      16,        // 16
-			NetworkSize:               10000,     // 10000
-			BinSize:                   16,        // 16
-			Originators:               1000,      // 0.01 * NetworkSize
-			RefreshRate:               8,         // 8
-			Threshold:                 16,        // 16
-			RandomSeed:                123456789, // 123456789
-			MaxProximityOrder:         16,        // 16
-			Price:                     1,         // 1
-			RequestsPerSecond:         100_000,   // 100_000
-			EdgeLock:                  true,      // false
-			SameOriginator:            false,     // false
-			IterationMeansUniqueChunk: false,     // false
-			DebugPrints:               false,     // false
-			DebugInterval:             1000000,   // 1000000
-			NumGoroutines:             -1,        // -1 means gets overwritten by numCPU
-			OutputEnabled:             false,     // false
-			ReplicationFactor:         4,
+			Iterations:                  100_000,   // 100_000
+			Bits:                        16,        // 16
+			NetworkSize:                 10000,     // 10000
+			BinSize:                     16,        // 16
+			Originators:                 1000,      // 0.01 * NetworkSize
+			RefreshRate:                 8,         // 8
+			Threshold:                   16,        // 16
+			RandomSeed:                  123456789, // 123456789
+			MaxProximityOrder:           16,        // 16
+			Price:                       1,         // 1
+			RequestsPerSecond:           100_000,   // 100_000
+			EdgeLock:                    true,      // false
+			SameOriginator:              false,     // false
+			IterationMeansUniqueChunk:   false,     // false
+			DebugPrints:                 false,     // false
+			DebugInterval:               1000000,   // 1000000
+			NumGoroutines:               -1,        // -1 means gets overwritten by numCPU
+			OutputEnabled:               false,     // false
+			ReplicationFactor:           4,
+			AdjustableThresholdExponent: 3,
 			OutputOptions: outputOptions{
 				MeanRewardPerForward:      false,     // false
 				AverageNumberOfHops:       false,     // false

@@ -1,8 +1,7 @@
-package threshold
+package routing
 
 import (
 	"go-incentive-simulation/config"
-	"go-incentive-simulation/model/forgiveness"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/utils"
 )
@@ -31,7 +30,7 @@ func IsThresholdFailed(firstNodeId types.NodeId, secondNodeId types.NodeId, grap
 	//fmt.Printf("price: %d = p2pFirst: %d - p2pSecond: %d + PeerPriceChunk: %d \n", price, p2pFirst, p2pSecond, peerPriceChunk)
 
 	if price > threshold && config.IsForgivenessEnabled() {
-		newP2pFirst, forgiven := forgiveness.CheckForgiveness(edgeDataFirst, firstNodeId, secondNodeId, graph, request)
+		newP2pFirst, forgiven := CheckForgiveness(edgeDataFirst, firstNodeId, secondNodeId, graph, request)
 		if forgiven {
 			price = newP2pFirst - p2pSecond + peerPriceChunk
 		}

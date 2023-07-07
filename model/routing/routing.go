@@ -5,7 +5,6 @@ import (
 	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/utils"
-	"go-incentive-simulation/model/threshold"
 )
 
 // returns the next node in the route, which is the closest node to the route in the previous nodes adjacency list
@@ -40,7 +39,7 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 			graph.LockEdge(firstNodeId, nodeId)
 		}
 
-		if !threshold.IsThresholdFailed(firstNodeId, nodeId, graph, request) {
+		if !IsThresholdFailed(firstNodeId, nodeId, graph, request) {
 			thresholdFailed = false
 
 			if config.IsRetryWithAnotherPeer() {

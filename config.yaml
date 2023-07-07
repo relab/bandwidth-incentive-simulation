@@ -40,6 +40,8 @@ BaseOptions:
   OutputEnabled: true
   # How many nodes are responsible to store a chunk, if possible
   ReplicationFactor: 4
+  # The exponent used for the adjustable threshold formula
+  AdjustableThresholdExponent: 3
   # Which logic should be used in the outputWorker
   OutputOptions:
     MeanRewardPerForward: false
