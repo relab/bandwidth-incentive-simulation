@@ -3,9 +3,9 @@ package routing
 import (
 	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
-	"go-incentive-simulation/model/parts/threshold"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/utils"
+	"go-incentive-simulation/model/threshold"
 )
 
 // returns the next node in the route, which is the closest node to the route in the previous nodes adjacency list
