@@ -7,6 +7,7 @@ import (
 	"go-incentive-simulation/model/parts/output"
 	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/workers"
+	"go-incentive-simulation/model/routing"
 	"go-incentive-simulation/model/state"
 	networkdata "go-incentive-simulation/network_data"
 	"strconv"
@@ -89,7 +90,7 @@ func run(iteration int, graphId string, maxPO int) {
 
 	for i := 0; i < numRoutingGoroutines; i++ {
 		wgMain.Add(1)
-		go workers.RoutingWorker(pauseChan, continueChan, requestChan, outputChan, &globalState, wgMain)
+		go routing.RoutingWorker(pauseChan, continueChan, requestChan, outputChan, &globalState, wgMain)
 	}
 
 	wgMain.Wait()
