@@ -5,7 +5,7 @@
 *.so
 *.dylib
 *.yaml
-!**/routing/config.yaml
+# !**/routing/config.yaml
 *.py
 network_data/*.txt
 *-incentive-simulation
