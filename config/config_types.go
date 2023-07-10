@@ -11,28 +11,29 @@ type experiment struct {
 }
 
 type baseOptions struct {
-	Iterations                int           `yaml:"Iterations"`
-	Bits                      int           `yaml:"Bits"`
-	NetworkSize               int           `yaml:"NetworkSize"`
-	BinSize                   int           `yaml:"BinSize"`
-	Originators               int           `yaml:"Originators"`
-	RefreshRate               int           `yaml:"RefreshRate"`
-	Threshold                 int           `yaml:"Threshold"`
-	RandomSeed                int64         `yaml:"RandomSeed"`
-	MaxProximityOrder         int           `yaml:"MaxProximityOrder"`
-	Price                     int           `yaml:"Price"`
-	RequestsPerSecond         int           `yaml:"RequestsPerSecond"`
-	EdgeLock                  bool          `yaml:"EdgeLock"`
-	SameOriginator            bool          `yaml:"SameOriginator"`
-	IterationMeansUniqueChunk bool          `yaml:"IterationMeansUniqueChunk"`
-	DebugPrints               bool          `yaml:"DebugPrints"`
-	DebugInterval             int           `yaml:"DebugInterval"`
-	NumGoroutines             int           `yaml:"NumGoroutines"`
-	OutputEnabled             bool          `yaml:"OutputEnabled"`
-	OutputOptions             outputOptions `yaml:"OutputOptions"`
-	ReplicationFactor         int           `yaml:"ReplicationFactor"`
-	AddressRange              int
-	StorageDepth              int
+	Iterations                  int           `yaml:"Iterations"`
+	Bits                        int           `yaml:"Bits"`
+	NetworkSize                 int           `yaml:"NetworkSize"`
+	BinSize                     int           `yaml:"BinSize"`
+	Originators                 int           `yaml:"Originators"`
+	RefreshRate                 int           `yaml:"RefreshRate"`
+	Threshold                   int           `yaml:"Threshold"`
+	RandomSeed                  int64         `yaml:"RandomSeed"`
+	MaxProximityOrder           int           `yaml:"MaxProximityOrder"`
+	Price                       int           `yaml:"Price"`
+	RequestsPerSecond           int           `yaml:"RequestsPerSecond"`
+	EdgeLock                    bool          `yaml:"EdgeLock"`
+	SameOriginator              bool          `yaml:"SameOriginator"`
+	IterationMeansUniqueChunk   bool          `yaml:"IterationMeansUniqueChunk"`
+	DebugPrints                 bool          `yaml:"DebugPrints"`
+	DebugInterval               int           `yaml:"DebugInterval"`
+	NumGoroutines               int           `yaml:"NumGoroutines"`
+	OutputEnabled               bool          `yaml:"OutputEnabled"`
+	OutputOptions               outputOptions `yaml:"OutputOptions"`
+	ReplicationFactor           int           `yaml:"ReplicationFactor"`
+	AdjustableThresholdExponent int           `yaml:"AdjustableThresholdExponent"`
+	AddressRange                int
+	StorageDepth                int
 }
 
 type experimentOptions struct {

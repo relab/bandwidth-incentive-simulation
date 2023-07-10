@@ -31,6 +31,10 @@ func IsAdjustableThreshold() bool {
 	return theconfig.ExperimentOptions.AdjustableThreshold
 }
 
+func GetAdjustableThresholdExponent() int {
+	return theconfig.BaseOptions.AdjustableThresholdExponent
+}
+
 func IsForgivenessEnabled() bool {
 	return theconfig.ExperimentOptions.ForgivenessEnabled
 }

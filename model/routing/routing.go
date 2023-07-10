@@ -1,9 +1,10 @@
-package utils
+package routing
 
 import (
 	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
+	"go-incentive-simulation/model/parts/utils"
 )
 
 // returns the next node in the route, which is the closest node to the route in the previous nodes adjacency list
@@ -16,15 +17,12 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 	mainOriginatorId := request.OriginatorId
 	chunkId := request.ChunkId
 	lastDistance := firstNodeId.ToInt() ^ chunkId.ToInt()
-	//fmt.Printf("\n last distance is : %d, chunk is: %d, first is: %d", lastDistance, chunkId, firstNodeId)
-	//fmt.Printf("\n which bucket: %d \n", 16-BitLength(chunkId^firstNodeId))
 
 	currDist := lastDistance
 	payDist := lastDistance
 
-	//var lockedEdges []types.NodeId
+	bin := config.GetBits() - general.BitLength(lastDistance)
 
-	bin := config.GetBits() - general.BitLength(firstNodeId.ToInt()^chunkId.ToInt())
 	firstNodeAdjIds := graph.GetNodeAdj(firstNodeId)
 
 	for _, nodeId := range firstNodeAdjIds[bin] {
@@ -35,21 +33,22 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 		if dist >= currDist {
 			continue
 		}
+
 		// This means the node is now actively trying to communicate with the other node
 		if config.IsEdgeLock() {
 			graph.LockEdge(firstNodeId, nodeId)
 		}
-		if !isThresholdFailed(firstNodeId, nodeId, graph, request) {
+
+		if !IsThresholdFailed(firstNodeId, nodeId, graph, request) {
 			thresholdFailed = false
+
 			if config.IsRetryWithAnotherPeer() {
 				rerouteStruct := graph.GetNode(mainOriginatorId).RerouteStruct
-				if rerouteStruct.Reroute.RejectedNodes != nil {
-					if general.Contains(rerouteStruct.Reroute.RejectedNodes, nodeId) {
-						if config.IsEdgeLock() {
-							graph.UnlockEdge(firstNodeId, nodeId)
-						}
-						continue // skips node that's been part of a failed route before
+				if rerouteStruct.Reroute.RejectedNodes != nil && general.Contains(rerouteStruct.Reroute.RejectedNodes, nodeId) {
+					if config.IsEdgeLock() {
+						graph.UnlockEdge(firstNodeId, nodeId)
 					}
+					continue // skips node that's been part of a failed route before
 				}
 			}
 
@@ -62,11 +61,12 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 					payNextId = -1 // IMPORTANT!
 				}
 			}
+
 			currDist = dist
 			nextNodeId = nodeId
-
 		} else {
 			thresholdFailed = true
+
 			if config.GetPaymentEnabled() {
 				if dist < payDist && nextNodeId.IsNil() {
 					if config.IsEdgeLock() && !payNextId.IsNil() {
@@ -74,15 +74,11 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 					}
 					payDist = dist
 					payNextId = nodeId
-				} else {
-					if config.IsEdgeLock() {
-						graph.UnlockEdge(firstNodeId, nodeId)
-					}
-				}
-			} else {
-				if config.IsEdgeLock() {
+				} else if config.IsEdgeLock() {
 					graph.UnlockEdge(firstNodeId, nodeId)
 				}
+			} else if config.IsEdgeLock() {
+				graph.UnlockEdge(firstNodeId, nodeId)
 			}
 		}
 	}
@@ -109,7 +105,6 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 				payment.ChunkId = chunkId
 				nextNodeId = payNextId
 			}
-
 		} else if config.IsPayIfOrigPays() {
 			// Pay if the originator pays or if the previous node has paid
 			if payment.IsOriginator || prevNodePaid {
@@ -118,11 +113,9 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 				payment.ChunkId = chunkId
 				nextNodeId = payNextId
 				thresholdFailed = false
-
 			} else {
 				thresholdFailed = true
 			}
-
 		} else {
 			// Always pays
 			payment.FirstNodeId = firstNodeId
@@ -133,15 +126,93 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 		}
 	}
 
-	if !payment.IsNil() {
-		prevNodePaid = true
-	} else {
-		prevNodePaid = false
-	}
-
-	if !nextNodeId.IsNil() {
-		// fmt.Println("Next node is: ", nextNodeId)
-	}
+	prevNodePaid = !payment.IsNil()
 
 	return nextNodeId, thresholdFailed, accessFailed, prevNodePaid, payment
+}
+
+func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []types.Payment, bool, bool, bool, bool) {
+	chunkId := request.ChunkId
+	mainOriginatorId := request.OriginatorId
+	curNextNodeId := request.OriginatorId
+	route := []types.NodeId{mainOriginatorId}
+	found := false
+	accessFailed := false
+	thresholdFailed := false
+	foundByCaching := false
+	prevNodePaid := config.IsPayIfOrigPays()
+	var payment types.Payment
+	var paymentList []types.Payment
+	var nextNodeId types.NodeId
+
+	depth := config.GetStorageDepth()
+
+	if utils.FindDistance(mainOriginatorId, chunkId) >= depth {
+		found = true
+	} else {
+		for !(utils.FindDistance(curNextNodeId, chunkId) >= depth) {
+			nextNodeId, thresholdFailed, accessFailed, prevNodePaid, payment = getNext(request, curNextNodeId, prevNodePaid, graph)
+
+			if !payment.IsNil() {
+				paymentList = append(paymentList, payment)
+			}
+			if !nextNodeId.IsNil() {
+				route = append(route, nextNodeId)
+			}
+			if !thresholdFailed && !accessFailed {
+				if utils.FindDistance(nextNodeId, chunkId) >= depth {
+					found = true
+					break
+				}
+				if config.IsCacheEnabled() {
+					node := graph.GetNode(nextNodeId)
+					if node.CacheStruct.Contains(chunkId) {
+						foundByCaching = true
+						found = true
+						break
+					}
+				}
+				curNextNodeId = nextNodeId
+			} else {
+				break
+			}
+		}
+	}
+
+	if config.IsForwardersPayForceOriginatorToPay() {
+		if !accessFailed && len(paymentList) > 0 {
+			newList := make([]types.Payment, 0, len(paymentList))
+
+			for i := 0; i < len(route)-1; i++ {
+				newPayment := types.Payment{
+					FirstNodeId:  route[i],
+					PayNextId:    route[i+1],
+					ChunkId:      chunkId,
+					IsOriginator: i == 0,
+				}
+				newList = append(newList, newPayment)
+
+				oldIndex := -1
+				for oi, tmp := range paymentList {
+					if newPayment.FirstNodeId == tmp.FirstNodeId && newPayment.PayNextId == tmp.PayNextId {
+						oldIndex = oi
+						break
+					}
+				}
+
+				if oldIndex > -1 {
+					paymentList = append(paymentList[:oldIndex], paymentList[oldIndex+1:]...)
+				}
+				if len(paymentList) == 0 {
+					break
+				}
+			}
+
+			paymentList = newList
+		} else {
+			paymentList = []types.Payment{}
+		}
+	}
+
+	return route, paymentList, found, accessFailed, thresholdFailed, foundByCaching
 }
