@@ -12,6 +12,7 @@ type LogResetUpdater interface {
 	Log()
 	Reset()
 	Update(output *Route)
+	Close()
 }
 
 type Route struct {
