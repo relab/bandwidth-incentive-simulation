@@ -10,7 +10,6 @@ import (
 )
 
 func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan types.Request, globalState *types.State, wg *sync.WaitGroup) {
-
 	defer wg.Done()
 	var requestQueueSize = 10
 	var counter = 0
@@ -38,15 +37,18 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 
 			// Needed for checks waiting and retry
 			chunkId = -1
-
+			isRetriedChunk := false
+			rejectedNodesLength := 0
 			if config.IsRetryWithAnotherPeer() {
 				rerouteStruct := originator.RerouteStruct
-
-				if len(rerouteStruct.Reroute.RejectedNodes) > 0 {
+				rejectedNodesLength = len(rerouteStruct.Reroute.RejectedNodes)
+				if rejectedNodesLength > 0 {
 					chunkId = rerouteStruct.Reroute.ChunkId
+					isRetriedChunk = true
+					// fmt.Printf("Rejected Nodes: %v, originatorId: %v, chunkId: %v\n", rerouteStruct.Reroute.RejectedNodes, originatorId, chunkId)
 				}
 			}
-
+			isFromQueuedChunks := false
 			if config.IsWaitingEnabled() && chunkId == -1 { // No valid chunkId in reroute
 				pendingStruct := originator.PendingStruct
 
@@ -54,6 +56,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 					queuedChunk, ok := pendingStruct.GetChunkFromQueue(curEpoch)
 					if ok {
 						chunkId = queuedChunk.ChunkId
+						isFromQueuedChunks = true
 					}
 				}
 			}
@@ -81,9 +84,14 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 					OriginatorIndex: originatorIndex,
 					OriginatorId:    originatorId,
 					ChunkId:         chunkId,
+					IsRetry:         isRetriedChunk,
+					RetryIteration:  rejectedNodesLength + 1,
+					IsWaited:        isFromQueuedChunks,
 				}
 				requestChan <- request
 			}
+
+			//fmt.Printf("timestep: %v, epoch: %v, OriginatorIndex: %v, OriginatorId: %v, chunkId: %v, IsRetry: %v, RetryIteration: %v, IsWaited: %v\n", timeStep, curEpoch, originatorIndex, originatorId, chunkId, isRetriedChunk, rejectedNodesLength+1, isFromQueuedChunks)
 
 			if config.TimeForDebugPrints(timeStep) {
 				fmt.Println("TimeStep is currently:", timeStep)

@@ -111,6 +111,4 @@ func run(iteration int, graphId string, maxPO int) {
 func PrintState(state types.State) {
 	fmt.Println("TimeStep: ", state.TimeStep)
 	fmt.Println("OriginatorIndex: ", state.OriginatorIndex)
-	fmt.Println("UniqueRetryCounter: ", state.UniqueRetryCounter)
-	fmt.Println("UniqueWaitingCounter: ", state.UniqueWaitingCounter)
 }
