@@ -59,6 +59,7 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 				output.ThresholdFailed = thresholdFailed
 				output.AccessFailed = accessFailed
 				output.FoundByCaching = foundByCaching
+				output.NumRetries = request.RetryIteration
 				outputChan <- output
 			}
 		}
