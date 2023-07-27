@@ -81,6 +81,12 @@ func CreateLoggers() []LogResetUpdater {
 		loggers = append(loggers, linkInfo)
 	}
 
+	if config.IsRetryWithAnotherPeer() && config.GetRerouteInfo() {
+		rerouteInfo := InitRerouteInfo()
+		defer rerouteInfo.Close()
+		loggers = append(loggers, rerouteInfo)
+	}
+
 	if config.JustPrintOutPut() {
 		outputWriter := InitOutputWriter()
 		defer outputWriter.Close()
