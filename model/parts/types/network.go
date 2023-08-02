@@ -9,7 +9,6 @@ import (
 	"os"
 	"sort"
 	"sync"
-	"time"
 )
 
 type Network struct {
@@ -200,7 +199,7 @@ func (network *Network) Dump(path string) error {
 //}
 
 func generateIds(totalNumbers int, maxValue int) []int {
-	rand.Seed(time.Now().UnixNano())
+	// rand.Seed(time.Now().UnixNano())
 	generatedNumbers := make(map[int]bool)
 	for len(generatedNumbers) < totalNumbers {
 		num := rand.Intn(maxValue-1) + 1
