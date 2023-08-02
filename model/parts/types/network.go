@@ -143,7 +143,7 @@ func (network *Network) Generate(count int, random bool) []*Node {
 	}
 
 	for i, node1 := range nodes {
-		choicenodes := nodes[i:]
+		choicenodes := nodes[i+1:]
 		rand.Shuffle(len(choicenodes), func(i, j int) { choicenodes[i], choicenodes[j] = choicenodes[j], choicenodes[i] })
 		for _, node2 := range choicenodes {
 			_, err := node1.add(node2)
