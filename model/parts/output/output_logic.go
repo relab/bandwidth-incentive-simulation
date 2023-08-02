@@ -8,10 +8,11 @@ import (
 	"os"
 )
 
-type LogResetUpdater interface {
+type LogResetUpdateCloser interface {
 	Log()
 	Reset()
 	Update(output *Route)
+	Close()
 }
 
 type Route struct {

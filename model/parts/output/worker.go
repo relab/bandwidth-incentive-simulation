@@ -14,6 +14,10 @@ func Worker(outputChan chan Route, wg *sync.WaitGroup) {
 	logInterval := config.GetEvaluateInterval()
 	reset := config.DoReset()
 
+	for _, logger := range loggers {
+		defer logger.Close()
+	}
+
 	for outputStruct = range outputChan {
 		counter++
 
@@ -28,20 +32,19 @@ func Worker(outputChan chan Route, wg *sync.WaitGroup) {
 			}
 		}
 	}
+
 }
 
-func CreateLoggers() []LogResetUpdater {
-	loggers := make([]LogResetUpdater, 0)
+func CreateLoggers() []LogResetUpdateCloser {
+	loggers := make([]LogResetUpdateCloser, 0)
 
 	successInfo := InitSuccessInfo()
-	defer successInfo.Close()
 	loggers = append(loggers, successInfo)
 
 	if config.GetAverageNumberOfHops() ||
 		config.GetHopFractionOfRewards() ||
 		config.GetMeanRewardPerForward() {
 		hopInfo := InitHopInfo()
-		defer hopInfo.Close()
 		loggers = append(loggers, hopInfo)
 	}
 
@@ -50,7 +53,6 @@ func CreateLoggers() []LogResetUpdater {
 			config.GetHopFractionOfRewards() ||
 			config.GetMeanRewardPerForward()) {
 		hopPaymentInfo := InitHopPaymentInfo()
-		defer hopPaymentInfo.Close()
 		loggers = append(loggers, hopPaymentInfo)
 	}
 
@@ -59,31 +61,26 @@ func CreateLoggers() []LogResetUpdater {
 		config.GetHopIncome() ||
 		config.GetDensnessIncome() {
 		incomeInfo := InitIncomeInfo()
-		defer incomeInfo.Close()
 		loggers = append(loggers, incomeInfo)
 	}
 
 	if config.GetWorkInfo() {
 		workInfo := InitWorkInfo()
-		defer workInfo.Close()
 		loggers = append(loggers, workInfo)
 	}
 
 	if config.GetBucketInfo() {
 		bucketInfo := InitBucketInfo()
-		defer bucketInfo.Close()
 		loggers = append(loggers, bucketInfo)
 	}
 
 	if config.GetLinkInfo() {
 		linkInfo := InitLinkInfo()
-		defer linkInfo.Close()
 		loggers = append(loggers, linkInfo)
 	}
 
 	if config.JustPrintOutPut() {
 		outputWriter := InitOutputWriter()
-		defer outputWriter.Close()
 		loggers = append(loggers, outputWriter)
 	}
 	return loggers
