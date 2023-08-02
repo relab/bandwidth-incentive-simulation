@@ -13,6 +13,7 @@ import (
 type IncomeInfo struct {
 	IncomeMap  map[int]int
 	HopMap     map[int][]int
+	CostMap    map[int]int
 	Requesters map[int]bool
 	File       *os.File
 	Writer     *bufio.Writer
@@ -21,6 +22,7 @@ type IncomeInfo struct {
 func InitIncomeInfo() *IncomeInfo {
 	iinfo := IncomeInfo{}
 	iinfo.IncomeMap = make(map[int]int)
+	iinfo.CostMap = make(map[int]int)
 	iinfo.HopMap = make(map[int][]int)
 	iinfo.Requesters = make(map[int]bool) //This map is currently used to find out who is an originator. This should instead be looked up somewhere else.
 
@@ -32,6 +34,7 @@ func InitIncomeInfo() *IncomeInfo {
 
 func (ii *IncomeInfo) Reset() {
 	ii.IncomeMap = make(map[int]int)
+	ii.CostMap = make(map[int]int)
 	ii.HopMap = make(map[int][]int)
 	ii.Requesters = make(map[int]bool) //This map is currently used to find out who is an originator. This should instead be looked up somewhere else.
 }
@@ -62,6 +65,17 @@ func (o *IncomeInfo) CalculateNonOIncomeFairness() float64 {
 	size := config.GetNetworkSize()
 	vals := make([]int, 0, size)
 	for id, value := range o.IncomeMap {
+		if !o.Requesters[id] {
+			vals = append(vals, value)
+		}
+	}
+	return utils.Gini(vals)
+}
+
+func (o *IncomeInfo) CalculateOriginatorCostFairness() float64 {
+	size := config.GetNetworkSize()
+	vals := make([]int, 0, size)
+	for id, value := range o.CostMap {
 		if o.Requesters[id] {
 			vals = append(vals, value)
 		}
@@ -92,6 +106,7 @@ func (ii *IncomeInfo) Update(output *Route) {
 			ii.IncomeMap[payer] -= payment.Price
 		} else {
 			ii.Requesters[payee] = true
+			ii.CostMap[payee] += payment.Price
 			if hop != 0 {
 				panic("First payment in list is not from originator.")
 			}
@@ -373,6 +388,11 @@ func (ii *IncomeInfo) Log() {
 			panic(err)
 		}
 		_, err = ii.Writer.WriteString(fmt.Sprintf("Non Org Income fairness: %f \n", ii.CalculateNonOIncomeFairness()))
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = ii.Writer.WriteString(fmt.Sprintf("Org Cost fairness: %f \n", ii.CalculateOriginatorCostFairness()))
 		if err != nil {
 			panic(err)
 		}
