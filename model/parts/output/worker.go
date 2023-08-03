@@ -17,6 +17,10 @@ func Worker(outputChan chan Route, wg *sync.WaitGroup) {
 	logInterval := config.GetEvaluateInterval()
 	reset := config.DoReset()
 
+	for _, logger := range loggers {
+		defer logger.Close()
+	}
+
 	for outputStruct = range outputChan {
 		counter++
 
@@ -31,10 +35,11 @@ func Worker(outputChan chan Route, wg *sync.WaitGroup) {
 			}
 		}
 	}
+
 }
 
-func CreateLoggers() []LogResetUpdater {
-	loggers := make([]LogResetUpdater, 0)
+func CreateLoggers() []LogResetUpdateCloser {
+	loggers := make([]LogResetUpdateCloser, 0)
 
 	successInfo := InitSuccessInfo()
 	loggers = append(loggers, successInfo)

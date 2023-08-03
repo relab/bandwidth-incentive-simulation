@@ -19,7 +19,7 @@ BaseOptions:
   # RandomSeed: 123456789, seed for deterministic randomness
   RandomSeed: 123456789
   # MaxProximityOrder: 16, determines how many accounting units is transferred according to distance from chunk.
-  MaxProximityOrder: 30
+  MaxProximityOrder: 16
   # Price: 1, the base unit for prices
   Price: 1
   # RequestsPerSecond: 12500, number of iterations during a second
@@ -40,6 +40,8 @@ BaseOptions:
   OutputEnabled: true
   # How many nodes are responsible to store a chunk, if possible
   ReplicationFactor: 4
+  # The exponent used for the adjustable threshold formula
+  AdjustableThresholdExponent: 3
   # Which logic should be used in the outputWorker
   OutputOptions:
     MeanRewardPerForward: false

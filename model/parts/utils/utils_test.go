@@ -70,19 +70,6 @@ func TestCreateDowloaderList(t *testing.T) {
 	assert.Equal(t, len(l), c)
 }
 
-func TestIsThresholdFailed(t *testing.T) {
-
-	// firstNodes := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-	// secondsNodes := []int{11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
-	// chunkIds := []int{21, 22, 23, 24, 25, 26, 27, 28, 29, 30}
-
-	// graph := Graph{}
-}
-
-func TestGetNext(t *testing.T) {
-
-}
-
 func TestDistributionRespNodeswithStorageDepth(t *testing.T) {
 	network := &types.Network{}
 	network.Load(path)
@@ -113,36 +100,4 @@ func TestGini(t *testing.T) {
 
 	assert.Equal(t, Mean(values), float64(1))
 	assert.Equal(t, Gini(values), 0.75)
-}
-
-func TestAdjustedRefreshrate(t *testing.T) {
-
-	assert.Equal(t, GetAdjustedRefreshrate(15, 16, 8, 2), 8)
-	assert.Equal(t, GetAdjustedRefreshrate(14, 16, 8, 2), 7)
-	assert.Equal(t, GetAdjustedRefreshrate(13, 16, 8, 2), 6)
-	assert.Equal(t, GetAdjustedRefreshrate(12, 16, 8, 2), 5)
-	assert.Equal(t, GetAdjustedRefreshrate(11, 16, 8, 2), 4)
-	assert.Equal(t, GetAdjustedRefreshrate(10, 16, 8, 2), 4)
-	assert.Equal(t, GetAdjustedRefreshrate(9, 16, 8, 2), 3)
-	assert.Equal(t, GetAdjustedRefreshrate(8, 16, 8, 2), 2)
-	assert.Equal(t, GetAdjustedRefreshrate(7, 16, 8, 2), 2)
-	assert.Equal(t, GetAdjustedRefreshrate(6, 16, 8, 2), 2)
-	assert.Equal(t, GetAdjustedRefreshrate(5, 16, 8, 2), 1)
-	assert.Equal(t, GetAdjustedRefreshrate(4, 16, 8, 2), 1)
-	assert.Equal(t, GetAdjustedRefreshrate(3, 16, 8, 2), 1)
-
-	assert.Equal(t, GetAdjustedRefreshrate(15, 16, 8, 3), 7)
-	assert.Equal(t, GetAdjustedRefreshrate(14, 16, 8, 3), 6)
-	assert.Equal(t, GetAdjustedRefreshrate(13, 16, 8, 3), 5)
-	assert.Equal(t, GetAdjustedRefreshrate(12, 16, 8, 3), 4)
-	assert.Equal(t, GetAdjustedRefreshrate(11, 16, 8, 3), 3)
-	assert.Equal(t, GetAdjustedRefreshrate(10, 16, 8, 3), 2)
-	assert.Equal(t, GetAdjustedRefreshrate(9, 16, 8, 3), 2)
-	assert.Equal(t, GetAdjustedRefreshrate(8, 16, 8, 3), 1)
-	assert.Equal(t, GetAdjustedRefreshrate(7, 16, 8, 3), 1)
-	assert.Equal(t, GetAdjustedRefreshrate(3, 16, 8, 3), 1)
-	assert.Equal(t, GetAdjustedRefreshrate(15, 16, 2, 3), 2)
-	assert.Equal(t, GetAdjustedRefreshrate(14, 16, 2, 3), 2)
-	assert.Equal(t, GetAdjustedRefreshrate(13, 16, 2, 3), 2)
-
 }

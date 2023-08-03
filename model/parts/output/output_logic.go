@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-type LogResetUpdater interface {
+type LogResetUpdateCloser interface {
 	Log()
 	Reset()
 	Update(output *Route)
