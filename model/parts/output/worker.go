@@ -62,6 +62,7 @@ func CreateLoggers() []LogResetUpdateCloser {
 	if config.GetNegativeIncome() ||
 		config.GetIncomeGini() ||
 		config.GetHopIncome() ||
+		config.GetIncomeTheil() ||
 		config.GetDensnessIncome() {
 		incomeInfo := InitIncomeInfo()
 		loggers = append(loggers, incomeInfo)

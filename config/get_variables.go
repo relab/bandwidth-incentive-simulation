@@ -185,6 +185,7 @@ func JustPrintOutPut() bool {
 		!theconfig.BaseOptions.OutputOptions.HopFractionOfTotalRewards &&
 		!theconfig.BaseOptions.OutputOptions.NegativeIncome &&
 		!theconfig.BaseOptions.OutputOptions.IncomeGini &&
+		!theconfig.BaseOptions.OutputOptions.IncomeTheil &&
 		!theconfig.BaseOptions.OutputOptions.HopIncome &&
 		!theconfig.BaseOptions.OutputOptions.DensenessIncome &&
 		!theconfig.BaseOptions.OutputOptions.WorkInfo &&
@@ -223,6 +224,13 @@ func GetNegativeIncome() bool {
 func GetIncomeGini() bool {
 	if theconfig.ExperimentOptions.PaymentEnabled {
 		return theconfig.BaseOptions.OutputOptions.IncomeGini
+	}
+	return false
+}
+
+func GetIncomeTheil() bool {
+	if theconfig.ExperimentOptions.PaymentEnabled {
+		return theconfig.BaseOptions.OutputOptions.IncomeTheil
 	}
 	return false
 }

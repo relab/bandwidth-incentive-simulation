@@ -83,6 +83,18 @@ func (o *IncomeInfo) CalculateOriginatorCostFairness() float64 {
 	return utils.Gini(vals)
 }
 
+func (o *IncomeInfo) CalculateIncomeTheilIndex() float64 {
+	size := config.GetNetworkSize()
+	vals := make([]int, size)
+	for i, value := range o.IncomeMap {
+		vals[i] = value
+		fmt.Print(value, " ")
+		i++
+	}
+	fmt.Println()
+	return utils.Theil(vals)
+}
+
 func (o *IncomeInfo) CalculateNegativeIncome() float64 {
 	totalNegativeIncomeCounter := 0
 	for _, value := range o.IncomeMap {
@@ -398,6 +410,14 @@ func (ii *IncomeInfo) Log() {
 		}
 		max, nonzero, total := ii.MaxNonZeroTotal()
 		_, err = ii.Writer.WriteString(fmt.Sprintf("Max, total and nonzero: %d, %d, %d \n", max, total, nonzero))
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	if config.GetIncomeTheil() {
+		incomeTheilIndex := ii.CalculateIncomeTheilIndex()
+		_, err := ii.Writer.WriteString(fmt.Sprintf("Income Theil Index: %f \n", incomeTheilIndex))
 		if err != nil {
 			panic(err)
 		}

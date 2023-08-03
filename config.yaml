@@ -3,7 +3,7 @@
 # Global configuration options, defaults in comment
 BaseOptions:
   # Iterations: 10_000_000, best in multiples of 100_000
-  Iterations: 1_000_000
+  Iterations: 10_000_000
   # Bits: 16, bits in maximum address
   Bits: 16
   # NetworkSize: 10000, number of nodes in network
@@ -49,6 +49,7 @@ BaseOptions:
     HopFractionOfTotalRewards: false
     NegaticeIncome: false
     IncomeGini: true
+    IncomeTheil: true
     HopIncome: false
     DensenessIncome: false
     WorkInfo: false

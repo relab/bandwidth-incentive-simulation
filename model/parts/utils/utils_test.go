@@ -101,3 +101,12 @@ func TestGini(t *testing.T) {
 	assert.Equal(t, Mean(values), float64(1))
 	assert.Equal(t, Gini(values), 0.75)
 }
+
+func TestTheil(t *testing.T) {
+	values := []int{7, 2, 1, 2}
+
+	println(Theil(values))
+
+	assert.Assert(t, 0.267 < Theil(values))
+	assert.Assert(t, Theil(values) < 0.268)
+}
