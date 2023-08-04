@@ -7,11 +7,11 @@ BaseOptions:
   # Bits: 16, bits in maximum address
   Bits: 16
   # NetworkSize: 10000, number of nodes in network
-  NetworkSize: 10000
+  NetworkSize: 10_000
   # BinSize: 16, number of nodes in each bin/bucket for each node
   BinSize: 16
   # Originators: 1000, number of originators initiating requests
-  Originators: 50
+  Originators: 500
   # RefreshRate: 8, the rate of which edge dept gets removed per second
   RefreshRate: 0
   # Threshold: 16, the maximum edge debt a node in an edge can have
@@ -52,6 +52,7 @@ BaseOptions:
     IncomeTheil: true
     HopIncome: false
     DensenessIncome: false
+    WorkIncomeSpearman: true
     WorkInfo: false
     BucketInfo: true
     LinkInfo: true

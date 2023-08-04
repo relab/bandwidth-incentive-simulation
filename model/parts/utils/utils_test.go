@@ -110,3 +110,42 @@ func TestTheil(t *testing.T) {
 	assert.Assert(t, 0.267 < Theil(values))
 	assert.Assert(t, Theil(values) < 0.268)
 }
+
+func TestSpearman(t *testing.T) {
+	rankSet1 := []int{1, 5, 2, 4, 3}
+	rankSet2 := []int{3, 2, 4, 1, 5}
+
+	assert.Equal(t, Spearman(rankSet1, rankSet2), -0.5)
+}
+
+func TestGetTopKeys(t *testing.T) {
+	m := map[int]int{
+		1: 8,
+		2: 2,
+		3: 4,
+		4: 6,
+	}
+
+	keys := GetTopKeys(m, 3)
+
+	assert.Equal(t, len(keys), 3)
+	assert.Equal(t, keys[0], 1)
+	assert.Equal(t, keys[1], 4)
+	assert.Equal(t, keys[2], 3)
+}
+
+func TestGetRanks(t *testing.T) {
+	m := map[int]int{
+		10: 8,
+		20: 2,
+		30: 4,
+		40: 6,
+	}
+
+	ranks := GetRanks(m, []int{20, 10, 30})
+
+	assert.Equal(t, len(ranks), 3)
+	assert.Equal(t, ranks[0], 2)
+	assert.Equal(t, ranks[1], 0)
+	assert.Equal(t, ranks[2], 1)
+}

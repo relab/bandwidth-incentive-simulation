@@ -59,18 +59,30 @@ func CreateLoggers() []LogResetUpdateCloser {
 		loggers = append(loggers, hopPaymentInfo)
 	}
 
+	var workIncomeInfo *WorkIncomeInfo
+	if config.GetWorkIncomeSpearman() {
+		workIncomeInfo := InitWorkIncomeInfo()
+		loggers = append(loggers, workIncomeInfo)
+	}
+
 	if config.GetNegativeIncome() ||
 		config.GetIncomeGini() ||
 		config.GetHopIncome() ||
 		config.GetIncomeTheil() ||
 		config.GetDensnessIncome() {
-		incomeInfo := InitIncomeInfo()
-		loggers = append(loggers, incomeInfo)
+		if workIncomeInfo == nil {
+			loggers = append(loggers, InitIncomeInfo())
+		} else {
+			loggers = append(loggers, workIncomeInfo.IncomeInfo)
+		}
 	}
 
 	if config.GetWorkInfo() {
-		workInfo := InitWorkInfo()
-		loggers = append(loggers, workInfo)
+		if workIncomeInfo == nil {
+			loggers = append(loggers, InitWorkInfo())
+		} else {
+			loggers = append(loggers, workIncomeInfo.WorkInfo)
+		}
 	}
 
 	if config.GetBucketInfo() {

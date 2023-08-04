@@ -86,7 +86,8 @@ func (o *IncomeInfo) CalculateOriginatorCostFairness() float64 {
 func (o *IncomeInfo) CalculateIncomeTheilIndex() float64 {
 	size := config.GetNetworkSize()
 	vals := make([]int, size)
-	for i, value := range o.IncomeMap {
+	i := 0
+	for _, value := range o.IncomeMap {
 		vals[i] = value
 		fmt.Print(value, " ")
 		i++
