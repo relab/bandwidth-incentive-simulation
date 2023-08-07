@@ -7,6 +7,7 @@ import (
 	"go-incentive-simulation/model/parts/types"
 	networkdata "go-incentive-simulation/network_data"
 	"math/rand"
+	"time"
 )
 
 func main() {
@@ -31,20 +32,24 @@ func main() {
 		*rSeed = int(config.GetRandomSeed())
 	}
 
+	if *rSeed != -1 {
+		rand.Seed(int64(*rSeed))
+	} else {
+		rand.Seed(time.Now().UnixNano())
+	}
+
 	if *count < 0 {
 		filename := "../network_data/" + networkdata.GetNetworkDataName(*bits, *binSize, *networkSize, *id, -1)
-		generateAndDump(*bits, *binSize, *networkSize, *rSeed, *random, filename)
+		generateAndDump(*bits, *binSize, *networkSize, *random, filename)
 	}
 	for i := 0; i < *count; i++ {
 		filename := "../network_data/" + networkdata.GetNetworkDataName(*bits, *binSize, *networkSize, *id, i)
-		generateAndDump(*bits, *binSize, *networkSize, *rSeed, *random, filename)
+		generateAndDump(*bits, *binSize, *networkSize, *random, filename)
 	}
 }
 
-func generateAndDump(bits, binSize, N, rSeed int, random bool, filename string) {
-	if rSeed != -1 {
-		rand.Seed(int64(rSeed))
-	}
+func generateAndDump(bits, binSize, N int, random bool, filename string) {
+
 	network := types.Network{Bits: bits, Bin: binSize}
 	network.Generate(N, random)
 
