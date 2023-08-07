@@ -11,9 +11,6 @@ func Worker(outputChan chan Route, wg *sync.WaitGroup) {
 	counter := 0
 
 	loggers := CreateLoggers()
-	for _, logger := range loggers {
-		defer logger.Close()
-	}
 	logInterval := config.GetEvaluateInterval()
 	reset := config.DoReset()
 

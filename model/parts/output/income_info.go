@@ -89,10 +89,8 @@ func (o *IncomeInfo) CalculateIncomeTheilIndex() float64 {
 	i := 0
 	for _, value := range o.IncomeMap {
 		vals[i] = value
-		fmt.Print(value, " ")
 		i++
 	}
-	fmt.Println()
 	return utils.Theil(vals)
 }
 

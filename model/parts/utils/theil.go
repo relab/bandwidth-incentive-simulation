@@ -10,9 +10,7 @@ func Theil(x []int) float64 {
 	total := 0.0
 	avg := Mean(x)
 	zero_count := 0
-	println("##############")
 	for _, xi := range x {
-		print(xi, " ")
 		if xi == 0 {
 			xi = 1;
 			zero_count ++;
@@ -20,10 +18,6 @@ func Theil(x []int) float64 {
 		dev := float64(xi) / avg
 		total += dev * math.Log(dev)
 	}
-	println()
-
-	println("zero count", zero_count, len(x))
-	println("avg", avg)
 
 	return total / float64(len(x))
 }
