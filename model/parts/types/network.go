@@ -9,7 +9,6 @@ import (
 	"os"
 	"sort"
 	"sync"
-	"time"
 )
 
 type Network struct {
@@ -144,7 +143,7 @@ func (network *Network) Generate(count int, random bool) []*Node {
 	}
 
 	for i, node1 := range nodes {
-		choicenodes := nodes[i:]
+		choicenodes := nodes[i+1:]
 		rand.Shuffle(len(choicenodes), func(i, j int) { choicenodes[i], choicenodes[j] = choicenodes[j], choicenodes[i] })
 		for _, node2 := range choicenodes {
 			_, err := node1.add(node2)
@@ -200,7 +199,7 @@ func (network *Network) Dump(path string) error {
 //}
 
 func generateIds(totalNumbers int, maxValue int) []int {
-	rand.Seed(time.Now().UnixNano())
+	// rand.Seed(time.Now().UnixNano())
 	generatedNumbers := make(map[int]bool)
 	for len(generatedNumbers) < totalNumbers {
 		num := rand.Intn(maxValue-1) + 1
