@@ -59,8 +59,10 @@ type outputOptions struct {
 	HopFractionOfTotalRewards bool   `yaml:"HopFractionOfTotalRewards"`
 	NegativeIncome            bool   `yaml:"NegativeIncome"`
 	IncomeGini                bool   `yaml:"IncomeGini"`
+	IncomeTheil               bool   `yaml:"IncomeTheil"`
 	HopIncome                 bool   `yaml:"HopIncome"`
 	DensenessIncome           bool   `yaml:"DensenessIncome"`
+	WorkIncomeSpearman        bool   `yaml:"WorkIncomeSpearman"`
 	WorkInfo                  bool   `yaml:"WorkInfo"`
 	BucketInfo                bool   `yaml:"BucketInfo"`
 	LinkInfo                  bool   `yaml:"LinkInfo"`

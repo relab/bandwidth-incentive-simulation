@@ -32,7 +32,7 @@ func (si *SuccessInfo) Close() {
 	}
 	err = si.File.Close()
 	if err != nil {
-		fmt.Println("Couldn't close the file sith filepath: ./results/work.txt")
+		fmt.Println("Couldn't close the file with filepath: ./results/work.txt", err)
 	}
 }
 

@@ -19,21 +19,15 @@ func OriginatorIndex(state *types.State, timeStep int) int64 {
 			} else {
 				return atomic.AddInt64(&state.OriginatorIndex, 1)
 			}
+		} else {
+			return curOriginatorIndex
 		}
 	} else {
 		if int(curOriginatorIndex+1) >= config.GetOriginators() {
 			atomic.StoreInt64(&state.OriginatorIndex, 0)
 			return 0
 		} else {
-			if config.GetSameOriginator() {
-				if atomic.LoadInt64(&state.TimeStep)%100 == 0 {
-					return atomic.AddInt64(&state.OriginatorIndex, 1)
-				}
-			} else {
-				return atomic.AddInt64(&state.OriginatorIndex, 1)
-			}
+			return atomic.AddInt64(&state.OriginatorIndex, 1)
 		}
 	}
-	return curOriginatorIndex
-	//state.OriginatorIndex = rand.Intn(config.GetOriginators() - 1)
 }

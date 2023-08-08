@@ -3,7 +3,7 @@
 # Run main.go in the background and capture its process name
 go run main.go &
 sleep 1
-PROC_NAME=$(ps -e -o comm= | grep exe/main)
+PROC_NAME=$(ps -e -o comm= | grep main)
 echo "Process name: $PROC_NAME"
 
 # Create a file to save the output
@@ -19,7 +19,7 @@ while true; do
   fi
   
   # Get the PID of the process and check if it is empty
-  PID=$(pgrep -f "$PROC_NAME")
+  PID=$(pgrep -f "exe/main")
   if [ -z "$PID" ]; then
     echo "Process $PROC_NAME is no longer running."
     break

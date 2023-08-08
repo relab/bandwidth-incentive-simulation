@@ -185,8 +185,10 @@ func JustPrintOutPut() bool {
 		!theconfig.BaseOptions.OutputOptions.HopFractionOfTotalRewards &&
 		!theconfig.BaseOptions.OutputOptions.NegativeIncome &&
 		!theconfig.BaseOptions.OutputOptions.IncomeGini &&
+		!theconfig.BaseOptions.OutputOptions.IncomeTheil &&
 		!theconfig.BaseOptions.OutputOptions.HopIncome &&
 		!theconfig.BaseOptions.OutputOptions.DensenessIncome &&
+		!theconfig.BaseOptions.OutputOptions.WorkIncomeSpearman &&
 		!theconfig.BaseOptions.OutputOptions.WorkInfo &&
 		!theconfig.BaseOptions.OutputOptions.BucketInfo &&
 		!theconfig.BaseOptions.OutputOptions.LinkInfo {
@@ -227,6 +229,13 @@ func GetIncomeGini() bool {
 	return false
 }
 
+func GetIncomeTheil() bool {
+	if theconfig.ExperimentOptions.PaymentEnabled {
+		return theconfig.BaseOptions.OutputOptions.IncomeTheil
+	}
+	return false
+}
+
 func GetHopIncome() bool {
 	if theconfig.ExperimentOptions.PaymentEnabled {
 		return theconfig.BaseOptions.OutputOptions.HopIncome
@@ -237,6 +246,13 @@ func GetHopIncome() bool {
 func GetDensnessIncome() bool {
 	if theconfig.ExperimentOptions.PaymentEnabled {
 		return theconfig.BaseOptions.OutputOptions.DensenessIncome
+	}
+	return false
+}
+
+func GetWorkIncomeSpearman() bool {
+	if theconfig.ExperimentOptions.PaymentEnabled {
+		return theconfig.BaseOptions.OutputOptions.WorkIncomeSpearman
 	}
 	return false
 }

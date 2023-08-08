@@ -33,8 +33,10 @@ func getDefaultConfig() Config {
 				HopFractionOfTotalRewards: false,     //false
 				NegativeIncome:            false,     // false
 				IncomeGini:                false,     // false
+				IncomeTheil:               false,     // false
 				HopIncome:                 false,     // false
 				DensenessIncome:           false,     // false
+				WorkIncomeSpearman:        false,     // false
 				WorkInfo:                  false,     // false
 				BucketInfo:                false,     // false
 				LinkInfo:                  false,     // false
