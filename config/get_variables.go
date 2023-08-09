@@ -191,7 +191,8 @@ func JustPrintOutPut() bool {
 		!theconfig.BaseOptions.OutputOptions.WorkIncomeSpearman &&
 		!theconfig.BaseOptions.OutputOptions.WorkInfo &&
 		!theconfig.BaseOptions.OutputOptions.BucketInfo &&
-		!theconfig.BaseOptions.OutputOptions.LinkInfo {
+		!theconfig.BaseOptions.OutputOptions.LinkInfo &&
+		!theconfig.BaseOptions.OutputOptions.RerouteInfo {
 		return true
 	}
 	return false
@@ -267,6 +268,10 @@ func GetBucketInfo() bool {
 
 func GetLinkInfo() bool {
 	return theconfig.BaseOptions.OutputOptions.LinkInfo
+}
+
+func GetRerouteInfo() bool {
+	return theconfig.BaseOptions.OutputOptions.RerouteInfo
 }
 
 func GetExpeimentId() string {

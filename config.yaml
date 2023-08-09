@@ -56,6 +56,7 @@ BaseOptions:
     WorkInfo: false
     BucketInfo: true
     LinkInfo: true
+    RerouteInfo: true
     ExperimentId: "0"
     # Reset output loggers after every output. With false, all outputs will be accumulated
     Reset: false

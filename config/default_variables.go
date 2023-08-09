@@ -40,6 +40,7 @@ func getDefaultConfig() Config {
 				WorkInfo:                  false,     // false
 				BucketInfo:                false,     // false
 				LinkInfo:                  false,     // false
+				RerouteInfo:               false,     // false
 				ExperimentId:              "default", // default
 				Reset:                     false,     // false
 				EvaluateInterval:          0,         // 0

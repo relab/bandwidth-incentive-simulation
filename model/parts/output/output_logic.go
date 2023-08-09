@@ -22,6 +22,7 @@ type Route struct {
 	AccessFailed       bool
 	ThresholdFailed    bool
 	FoundByCaching     bool
+	NumRetries         int
 }
 
 func (o *Route) failed() bool {
