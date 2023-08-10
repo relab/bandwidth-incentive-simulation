@@ -35,6 +35,10 @@ func GetAdjustableThresholdExponent() int {
 	return theconfig.BaseOptions.AdjustableThresholdExponent
 }
 
+func GetMaxOriginatorRequests() int {
+	return theconfig.BaseOptions.MaxOriginatorRequests
+}
+
 func IsForgivenessEnabled() bool {
 	return theconfig.ExperimentOptions.ForgivenessEnabled
 }

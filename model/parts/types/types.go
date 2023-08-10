@@ -1,5 +1,7 @@
 package types
 
+import "go-incentive-simulation/config"
+
 type Request struct {
 	TimeStep        int
 	Epoch           int
@@ -53,6 +55,22 @@ type State struct {
 }
 
 func (s *State) GetOriginatorId(originatorIndex int) NodeId {
+	if config.GetMaxOriginatorRequests() > 0 {
+		nodeId := s.Originators[originatorIndex]
+		node := s.Graph.GetNode(nodeId)
+		if node == nil {
+			panic("Node not found")
+		}
+		if node.OriginatorStruct.RequestCount > config.GetMaxOriginatorRequests() {
+			newNode, err := s.Graph.NewNode()
+			if err != nil {
+				panic(err)
+			}
+			newNode.OriginatorStruct.Deactivate()
+			s.Originators[originatorIndex] = newNode.Id
+		}
+	}
+
 	return s.Originators[originatorIndex]
 }
 

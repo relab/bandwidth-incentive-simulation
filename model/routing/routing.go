@@ -33,6 +33,9 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 		if dist >= currDist {
 			continue
 		}
+		if !graph.IsActive(nodeId) {
+			continue
+		}
 
 		// This means the node is now actively trying to communicate with the other node
 		if config.IsEdgeLock() {

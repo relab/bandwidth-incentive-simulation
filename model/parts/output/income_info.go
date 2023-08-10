@@ -54,9 +54,13 @@ func (o *IncomeInfo) CalculateIncomeFairness() float64 {
 	size := config.GetNetworkSize()
 	vals := make([]int, size)
 	i := 0
+	println("IncomeMap size" ,len(o.IncomeMap))
 	for _, value := range o.IncomeMap {
 		vals[i] = value
 		i++
+		if i == size {
+			break
+		}
 	}
 	return utils.Gini(vals)
 }
@@ -90,6 +94,9 @@ func (o *IncomeInfo) CalculateIncomeTheilIndex() float64 {
 	for _, value := range o.IncomeMap {
 		vals[i] = value
 		i++
+		if i == size {
+			break
+		}
 	}
 	return utils.Theil(vals)
 }

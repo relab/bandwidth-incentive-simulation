@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"go-incentive-simulation/model/general"
 	"sync"
 )
 
@@ -64,14 +65,48 @@ func (g *Graph) AddEdge(fromNodeId NodeId, toNodeId NodeId, attrs EdgeAttrs) err
 	} else {
 		//newEdges := append(g.Edges[edge.FromNodeId], edge)
 		//g.Edges[edge.FromNodeId] = newEdges
+	
 		mutex := &sync.Mutex{}
 		if g.EdgeExists(toNodeId, fromNodeId) {
 			mutex = g.GetEdge(toNodeId, fromNodeId).Mutex
 		}
 		newEdge := &Edge{FromNodeId: fromNodeId, ToNodeId: toNodeId, Attrs: attrs, Mutex: mutex}
+		g.Mutex.Lock()
+		defer g.Mutex.Unlock()
 		g.Edges[fromNodeId][toNodeId] = newEdge
 		return nil
 	}
+}
+
+func (g *Graph) NewNode() (*Node, error) {
+	g.Mutex.Lock()
+	node := g.Network.NewNode()
+	node.OriginatorStruct.Deactivate()
+	g.Edges[node.Id] = make(map[NodeId]*Edge)
+	err1 := g.AddNode(node)
+	g.Mutex.Unlock()
+	if err1 != nil {
+		return nil, err1
+	}
+
+	nodeAdj := node.AdjIds
+	for _, adjItems := range nodeAdj {
+		for _, otherNodeId := range adjItems {
+			threshold := general.BitLength(node.Id.ToInt() ^ otherNodeId.ToInt())
+			attrs := EdgeAttrs{A2B: 0, LastEpoch: 0, Threshold: threshold}
+			err := g.AddEdge(node.Id, otherNodeId, attrs)
+			if err != nil {
+				return nil, err
+			}
+			err = g.AddEdge(otherNodeId, node.Id, attrs)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	node.OriginatorStruct.Activate()
+
+	return node, nil
 }
 
 func (g *Graph) LockEdge(nodeA NodeId, nodeB NodeId) {
@@ -94,6 +129,8 @@ func (g *Graph) UnlockEdge(nodeA NodeId, nodeB NodeId) {
 
 func (g *Graph) GetEdge(fromNodeId NodeId, toNodeId NodeId) *Edge {
 	if g.EdgeExists(fromNodeId, toNodeId) {
+		g.Mutex.Lock()
+		defer g.Mutex.Unlock()
 		return g.Edges[fromNodeId][toNodeId]
 	}
 	return &Edge{}
@@ -107,6 +144,8 @@ func (g *Graph) GetEdgeData(fromNodeId NodeId, toNodeId NodeId) EdgeAttrs {
 }
 
 func (g *Graph) EdgeExists(fromNodeId NodeId, toNodeId NodeId) bool {
+	g.Mutex.Lock()
+	defer g.Mutex.Unlock()
 	if _, ok := g.Edges[fromNodeId][toNodeId]; ok {
 		return true
 	}
@@ -123,13 +162,17 @@ func (g *Graph) SetEdgeData(fromNodeId NodeId, toNodeId NodeId, edgeAttrs EdgeAt
 
 // GetNode getNode will return a node point if exists or return nil
 func (g *Graph) GetNode(nodeId NodeId) *Node {
-	//g.Mutex.Lock()
-	//defer g.Mutex.Unlock()
+	g.Mutex.Lock()
+	defer g.Mutex.Unlock()
 	node, ok := g.NodesMap[nodeId]
 	if ok {
 		return node
 	}
 	return nil
+}
+
+func (g *Graph) IsActive(nodeId NodeId) bool {
+	return g.GetNode(nodeId).OriginatorStruct.Active
 }
 
 func ContainsNode(Nodes []*Node, node *Node) bool {

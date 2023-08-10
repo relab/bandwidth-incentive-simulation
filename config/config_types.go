@@ -32,6 +32,7 @@ type baseOptions struct {
 	OutputOptions               outputOptions `yaml:"OutputOptions"`
 	ReplicationFactor           int           `yaml:"ReplicationFactor"`
 	AdjustableThresholdExponent int           `yaml:"AdjustableThresholdExponent"`
+	MaxOriginatorRequests       int           `yaml:"MaxOriginatorRequests"`
 	AddressRange                int
 	StorageDepth                int
 }

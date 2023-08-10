@@ -38,12 +38,13 @@ func (c ChunkId) IsNil() bool {
 }
 
 type Node struct {
-	Network       *Network
-	Id            NodeId
-	AdjIds        [][]NodeId
-	CacheStruct   CacheStruct
-	PendingStruct PendingStruct
-	RerouteStruct RerouteStruct
+	Network           *Network
+	Id                NodeId
+	AdjIds            [][]NodeId
+	OriginatorStruct  OriginatorStruct
+	CacheStruct       CacheStruct
+	PendingStruct     PendingStruct
+	RerouteStruct     RerouteStruct
 }
 
 type jsonFormat struct {
@@ -64,6 +65,8 @@ func (network *Network) Load(path string) (int, int, map[NodeId]*Node) {
 	defer func(file *os.File) {
 		err := file.Close()
 		if err != nil {
+			fmt.Printf("Error closing file %v", err)
+			panic("Unable to close network file")
 		}
 	}(file)
 	decoder := json.NewDecoder(file)
@@ -91,14 +94,46 @@ func (network *Network) Load(path string) (int, int, map[NodeId]*Node) {
 	return network.Bits, network.Bin, network.NodesMap
 }
 
+func (network *Network) NewNode() *Node {
+	// This is a very inefficient way to generate a new node
+	// Currently, it adds two-way connections to other nodes
+
+	nodeId := generateIds(1, (1<<network.Bits)-1)[0]
+	for _, ok := network.NodesMap[NodeId(nodeId)]; ok; _, ok = network.NodesMap[NodeId(nodeId)] {
+		nodeId = generateIds(1, (1<<network.Bits)-1)[0]
+	}
+
+	node := network.node(NodeId(nodeId))
+
+	choicenodes := make([]NodeId, 0, len(network.NodesMap))
+	for key := range network.NodesMap {
+		choicenodes = append(choicenodes, key)
+	}
+	rand.Shuffle(len(choicenodes), func(i, j int) { choicenodes[i], choicenodes[j] = choicenodes[j], choicenodes[i] })
+	for _, adj := range choicenodes {
+		_, err := node.add(network.NodesMap[adj])
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	network.NodesMap[NodeId(nodeId)] = node
+
+	return node
+}
+
 func (network *Network) node(nodeId NodeId) *Node {
 	if nodeId < 0 || nodeId >= (1<<network.Bits) {
 		panic("address out of range")
 	}
 	res := Node{
-		Network: network,
-		Id:      nodeId,
-		AdjIds:  make([][]NodeId, network.Bits),
+		Network:      network,
+		Id:           nodeId,
+		AdjIds:       make([][]NodeId, network.Bits),
+		OriginatorStruct: OriginatorStruct{
+			Active:       true,
+			RequestCount: 0,
+		},
 		CacheStruct: CacheStruct{
 			Size:       500,
 			CacheMap:   make(CacheMap),
@@ -227,7 +262,7 @@ func generateIdsEven(totalNumbers int, maxValue int) []int {
 
 func (node *Node) add(other *Node) (bool, error) {
 	if node.Network == nil || node.Network != other.Network {
-		return false, errors.New("Trying to add nodes with different networks")
+		return false, errors.New("trying to add nodes with different networks")
 	}
 	if node == other {
 		return false, nil
@@ -240,10 +275,10 @@ func (node *Node) add(other *Node) (bool, error) {
 	}
 	bit := node.Network.Bits - general.BitLength(node.Id.ToInt()^other.Id.ToInt())
 	if bit < 0 || bit >= node.Network.Bits {
-		return false, errors.New("Nodes have distance outside XOr metric")
+		return false, errors.New("nodes have distance outside XOR metric")
 	}
 	isDup := general.Contains(node.AdjIds[bit], other.Id) || general.Contains(other.AdjIds[bit], node.Id)
-	if len(node.AdjIds[bit]) < node.Network.Bin && len(other.AdjIds[bit]) < node.Network.Bin && !isDup {
+	if (len(node.AdjIds[bit]) < node.Network.Bin || len(other.AdjIds[bit]) < node.Network.Bin) && !isDup {
 		node.AdjIds[bit] = append(node.AdjIds[bit], other.Id)
 		other.AdjIds[bit] = append(other.AdjIds[bit], node.Id)
 		return true, nil

@@ -35,6 +35,7 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			originatorIndex := int(update.OriginatorIndex(globalState, timeStep))
 			originatorId := globalState.GetOriginatorId(originatorIndex)
 			originator := globalState.Graph.GetNode(originatorId)
+			originator.OriginatorStruct.AddRequest()
 
 			// Needed for checks waiting and retry
 			chunkId = -1

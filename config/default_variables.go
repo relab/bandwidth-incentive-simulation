@@ -27,6 +27,7 @@ func getDefaultConfig() Config {
 			OutputEnabled:               false,     // false
 			ReplicationFactor:           4,
 			AdjustableThresholdExponent: 3,
+			MaxOriginatorRequests: 	 	 0,         // non-positive means no limit
 			OutputOptions: outputOptions{
 				MeanRewardPerForward:      false,     // false
 				AverageNumberOfHops:       false,     // false
