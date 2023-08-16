@@ -30,6 +30,8 @@ BaseOptions:
   SameOriginator: false
   # IterationMeansUniqueChunk: false, if a chunk chosen again by waiting/retry counts as an iteration
   IterationMeansUniqueChunk: false
+  # RetryCausesTimeIncrease: false, if retry counts towards the x requests an originator makes per second
+  RetryCausesTimeIncrease: false
   # DebugPrints: false, enables some useful prints to terminal during the run
   DebugPrints: true
   # DebugInterval: 1_000_000, how often these prints should be done
