@@ -45,7 +45,6 @@ type Threshold [2]NodeId
 type State struct {
 	Graph                *Graph
 	Originators          []NodeId
-	NodesId              []NodeId
 	RouteLists           []RequestResult
 	UniqueWaitingCounter int64
 	UniqueRetryCounter   int64
@@ -66,7 +65,7 @@ func (s *State) GetOriginatorId(originatorIndex int) NodeId {
 			if err != nil {
 				panic(err)
 			}
-			newNode.OriginatorStruct.Deactivate()
+			newNode.Deactivate()
 			s.Originators[originatorIndex] = newNode.Id
 		}
 	}

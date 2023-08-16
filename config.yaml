@@ -23,7 +23,7 @@ BaseOptions:
   # Price: 1, the base unit for prices
   Price: 1
   # RequestsPerSecond: 12500, number of iterations during a second
-  RequestsPerSecond: 100_000
+  RequestsPerSecond: 500
   # EdgeLock: true, keeps edges locked while in use for concurrency
   EdgeLock: true
   # SameOriginator: false, makes the same originator request many times in a row
@@ -33,7 +33,7 @@ BaseOptions:
   # DebugPrints: false, enables some useful prints to terminal during the run
   DebugPrints: true
   # DebugInterval: 1_000_000, how often these prints should be done
-  DebugInterval: 100_000
+  DebugInterval: 10_000
   # NumGoroutines: -1, number of active goroutines, leave at -1 for automatically using numCPU
   NumGoroutines: -1
   # Enabled the outputWorker which handles writing output to file and analysis of results
@@ -43,6 +43,7 @@ BaseOptions:
   # The exponent used for the adjustable threshold formula
   AdjustableThresholdExponent: 3
   # The maximum amount an originator is going to handle, leave non-positive for no limit
+  # TODO: For god's sake, change the name of this variable
   MaxOriginatorRequests: 10
   # Which logic should be used in the outputWorker
   OutputOptions:
@@ -76,9 +77,9 @@ Experiment:
 # Defines your own custom experiment
 CustomExperiment:
   # ThresholdEnabled: true, enabling the maximum limit of debt an edge can have in one direction
-  ThresholdEnabled: false
+  ThresholdEnabled: true
   # ReciprocityEnabled: true, if enabled, dept in multiple directions is calculated against each other
-  ReciprocityEnabled: true
+  ReciprocityEnabled: false
   # ForgivenessEnabled: true, edge debt gets forgiven some amount on an interval (amortized)
   ForgivenessEnabled: false
   # PaymentEnabled: false, nodes pay if they would get a threshold failure

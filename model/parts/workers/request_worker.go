@@ -28,8 +28,8 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 
 			if config.TimeForNewEpoch(timeStep) {
 				curEpoch = update.Epoch(globalState)
-
 				waitForRoutingWorkers(pauseChan, continueChan, numRoutingGoroutines)
+				update.Neighbors(globalState)
 			}
 
 			originatorIndex := int(update.OriginatorIndex(globalState, timeStep))

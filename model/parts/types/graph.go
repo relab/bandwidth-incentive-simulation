@@ -10,10 +10,8 @@ import (
 type Graph struct {
 	*Network
 	CurState State
-	Nodes    []*Node
-	NodeIds  []NodeId
 	Edges    map[NodeId]map[NodeId]*Edge
-	Mutex    sync.Mutex
+	rwMutex    sync.RWMutex
 }
 
 // Edge that connects to NodesMap with attributes about the connection
@@ -34,17 +32,6 @@ type EdgeAttrs struct {
 	Threshold int
 }
 
-// AddNode will add a Node to a graph
-func (g *Graph) AddNode(node *Node) error {
-	if ContainsNode(g.Nodes, node) {
-		err := fmt.Errorf("node %d already exists", node.Id)
-		return err
-	} else {
-		g.Nodes = append(g.Nodes, node)
-		return nil
-	}
-}
-
 func (g *Graph) GetNodeAdj(nodeId NodeId) [][]NodeId {
 	n := g.GetNode(nodeId)
 	if n == nil {
@@ -55,39 +42,29 @@ func (g *Graph) GetNodeAdj(nodeId NodeId) [][]NodeId {
 
 // AddEdge will add an edge from a node to a node
 func (g *Graph) AddEdge(fromNodeId NodeId, toNodeId NodeId, attrs EdgeAttrs) error {
-	toNode := g.GetNode(toNodeId)
-	fromNode := g.GetNode(fromNodeId)
+	toNode := g.NodesMap[toNodeId]
+	fromNode := g.NodesMap[fromNodeId]
 	if toNode == nil || fromNode == nil {
 		return fmt.Errorf("not a valid edge from %d ---> %d", fromNode.Id, toNode.Id)
-	} else if g.EdgeExists(fromNodeId, toNodeId) {
-		//if ContainsEdge(g.Edges[edge.FromNodeId], edge) {
+	} else if g.unsafeEdgeExists(fromNodeId, toNodeId) {
 		return fmt.Errorf("edge from node %d ---> %d already exists", fromNodeId, toNodeId)
 	} else {
-		//newEdges := append(g.Edges[edge.FromNodeId], edge)
-		//g.Edges[edge.FromNodeId] = newEdges
-	
 		mutex := &sync.Mutex{}
-		if g.EdgeExists(toNodeId, fromNodeId) {
-			mutex = g.GetEdge(toNodeId, fromNodeId).Mutex
+		if g.unsafeEdgeExists(toNodeId, fromNodeId) {
+			mutex = g.Edges[toNodeId][fromNodeId].Mutex
 		}
 		newEdge := &Edge{FromNodeId: fromNodeId, ToNodeId: toNodeId, Attrs: attrs, Mutex: mutex}
-		g.Mutex.Lock()
-		defer g.Mutex.Unlock()
 		g.Edges[fromNodeId][toNodeId] = newEdge
 		return nil
 	}
 }
 
 func (g *Graph) NewNode() (*Node, error) {
-	g.Mutex.Lock()
+	g.rwMutex.Lock()
 	node := g.Network.NewNode()
-	node.OriginatorStruct.Deactivate()
+	node.Deactivate()
 	g.Edges[node.Id] = make(map[NodeId]*Edge)
-	err1 := g.AddNode(node)
-	g.Mutex.Unlock()
-	if err1 != nil {
-		return nil, err1
-	}
+	defer g.rwMutex.Unlock()
 
 	nodeAdj := node.AdjIds
 	for _, adjItems := range nodeAdj {
@@ -104,17 +81,16 @@ func (g *Graph) NewNode() (*Node, error) {
 			}
 		}
 	}
-	node.OriginatorStruct.Activate()
+	node.Activate()
 
 	return node, nil
 }
 
 func (g *Graph) LockEdge(nodeA NodeId, nodeB NodeId) {
-	// fmt.Printf("\n LockEdge: %d-%d", nodeA, nodeB)
-	if !g.EdgeExists(nodeA, nodeB) {
+	edge := g.GetEdge(nodeA, nodeB)
+	if edge == nil {
 		panic(fmt.Sprintf("Trying to lock edge %d-%d that does not exist!", nodeA, nodeB))
 	}
-	edge := g.GetEdge(nodeA, nodeB)
 	edge.Mutex.Lock()
 }
 
@@ -128,12 +104,22 @@ func (g *Graph) UnlockEdge(nodeA NodeId, nodeB NodeId) {
 }
 
 func (g *Graph) GetEdge(fromNodeId NodeId, toNodeId NodeId) *Edge {
-	if g.EdgeExists(fromNodeId, toNodeId) {
-		g.Mutex.Lock()
-		defer g.Mutex.Unlock()
+	g.rwMutex.RLock()
+	if _, ok := g.Edges[fromNodeId][toNodeId]; ok {
+		g.rwMutex.RUnlock()
 		return g.Edges[fromNodeId][toNodeId]
 	}
-	return &Edge{}
+	g.rwMutex.RUnlock()
+
+	g.rwMutex.Lock()
+	defer g.rwMutex.Unlock()
+
+	err := g.AddEdge(fromNodeId, toNodeId, EdgeAttrs{})
+	if err != nil {
+		return nil
+	}
+
+	return g.Edges[fromNodeId][toNodeId]
 }
 
 func (g *Graph) GetEdgeData(fromNodeId NodeId, toNodeId NodeId) EdgeAttrs {
@@ -144,8 +130,15 @@ func (g *Graph) GetEdgeData(fromNodeId NodeId, toNodeId NodeId) EdgeAttrs {
 }
 
 func (g *Graph) EdgeExists(fromNodeId NodeId, toNodeId NodeId) bool {
-	g.Mutex.Lock()
-	defer g.Mutex.Unlock()
+	g.rwMutex.RLock()
+	defer g.rwMutex.RUnlock()
+	if _, ok := g.Edges[fromNodeId][toNodeId]; ok {
+		return true
+	}
+	return false
+}
+
+func (g *Graph) unsafeEdgeExists(fromNodeId NodeId, toNodeId NodeId) bool {
 	if _, ok := g.Edges[fromNodeId][toNodeId]; ok {
 		return true
 	}
@@ -162,8 +155,8 @@ func (g *Graph) SetEdgeData(fromNodeId NodeId, toNodeId NodeId, edgeAttrs EdgeAt
 
 // GetNode getNode will return a node point if exists or return nil
 func (g *Graph) GetNode(nodeId NodeId) *Node {
-	g.Mutex.Lock()
-	defer g.Mutex.Unlock()
+	g.rwMutex.RLock()
+	defer g.rwMutex.RUnlock()
 	node, ok := g.NodesMap[nodeId]
 	if ok {
 		return node
@@ -172,20 +165,15 @@ func (g *Graph) GetNode(nodeId NodeId) *Node {
 }
 
 func (g *Graph) IsActive(nodeId NodeId) bool {
-	return g.GetNode(nodeId).OriginatorStruct.Active
-}
-
-func ContainsNode(Nodes []*Node, node *Node) bool {
-	for _, curNode := range Nodes {
-		if curNode.Id == node.Id {
-			return true
-		}
+	node := g.GetNode(nodeId)
+	if node == nil {
+		return false
 	}
-	return false
+	return node.Active
 }
 
 func (g *Graph) Print() {
-	for _, v := range g.Nodes {
+	for _, v := range g.NodesMap {
 		fmt.Printf("%d : ", v.Id)
 		for _, i := range v.AdjIds {
 			for _, v := range i {

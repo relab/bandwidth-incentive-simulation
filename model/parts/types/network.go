@@ -2,12 +2,9 @@ package types
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"go-incentive-simulation/model/general"
 	"math/rand"
 	"os"
-	"sort"
 	"sync"
 )
 
@@ -35,16 +32,6 @@ func (c ChunkId) ToInt() int {
 
 func (c ChunkId) IsNil() bool {
 	return c.ToInt() == 0
-}
-
-type Node struct {
-	Network           *Network
-	Id                NodeId
-	AdjIds            [][]NodeId
-	OriginatorStruct  OriginatorStruct
-	CacheStruct       CacheStruct
-	PendingStruct     PendingStruct
-	RerouteStruct     RerouteStruct
 }
 
 type jsonFormat struct {
@@ -84,7 +71,6 @@ func (network *Network) Load(path string) (int, int, map[NodeId]*Node) {
 
 	for _, node := range test.Nodes {
 		node1 := network.node(NodeId(node.Id))
-		sort.Ints(node.Adj)
 		for _, adj := range node.Adj {
 			node2 := network.node(NodeId(adj))
 			node1.add(node2)
@@ -115,6 +101,10 @@ func (network *Network) NewNode() *Node {
 		if err != nil {
 			panic(err)
 		}
+		_, err = network.NodesMap[adj].add(node)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	network.NodesMap[NodeId(nodeId)] = node
@@ -130,8 +120,8 @@ func (network *Network) node(nodeId NodeId) *Node {
 		Network:      network,
 		Id:           nodeId,
 		AdjIds:       make([][]NodeId, network.Bits),
+		Active: 	  true,
 		OriginatorStruct: OriginatorStruct{
-			Active:       true,
 			RequestCount: 0,
 		},
 		CacheStruct: CacheStruct{
@@ -154,6 +144,7 @@ func (network *Network) node(nodeId NodeId) *Node {
 			History:      make(map[ChunkId][]NodeId),
 			RerouteMutex: &sync.Mutex{},
 		},
+		AdjLock: sync.RWMutex{},
 	}
 	if len(network.NodesMap) == 0 {
 		network.NodesMap = make(map[NodeId]*Node)
@@ -185,6 +176,10 @@ func (network *Network) Generate(count int, random bool) []*Node {
 			if err != nil {
 				panic(err)
 			}
+			_, err = node2.add(node1)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 	return nodes
@@ -205,12 +200,15 @@ func (network *Network) Dump(path string) error {
 	}, 0)}
 	for _, node := range network.NodesMap {
 		var result []int
+
+		node.AdjLock.RLock()
 		for _, list := range node.AdjIds {
 			for _, ele := range list {
 				result = append(result, int(ele))
 			}
-			//result = append(result, list...)
 		}
+		node.AdjLock.RUnlock()
+
 		data.Nodes = append(data.Nodes, struct {
 			Id  int   `json:"id"`
 			Adj []int `json:"adj"`
@@ -223,15 +221,6 @@ func (network *Network) Dump(path string) error {
 	}
 	return nil
 }
-
-//func Choice(nodes []NodeId, k int) []NodeId {
-//	if k > len(nodes) {
-//		panic("Cannot have more originators than nodes")
-//	}
-//	rand.Shuffle(len(nodes), func(i, j int) { nodes[i], nodes[j] = nodes[j], nodes[i] })
-//
-//	return nodes[:k]
-//}
 
 func generateIds(totalNumbers int, maxValue int) []int {
 	// rand.Seed(time.Now().UnixNano())
@@ -260,32 +249,3 @@ func generateIdsEven(totalNumbers int, maxValue int) []int {
 	return result[:totalNumbers]
 }
 
-func (node *Node) add(other *Node) (bool, error) {
-	if node.Network == nil || node.Network != other.Network {
-		return false, errors.New("trying to add nodes with different networks")
-	}
-	if node == other {
-		return false, nil
-	}
-	if node.AdjIds == nil {
-		node.AdjIds = make([][]NodeId, node.Network.Bits)
-	}
-	if other.AdjIds == nil {
-		other.AdjIds = make([][]NodeId, other.Network.Bits)
-	}
-	bit := node.Network.Bits - general.BitLength(node.Id.ToInt()^other.Id.ToInt())
-	if bit < 0 || bit >= node.Network.Bits {
-		return false, errors.New("nodes have distance outside XOR metric")
-	}
-	isDup := general.Contains(node.AdjIds[bit], other.Id) || general.Contains(other.AdjIds[bit], node.Id)
-	if (len(node.AdjIds[bit]) < node.Network.Bin || len(other.AdjIds[bit]) < node.Network.Bin) && !isDup {
-		node.AdjIds[bit] = append(node.AdjIds[bit], other.Id)
-		other.AdjIds[bit] = append(other.AdjIds[bit], node.Id)
-		return true, nil
-	}
-	return false, nil
-}
-
-func (node *Node) IsNil() bool {
-	return node.Id == 0
-}
