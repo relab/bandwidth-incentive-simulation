@@ -25,6 +25,7 @@ type baseOptions struct {
 	EdgeLock                    bool          `yaml:"EdgeLock"`
 	SameOriginator              bool          `yaml:"SameOriginator"`
 	IterationMeansUniqueChunk   bool          `yaml:"IterationMeansUniqueChunk"`
+	RetryCausesTimeIncrease     bool          `yaml:"RetryCausesTimeIncrease"`
 	DebugPrints                 bool          `yaml:"DebugPrints"`
 	DebugInterval               int           `yaml:"DebugInterval"`
 	NumGoroutines               int           `yaml:"NumGoroutines"`

@@ -6,6 +6,7 @@ import (
 	"math"
 	"os"
 	"runtime"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -68,6 +69,7 @@ func ValidateBaseOptions(configOptions baseOptions) {
 	SetEvaluateInterval(configOptions.OutputOptions.EvaluateInterval)
 	SetAddressRange(configOptions.Bits)
 	SetStorageDepth(configOptions.ReplicationFactor)
+	SetRandomSeed()
 }
 
 func SetNumGoroutines(numGoroutines int) {
@@ -77,8 +79,8 @@ func SetNumGoroutines(numGoroutines int) {
 }
 
 func SetEvaluateInterval(interval int) {
-	if interval <= 0 {
-		theconfig.BaseOptions.OutputOptions.EvaluateInterval = theconfig.BaseOptions.Iterations
+	if interval < 0 {
+		theconfig.BaseOptions.OutputOptions.EvaluateInterval = 0
 	}
 }
 
@@ -101,4 +103,10 @@ func SetStorageDepth(replicationFactor int) {
 		depth++
 	}
 	theconfig.BaseOptions.StorageDepth = depth
+}
+
+func SetRandomSeed() {
+	if theconfig.BaseOptions.RandomSeed == -1 {
+		theconfig.BaseOptions.RandomSeed = time.Now().UnixNano()
+	}
 }

@@ -48,7 +48,7 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 			output := update.Graph(globalState, requestResult, curTimeStep)
 
 			update.Pending(globalState, requestResult, request.Epoch)
-			update.Reroute(globalState, requestResult, request.Epoch)
+			output.RetryCount = update.Reroute(globalState, requestResult, request.Epoch)
 			update.Cache(globalState, requestResult)
 
 			if config.IsOutputEnabled() {

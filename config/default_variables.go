@@ -21,6 +21,7 @@ func getDefaultConfig() Config {
 			EdgeLock:                    true,      // false
 			SameOriginator:              false,     // false
 			IterationMeansUniqueChunk:   false,     // false
+			RetryCausesTimeIncrease:     false,     //false
 			DebugPrints:                 false,     // false
 			DebugInterval:               1000000,   // 1000000
 			NumGoroutines:               -1,        // -1 means gets overwritten by numCPU
