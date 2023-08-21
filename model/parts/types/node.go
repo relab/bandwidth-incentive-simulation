@@ -2,12 +2,12 @@ package types
 
 import (
 	"errors"
-	// "fmt"
+	"math"
+
 	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
 	"math/rand"
 	"sync"
-	// "time"
 )
 
 type Node struct {
@@ -52,22 +52,13 @@ func (node *Node) add(other *Node) (bool, error) {
 }
 
 func (node *Node) UpdateNeighbors() {
-	return
-	// start := time.Now()
 	node.AdjLock.Lock()
 	defer node.AdjLock.Unlock()
 
 	candidateNeighbors := make([][]NodeId, node.Network.Bits)
+	numConsidredNeighbors := int(math.Log2(float64(node.Network.Bin + 4))) // 4 is an arbitrary smoothing factor
 	for l, adjIds := range node.AdjIds {
-
-		shuffledAdjIds := adjIds
-		rand.Shuffle(len(shuffledAdjIds), func(i, j int) {
-			shuffledAdjIds[i], shuffledAdjIds[j] = shuffledAdjIds[j], shuffledAdjIds[i]
-		})
-		if len(shuffledAdjIds) > 4 {
-			shuffledAdjIds = shuffledAdjIds[:4]
-		}
-
+		shuffledAdjIds := getRandomElements(adjIds, numConsidredNeighbors)
 		for _, adjId := range shuffledAdjIds {
 			if !general.Contains(candidateNeighbors[l], adjId) {
 				candidateNeighbors[l] = append(candidateNeighbors[l], adjId)
@@ -75,15 +66,7 @@ func (node *Node) UpdateNeighbors() {
 			adj := node.Network.NodesMap[adjId]
 			adj.AdjLock.RLock()
 			for _, adjAdjIds := range adj.AdjIds {
-
-				shuffledAdjAdjIds := adjAdjIds
-				rand.Shuffle(len(shuffledAdjAdjIds), func(i, j int) {
-					shuffledAdjAdjIds[i], shuffledAdjAdjIds[j] = shuffledAdjAdjIds[j], shuffledAdjAdjIds[i]
-				})
-				if len(shuffledAdjAdjIds) > 4 {
-					shuffledAdjAdjIds = shuffledAdjAdjIds[:4]
-				}
-
+				shuffledAdjAdjIds := getRandomElements(adjAdjIds, numConsidredNeighbors)
 				for _, adjAdjId := range shuffledAdjAdjIds {
 					bin := config.GetBits() - general.BitLength(node.Id.ToInt()^adjAdjId.ToInt())
 					if adjAdjId != node.Id && !general.Contains(candidateNeighbors[bin], adjAdjId) {
@@ -105,8 +88,6 @@ func (node *Node) UpdateNeighbors() {
 			node.AdjIds[d] = candidateNeighbors[d]
 		}
 	}
-
-	// fmt.Println("Time taken:", time.Since(start))
 }
 
 func (node *Node) IsNil() bool {
@@ -119,4 +100,16 @@ func (node *Node) Deactivate() {
 
 func (node *Node) Activate() {
 	node.Active = true
+}
+
+func getRandomElements(slice []NodeId, num int) []NodeId {
+	if len(slice) <= num {
+		return slice
+	}
+
+	rand.Shuffle(len(slice), func(i, j int) {
+		slice[i], slice[j] = slice[j], slice[i]
+	})
+
+	return slice[:num]
 }

@@ -8,10 +8,7 @@ import (
 
 func Neighbors(globalState *types.State) bool {
 	// Update neighbors with probability p
-	if config.GetOriginatorShuffleProbability() <= 0 {
-		return true
-	}
-	if config.GetNonOriginatorShuffleProbability() <= 0 {
+	if config.GetOriginatorShuffleProbability() <= 0 && config.GetNonOriginatorShuffleProbability() <= 0 {
 		return true
 	}
 	for _, node := range(globalState.Graph.NodesMap) {

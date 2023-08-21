@@ -37,7 +37,9 @@ func (g *Graph) GetNodeAdj(nodeId NodeId) [][]NodeId {
 	if n == nil {
 		panic(fmt.Sprintf("Node %d does not exist!", nodeId))
 	}
-	return g.GetNode(nodeId).AdjIds
+	n.AdjLock.RLock()
+	defer n.AdjLock.RUnlock()
+	return n.AdjIds
 }
 
 // AddEdge will add an edge from a node to a node

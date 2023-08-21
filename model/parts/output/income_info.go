@@ -123,8 +123,8 @@ func (ii *IncomeInfo) Update(output *Route) {
 		if !(payment.Payment.IsOriginator) {
 			ii.IncomeMap[payer] -= payment.Price
 		} else {
-			ii.Requesters[payee] = true
-			ii.CostMap[payee] += payment.Price
+			ii.Requesters[payer] = true
+			ii.CostMap[payer] += payment.Price
 			if hop != 0 {
 				panic("First payment in list is not from originator.")
 			}

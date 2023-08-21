@@ -39,6 +39,10 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 
 		// This means the node is now actively trying to communicate with the other node
 		if config.IsEdgeLock() {
+			// This is dangerous because it locks all the edges on the route:
+			//   Imagine two nodes trying to request each other with distance 2, A -- M -- B
+			//   Both of them will lock the first edge on their side (A-M & M-B Respectively), and will request for the other.
+			//   Boom! Deadlock.
 			graph.LockEdge(firstNodeId, nodeId)
 		}
 
