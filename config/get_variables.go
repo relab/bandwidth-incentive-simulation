@@ -163,6 +163,10 @@ func IsIterationMeansUniqueChunk() bool {
 	return theconfig.BaseOptions.IterationMeansUniqueChunk
 }
 
+func RetryCausesTimeIncrease() bool {
+	return theconfig.BaseOptions.RetryCausesTimeIncrease
+}
+
 func IsDebugPrints() bool {
 	return theconfig.BaseOptions.DebugPrints
 }

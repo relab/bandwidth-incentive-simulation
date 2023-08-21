@@ -2,13 +2,11 @@ package update
 
 import (
 	"go-incentive-simulation/config"
-	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
-	"sync/atomic"
 )
 
-func Reroute(state *types.State, requestResult types.RequestResult, curEpoch int) int64 {
-	var retryCounter int64 = 0
+func Reroute(state *types.State, requestResult types.RequestResult, curEpoch int) int {
+	var retryCounter int = 0
 	if config.IsRetryWithAnotherPeer() {
 
 		route := requestResult.Route
@@ -20,6 +18,7 @@ func Reroute(state *types.State, requestResult types.RequestResult, curEpoch int
 		if requestResult.Found {
 			if reroute.RejectedNodes != nil {
 				if reroute.ChunkId == chunkId { // If chunkId == chunkId --> reset reroute
+
 					originator.RerouteStruct.ResetRerouteAndSaveToHistory(chunkId, curEpoch)
 				}
 			}
@@ -28,19 +27,13 @@ func Reroute(state *types.State, requestResult types.RequestResult, curEpoch int
 			lastHopNode := route[len(route)-1]
 			if reroute.RejectedNodes == nil {
 				reroute = originator.RerouteStruct.AddNewReroute(requestResult.AccessFailed, lastHopNode, chunkId, curEpoch)
-				retryCounter = atomic.AddInt64(&state.UniqueRetryCounter, 1)
-			} else {
-				if !general.Contains(reroute.RejectedNodes, lastHopNode) { // if the last hop in new route have not been searched before
-					originator.RerouteStruct.AddNodeToRejectedNodes(requestResult.AccessFailed, lastHopNode, curEpoch)
-				}
 			}
+			originator.RerouteStruct.AddNodeToRejectedNodes(requestResult.AccessFailed, lastHopNode, chunkId, curEpoch)
 		}
 
-		if retryCounter == 0 {
-			retryCounter = atomic.LoadInt64(&state.UniqueRetryCounter)
-		}
+		retryCounter = len(reroute.RejectedNodes)
 
-		if len(reroute.RejectedNodes) > config.GetBinSize() {
+		if len(reroute.RejectedNodes) >= config.GetBinSize() {
 			originator.RerouteStruct.ResetRerouteAndSaveToHistory(chunkId, curEpoch)
 		}
 

@@ -13,7 +13,7 @@ type Reroute struct {
 
 type RerouteStruct struct {
 	Reroute      Reroute
-	History      map[ChunkId][]NodeId // History of rejected nodes related to a specific chunk
+	History      map[ChunkId][]NodeId // History of access failure nodes related to a specific chunk
 	RerouteMutex *sync.Mutex
 }
 
@@ -31,10 +31,6 @@ func (r *RerouteStruct) AddNewReroute(accessFail bool, nodeId NodeId, chunkId Ch
 		rejectedNodes = previouslyRejectedNodes
 	}
 
-	if accessFail && !general.Contains(rejectedNodes, nodeId) {
-		rejectedNodes = append(rejectedNodes, nodeId)
-	}
-
 	newReroute := Reroute{
 		RejectedNodes: rejectedNodes,
 		ChunkId:       chunkId,
@@ -45,16 +41,18 @@ func (r *RerouteStruct) AddNewReroute(accessFail bool, nodeId NodeId, chunkId Ch
 	return r.Reroute
 }
 
-func (r *RerouteStruct) AddNodeToRejectedNodes(accessFail bool, nodeId NodeId, curEpoch int) {
+func (r *RerouteStruct) AddNodeToRejectedNodes(accessFail bool, nodeId NodeId, chunkId ChunkId, curEpoch int) {
 	r.RerouteMutex.Lock()
 	defer r.RerouteMutex.Unlock()
 
-	//r.Reroute.LastEpoch = curEpoch
-	if accessFail {
-		newRejectedNodes := append(r.Reroute.RejectedNodes, nodeId)
-
-		r.Reroute.RejectedNodes = newRejectedNodes
+	if historyNodes := r.History[chunkId]; accessFail && !general.Contains(historyNodes, nodeId) {
+		if historyNodes != nil {
+			r.History[chunkId] = append(historyNodes, nodeId)
+		} else {
+			r.History[chunkId] = []NodeId{nodeId}
+		}
 	}
+	r.Reroute.RejectedNodes = append(r.Reroute.RejectedNodes, nodeId)
 
 }
 
@@ -62,7 +60,7 @@ func (r *RerouteStruct) ResetRerouteAndSaveToHistory(chunkId ChunkId, curEpoch i
 	r.RerouteMutex.Lock()
 	defer r.RerouteMutex.Unlock()
 
-	r.History[chunkId] = r.Reroute.RejectedNodes
+	// r.History[chunkId] = r.Reroute.RejectedNodes
 	r.Reroute = Reroute{}
 }
 

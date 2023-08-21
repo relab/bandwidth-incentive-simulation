@@ -47,7 +47,6 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 		}
 
 		if !IsThresholdFailed(firstNodeId, nodeId, graph, request) {
-			thresholdFailed = false
 
 			if config.IsRetryWithAnotherPeer() {
 				rerouteStruct := graph.GetNode(mainOriginatorId).RerouteStruct
@@ -59,11 +58,15 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 				}
 			}
 
+			thresholdFailed = false
+
 			if config.IsEdgeLock() {
 				if !nextNodeId.IsNil() {
+					// found new nextNode, release lock on previous found.
 					graph.UnlockEdge(firstNodeId, nextNodeId)
 				}
 				if !payNextId.IsNil() {
+					// found new nextNode, without payment, release lock on previous found payNext.
 					graph.UnlockEdge(firstNodeId, payNextId)
 					payNextId = -1 // IMPORTANT!
 				}
@@ -111,6 +114,9 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 				payment.PayNextId = payNextId
 				payment.ChunkId = chunkId
 				nextNodeId = payNextId
+				thresholdFailed = false
+			} else if config.IsEdgeLock() {
+				graph.UnlockEdge(firstNodeId, payNextId)
 			}
 		} else if config.IsPayIfOrigPays() {
 			// Pay if the originator pays or if the previous node has paid
@@ -120,8 +126,8 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 				payment.ChunkId = chunkId
 				nextNodeId = payNextId
 				thresholdFailed = false
-			} else {
-				thresholdFailed = true
+			} else if config.IsEdgeLock() {
+				graph.UnlockEdge(firstNodeId, payNextId)
 			}
 		} else {
 			// Always pays
