@@ -3,7 +3,7 @@
 # Global configuration options, defaults in comment
 BaseOptions:
   # Iterations: 10_000_000, best in multiples of 100_000
-  Iterations: 100_000
+  Iterations: 1_000_000
   # Bits: 16, bits in maximum address
   Bits: 16
   # NetworkSize: 10000, number of nodes in network
@@ -33,7 +33,7 @@ BaseOptions:
   # DebugPrints: false, enables some useful prints to terminal during the run
   DebugPrints: true
   # DebugInterval: 1_000_000, how often these prints should be done
-  DebugInterval: 10_000
+  DebugInterval: 100_000
   # NumGoroutines: -1, number of active goroutines, leave at -1 for automatically using numCPU
   NumGoroutines: -1
   # Enabled the outputWorker which handles writing output to file and analysis of results
@@ -42,9 +42,12 @@ BaseOptions:
   ReplicationFactor: 4
   # The exponent used for the adjustable threshold formula
   AdjustableThresholdExponent: 3
-  # The maximum amount an originator is going to handle, leave non-positive for no limit
-  # TODO: For god's sake, change the name of this variable
-  MaxOriginatorRequests: 10
+  # The maximum number of requests an originator is going to originate, leave non-positive for no limit
+  AddressChangeThreshold: 0
+  # The probability of neighbor update for every originator at every epoch
+  OriginatorShuffleProbability: 0.0
+  # The probability of neighbor update for every non-originator at every epoch
+  NonOriginatorShuffleProbability: 0.0
   # Which logic should be used in the outputWorker
   OutputOptions:
     MeanRewardPerForward: false

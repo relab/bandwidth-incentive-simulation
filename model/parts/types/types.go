@@ -54,18 +54,19 @@ type State struct {
 }
 
 func (s *State) GetOriginatorId(originatorIndex int) NodeId {
-	if config.GetMaxOriginatorRequests() > 0 {
+	if config.GetAddressChangeThreshold() > 0 {
 		nodeId := s.Originators[originatorIndex]
 		node := s.Graph.GetNode(nodeId)
 		if node == nil {
 			panic("Node not found")
 		}
-		if node.OriginatorStruct.RequestCount > config.GetMaxOriginatorRequests() {
+		if node.OriginatorStruct.RequestCount > config.GetAddressChangeThreshold() {
 			newNode, err := s.Graph.NewNode()
 			if err != nil {
 				panic(err)
 			}
-			newNode.Deactivate()
+			node.Deactivate()
+			newNode.Activate()
 			s.Originators[originatorIndex] = newNode.Id
 		}
 	}
