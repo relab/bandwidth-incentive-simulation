@@ -67,9 +67,6 @@ func Graph(state *types.State, requestResult types.RequestResult, curTimeStep in
 				output.RouteWithPrices = append(output.RouteWithPrices, nodePairWithPrice)
 			}
 		}
-		if config.GetMaxPOCheckEnabled() {
-			//fmt.Println("RequestResult with price ", routeWithPrice)
-		}
 	}
 
 	// Unlocks all the edges between the nodes in the route
