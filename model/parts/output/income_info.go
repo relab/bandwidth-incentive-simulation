@@ -54,7 +54,7 @@ func (o *IncomeInfo) CalculateIncomeFairness() float64 {
 	size := config.GetNetworkSize()
 	vals := make([]int, size)
 	i := 0
-	println("IncomeMap size" ,len(o.IncomeMap))
+	println("IncomeMap size", len(o.IncomeMap))
 	for _, value := range o.IncomeMap {
 		vals[i] = value
 		i++
@@ -341,7 +341,6 @@ func (ii *IncomeInfo) AvgHopIncome() (income, count map[int]int) {
 }
 
 func (ii *IncomeInfo) Log() {
-
 	if config.GetHopIncome() {
 		avgHopIncome, avgHopCount := ii.AvgHopIncome()
 		for hop, income := range avgHopIncome {

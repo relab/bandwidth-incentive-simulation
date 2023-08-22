@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"go-incentive-simulation/config"
 	"math/rand"
 	"os"
 	"sync"
@@ -119,17 +120,16 @@ func (network *Network) node(nodeId NodeId) *Node {
 		panic("address out of range")
 	}
 	res := Node{
-		Network:      network,
-		Id:           nodeId,
-		AdjIds:       make([][]NodeId, network.Bits),
-		Active: 	  true,
+		Network: network,
+		Id:      nodeId,
+		AdjIds:  make([][]NodeId, network.Bits),
+		Active:  true,
 		OriginatorStruct: OriginatorStruct{
 			RequestCount: 0,
 		},
 		CacheStruct: CacheStruct{
-			Size:       500,
+			Size:       config.GetCacheSize(),
 			CacheMap:   make(CacheMap),
-			CacheList:  make([]ChunkId, 0, 11),
 			CacheMutex: &sync.Mutex{},
 		},
 		PendingStruct: PendingStruct{
@@ -147,6 +147,12 @@ func (network *Network) node(nodeId NodeId) *Node {
 			RerouteMutex: &sync.Mutex{},
 		},
 		AdjLock: sync.RWMutex{},
+		ChunksQueueStruct: CidQueueStruct{
+			CidQueue:      make([]CidStruct, 0),
+			ChunksFromCid: make([]ChunkId, 0),
+			CidQueueMutex: &sync.Mutex{},
+		},
+		IsOriginator: false,
 	}
 	if len(network.NodesMap) == 0 {
 		network.NodesMap = make(map[NodeId]*Node)
@@ -252,4 +258,3 @@ func generateIdsEven(totalNumbers int, maxValue int) []int {
 	}
 	return result[:totalNumbers]
 }
-

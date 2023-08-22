@@ -1,75 +1,110 @@
 package types
 
-import "sync"
+import (
+	"fmt"
+	"go-incentive-simulation/config"
+	"go-incentive-simulation/model/general"
+	"math"
+	"sync"
+	"time"
+)
 
-type CacheMap map[ChunkId]int
+type CacheMap map[ChunkId]CacheData
+
+type CacheData struct {
+	Proximity    int
+	LastTimeUsed time.Time
+	Frequency    int
+}
 
 type CacheStruct struct {
 	Size       uint
 	Node       *Node
 	CacheMap   CacheMap
-	CacheList  []ChunkId
 	CacheMutex *sync.Mutex
 }
 
-func (c *CacheStruct) AddToCache(chunkId ChunkId) CacheMap {
+func FindDistance(chunkId ChunkId, nodeId NodeId) int {
+	return config.GetBits() - general.BitLength(chunkId.ToInt()^nodeId.ToInt())
+}
+
+func (c *CacheStruct) AddToCache(chunkId ChunkId, nodeId NodeId) CacheMap {
 	c.CacheMutex.Lock()
 	defer c.CacheMutex.Unlock()
+	distance := FindDistance(chunkId, nodeId)
+	cacheModel := config.GetCacheModel()
+	if cacheModel == -1 {
+		fmt.Println("No cache model is selected.")
+		return nil
+	}
 
 	if _, ok := c.CacheMap[chunkId]; ok {
-		c.CacheMap[chunkId]++
+		currData := c.CacheMap[chunkId]
+		currData.Frequency++
+		currData.Proximity = distance
+		c.CacheMap[chunkId] = currData
 	} else {
-		c.CacheMap[chunkId] = 1
-	}
-	c.CacheList = append(c.CacheList, chunkId)
-	if len(c.CacheList) > int(c.Size) {
-		firstChunk := c.CacheList[0]
-		c.CacheMap[firstChunk]--
-		c.CacheList = c.CacheList[1:]
+		newCacheData := CacheData{
+			Proximity:    distance,
+			LastTimeUsed: time.Now(),
+			Frequency:    1,
+		}
+		c.CacheMap[chunkId] = newCacheData
 	}
 
+	if len(c.CacheMap) > int(c.Size) {
+		UpdateCacheMap(c, chunkId, cacheModel, distance)
+	}
+
+	// fmt.Println("CacheMapSize: ", len(c.CacheMap))
 	return c.CacheMap
+}
+
+func UpdateCacheMap(c *CacheStruct, newChunkId ChunkId, cacheModel int, distance int) {
+	chunkIdToDelete := ChunkId(-1)
+	if cacheModel == 1 { // proximity
+		minProximity := math.MaxInt32
+		for chunkId, cacheData := range c.CacheMap {
+			if cacheData.Proximity < minProximity {
+				minProximity = cacheData.Proximity
+				chunkIdToDelete = chunkId
+			}
+		}
+	}
+	if cacheModel == 2 { // leastRecentUsed
+		leastRecentUsedTime := time.Now()
+		for chunkId, cacheData := range c.CacheMap {
+			if cacheData.LastTimeUsed.Before(leastRecentUsedTime) {
+				leastRecentUsedTime = cacheData.LastTimeUsed
+				chunkIdToDelete = chunkId
+			}
+		}
+	}
+	if cacheModel == 3 { // leastFrequentlyUsed
+		leastFrequentlyUsed := math.MaxInt32
+		for chunkId, cacheData := range c.CacheMap {
+			if cacheData.Frequency < leastFrequentlyUsed {
+				leastFrequentlyUsed = cacheData.Frequency
+				chunkIdToDelete = chunkId
+			}
+		}
+	}
+	if int(chunkIdToDelete) != -1 {
+		delete(c.CacheMap, chunkIdToDelete)
+	}
 }
 
 func (c *CacheStruct) Contains(chunkId ChunkId) bool {
 	c.CacheMutex.Lock()
 	defer c.CacheMutex.Unlock()
-	cacheMap := c.CacheMap
-	if c, ok := cacheMap[chunkId]; ok && c > 0 {
+
+	if _, ok := c.CacheMap[chunkId]; ok {
+		cacheData := c.CacheMap[chunkId]
+		cacheData.LastTimeUsed = time.Now()
+		cacheData.Frequency = cacheData.Frequency + 1
+		c.CacheMap[chunkId] = cacheData
 		return true
 	}
+
 	return false
 }
-
-//type CacheMap map[NodeId]map[ChunkId]int
-
-//func (c *CacheStruct) LenMap() int {
-//	c.CacheMutex.Lock()
-//	defer c.CacheMutex.Unlock()
-//	return len(c.CacheMap)
-//}
-//
-//func (c *CacheStruct) Contains(nodeId NodeId, chunkId ChunkId) bool {
-//	c.CacheMutex.Lock()
-//	defer c.CacheMutex.Unlock()
-//	nodeMap := c.CacheMap[nodeId]
-//	if nodeMap != nil && nodeMap[chunkId] > 0 {
-//		return true
-//	}
-//	return false
-//}
-//
-//func (c *CacheStruct) AddToCache(nodeId NodeId, chunkId ChunkId) {
-//	c.CacheMutex.Lock()
-//	defer c.CacheMutex.Unlock()
-//	nodeMap := c.CacheMap[nodeId]
-//	if nodeMap != nil {
-//		if _, ok2 := nodeMap[chunkId]; ok2 {
-//			nodeMap[chunkId]++
-//		} else {
-//			nodeMap[chunkId] = 1
-//		}
-//	} else {
-//		c.CacheMap[nodeId] = map[ChunkId]int{chunkId: 1}
-//	}
-//}

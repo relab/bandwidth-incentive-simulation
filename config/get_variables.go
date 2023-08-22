@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"strconv"
 )
 
 func GetNumRoutingGoroutines() int {
@@ -47,12 +48,20 @@ func GetNonOriginatorShuffleProbability() float32 {
 	return theconfig.BaseOptions.NonOriginatorShuffleProbability
 }
 
+func GetRealWorkload() bool {
+	return theconfig.BaseOptions.RealWorkload
+}
+
 func IsForgivenessEnabled() bool {
 	return theconfig.ExperimentOptions.ForgivenessEnabled
 }
 
 func IsCacheEnabled() bool {
 	return theconfig.ExperimentOptions.CacheIsEnabled
+}
+
+func GetCacheSize() uint {
+	return theconfig.ExperimentOptions.CacheSize
 }
 
 func IsPreferredChunksEnabled() bool {
@@ -314,7 +323,8 @@ func GetExperimentString() (exp string) {
 		exp += "NoRec"
 	}
 	if IsCacheEnabled() {
-		exp += "Cache"
+		exp += "Cache-"
+		exp += strconv.Itoa(GetCacheModel())
 	}
 	if IsPreferredChunksEnabled() {
 		exp += "Skew"
@@ -325,4 +335,23 @@ func GetExperimentString() (exp string) {
 
 	exp += "-" + GetExpeimentId()
 	return exp
+}
+
+func GetCacheModel() int {
+	if IsCacheEnabled() {
+		if theconfig.ExperimentOptions.CacheModel.Unlimited {
+			return 0
+		}
+		if theconfig.ExperimentOptions.CacheModel.NonProximity {
+			return 1
+		}
+		if theconfig.ExperimentOptions.CacheModel.LRU {
+			return 2
+		}
+		if theconfig.ExperimentOptions.CacheModel.LFU {
+			return 3
+		}
+	}
+
+	return -1
 }
