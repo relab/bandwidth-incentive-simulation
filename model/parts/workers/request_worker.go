@@ -66,7 +66,11 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 				counter++ // Increment all iterations
 			}
 
-			if chunkId == -1 { // No waiting and no retry, and qualify for unique chunk
+			if config.GetRealWorkload() && chunkId == -1 {
+				chunkId = originator.ChunksQueueStruct.GetChunkFromCidQueue()
+			}
+
+			if chunkId == -1 && !config.GetRealWorkload() { // No waiting and no retry, and qualify for unique chunk
 				chunkId = utils.GetNewChunkId()
 
 				if config.IsPreferredChunksEnabled() {

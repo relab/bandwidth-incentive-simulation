@@ -1,11 +1,16 @@
 package utils
 
 import (
+	"encoding/csv"
+	"fmt"
 	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
 	"go-incentive-simulation/model/parts/types"
+	"log"
 	"math/rand"
+	"os"
 	"sort"
+	"strconv"
 )
 
 func SortedKeys(nodeMap map[types.NodeId]*types.Node) []types.NodeId {
@@ -67,6 +72,94 @@ func GetNewChunkId() types.ChunkId {
 	return types.ChunkId(rand.Intn(config.GetAddressRange()-1) + 1)
 }
 
+// func GetRealWorkLoadFromFile(currPos int64) *[]types.ChunkId {
+// 	if config.GetRealWorkload() {
+// 		chunkIds, err := networkdata.GetRealWorkload(currPos)
+// 		if err != nil {
+// 			fmt.Println("Error reading")
+// 		}
+// 		return &chunkIds
+// 	}
+
+//		return nil
+//	}
+
+func GetRealWorkLoadFromFileAndAddToOriginators(g *types.Graph) *[]types.CidStruct {
+	allCidData := make([]types.CidStruct, 0)
+
+	file, err := os.Open("network_data/workload.csv")
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return nil
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+
+	_, err = reader.Read()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for {
+		row, err := reader.Read()
+		if err != nil {
+			break
+		}
+
+		cid := row[0]
+		frequencyStr := row[1]
+		bytesReturnedStr := row[2]
+
+		frequency, err := strconv.Atoi(frequencyStr)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		bytesReturned, err := strconv.Atoi(bytesReturnedStr)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for i := 0; i < frequency; i++ {
+			c := types.CidStruct{
+				Cid:            cid,
+				ReturenedBytes: bytesReturned,
+			}
+			allCidData = append(allCidData, c)
+		}
+	}
+
+	rand.Shuffle(len(allCidData), func(i, j int) { allCidData[i], allCidData[j] = allCidData[j], allCidData[i] })
+
+	counter := 0
+loop:
+	for index, node := range g.Nodes {
+		if node.IsOriginator {
+			if counter < len(allCidData) {
+				node.ChunksQueueStruct.AddToCidQueue(allCidData[counter])
+				counter++
+			} else {
+				break
+			}
+		}
+		if index == len(g.Nodes)-1 {
+			goto loop
+		}
+	}
+	return &allCidData
+}
+
+func GetNewChunkIdFromWorkload(chunkIds *[]types.ChunkId) types.ChunkId {
+	if len(*chunkIds) == 0 {
+		return -1
+	}
+	// fmt.Println("chunkid size:", len(*chunkIds))
+	poppedChunkId := (*chunkIds)[len(*chunkIds)-1]
+	*chunkIds = (*chunkIds)[:len(*chunkIds)-1]
+	return poppedChunkId
+}
+
 func GetPreferredChunkId() types.ChunkId {
 	var chunkId types.ChunkId
 	var random float32
@@ -106,6 +199,7 @@ func CreateDownloadersList(g *types.Graph) []types.NodeId {
 	counter := 0
 	for _, originator := range g.NodesMap {
 		downloadersList = append(downloadersList, originator.Id)
+		originator.IsOriginator = true
 		counter++
 		if counter >= config.GetOriginators() {
 			break

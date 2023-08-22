@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
 	"math/rand"
 	"os"
@@ -38,12 +39,14 @@ func (c ChunkId) IsNil() bool {
 }
 
 type Node struct {
-	Network       *Network
-	Id            NodeId
-	AdjIds        [][]NodeId
-	CacheStruct   CacheStruct
-	PendingStruct PendingStruct
-	RerouteStruct RerouteStruct
+	Network           *Network
+	Id                NodeId
+	AdjIds            [][]NodeId
+	CacheStruct       CacheStruct
+	PendingStruct     PendingStruct
+	RerouteStruct     RerouteStruct
+	ChunksQueueStruct CidQueueStruct
+	IsOriginator      bool
 }
 
 type jsonFormat struct {
@@ -100,9 +103,8 @@ func (network *Network) node(nodeId NodeId) *Node {
 		Id:      nodeId,
 		AdjIds:  make([][]NodeId, network.Bits),
 		CacheStruct: CacheStruct{
-			Size:       500,
+			Size:       config.GetCacheSize(),
 			CacheMap:   make(CacheMap),
-			CacheList:  make([]ChunkId, 0, 11),
 			CacheMutex: &sync.Mutex{},
 		},
 		PendingStruct: PendingStruct{
@@ -119,6 +121,12 @@ func (network *Network) node(nodeId NodeId) *Node {
 			History:      make(map[ChunkId][]NodeId),
 			RerouteMutex: &sync.Mutex{},
 		},
+		ChunksQueueStruct: CidQueueStruct{
+			CidQueue:      make([]CidStruct, 0),
+			ChunksFromCid: make([]ChunkId, 0),
+			CidQueueMutex: &sync.Mutex{},
+		},
+		IsOriginator: false,
 	}
 	if len(network.NodesMap) == 0 {
 		network.NodesMap = make(map[NodeId]*Node)

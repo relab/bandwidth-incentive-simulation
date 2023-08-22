@@ -40,6 +40,7 @@ func (ii *IncomeInfo) Reset() {
 }
 
 func (ii *IncomeInfo) Close() {
+	fmt.Println("In the close function.")
 	err := ii.Writer.Flush()
 	if err != nil {
 		fmt.Println("Couldn't flush the remaining buffer in the writer for output")
@@ -311,7 +312,6 @@ func (ii *IncomeInfo) AvgHopIncome() (income, count map[int]int) {
 }
 
 func (ii *IncomeInfo) Log() {
-
 	if config.GetHopIncome() {
 		avgHopIncome, avgHopCount := ii.AvgHopIncome()
 		for hop, income := range avgHopIncome {

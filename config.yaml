@@ -5,13 +5,13 @@ BaseOptions:
   # Iterations: 10_000_000, best in multiples of 100_000
   Iterations: 10_000_000
   # Bits: 16, bits in maximum address
-  Bits: 16
+  Bits: 26
   # NetworkSize: 10000, number of nodes in network
   NetworkSize: 10_000
   # BinSize: 16, number of nodes in each bin/bucket for each node
   BinSize: 16
   # Originators: 1000, number of originators initiating requests
-  Originators: 500
+  Originators: 50
   # RefreshRate: 8, the rate of which edge dept gets removed per second
   RefreshRate: 0
   # Threshold: 16, the maximum edge debt a node in an edge can have
@@ -19,7 +19,7 @@ BaseOptions:
   # RandomSeed: 123456789, seed for deterministic randomness
   RandomSeed: 123456789
   # MaxProximityOrder: 16, determines how many accounting units is transferred according to distance from chunk.
-  MaxProximityOrder: 16
+  MaxProximityOrder: 26
   # Price: 1, the base unit for prices
   Price: 1
   # RequestsPerSecond: 12500, number of iterations during a second
@@ -42,6 +42,8 @@ BaseOptions:
   ReplicationFactor: 4
   # The exponent used for the adjustable threshold formula
   AdjustableThresholdExponent: 3
+  # IPFS workload
+  RealWorkload : true
   # Which logic should be used in the outputWorker
   OutputOptions:
     MeanRewardPerForward: false
@@ -49,13 +51,13 @@ BaseOptions:
     HopFractionOfTotalRewards: false
     NegaticeIncome: false
     IncomeGini: true
-    IncomeTheil: true
+    IncomeTheil: false
     HopIncome: false
     DensenessIncome: false
-    WorkIncomeSpearman: true
-    WorkInfo: false
-    BucketInfo: true
-    LinkInfo: true
+    WorkIncomeSpearman: false
+    WorkInfo: true
+    BucketInfo: false
+    LinkInfo: false
     ExperimentId: "0"
     # Reset output loggers after every output. With false, all outputs will be accumulated
     Reset: false
@@ -93,11 +95,23 @@ CustomExperiment:
   WaitingEnabled: false
   # RetryWithAnotherPeer: false, the Route to the chunk will try to take many paths to find the chunk
   RetryWithAnotherPeer: false
-  # CacheIsEnabled: false, cache on nodes which stores chunks the node have seen before
-  CacheIsEnabled: false
   # PreferredChunks: false, fits well with cache, where some chunks are chosen more often than others
   PreferredChunks: false
   # AdjustableThreshold: false, the threshold limit of an edge is determined based on the XOR distance
   AdjustableThreshold: false
   # PayIfOrigPays: false, only pay if the originator pays -- NOT NEEDED
   PayIfOrigPays: false
+  # CacheIsEnabled: false, cache on nodes which stores chunks the node have seen before
+  CacheIsEnabled: false
+  # cache size
+  CacheSize: 10_000 # this is for 40 megabytes
+  # different cache models
+  CacheModel:
+    # a base line can be the unlimited cache.
+    Unlimited: false
+    # if the content is far away then cache it (brings more reward)
+    NonProximity: false
+    # remove the least recently used chunk if cache is full (Least Recently Used)
+    LRU: false
+    # remove the least frequently used chunk if cache is full (Least Frequently Used)
+    LFU: false
