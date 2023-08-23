@@ -18,7 +18,7 @@ type CacheData struct {
 }
 
 type CacheStruct struct {
-	Size       uint
+	Size       int
 	Node       *Node
 	CacheMap   CacheMap
 	CacheMutex *sync.Mutex
