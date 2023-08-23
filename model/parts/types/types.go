@@ -65,8 +65,8 @@ func (s *State) GetOriginatorId(originatorIndex int) NodeId {
 			if err != nil {
 				panic(err)
 			}
-			node.Deactivate()
-			newNode.Activate()
+			// The new node is not going to get requests
+			newNode.Deactivate()
 			s.Originators[originatorIndex] = newNode.Id
 		}
 	}
