@@ -98,5 +98,8 @@ func CreateLoggers() []LogResetUpdateCloser {
 		outputWriter := InitOutputWriter()
 		loggers = append(loggers, outputWriter)
 	}
+
+	attackInfo := InitAttackInfo()
+	loggers = append(loggers, attackInfo)
 	return loggers
 }
