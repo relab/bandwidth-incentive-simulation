@@ -6,26 +6,30 @@ import (
 	"math"
 )
 
-func CheckForgiveness(edgeData types.EdgeAttrs, firstNodeId types.NodeId, secondNodeId types.NodeId, graph *types.Graph, request types.Request) (int, bool) {
-	passedTime := request.Epoch - edgeData.LastEpoch
+type EdgeWrapper struct {
+	types.Edge
+}
+
+func (edge *EdgeWrapper) CheckForgiveness(graph *types.Graph, request types.Request) (int, bool) {
+	passedTime := request.Epoch - edge.Attrs.LastEpoch
 
 	if passedTime <= 0 {
-		return edgeData.A2B, false
+		return edge.Attrs.A2B, false
 	}
 
 	refreshRate := config.GetRefreshRate()
 	if config.IsAdjustableThreshold() {
-		refreshRate = GetAdjustedRefreshrate(edgeData.Threshold, config.GetThreshold(), config.GetRefreshRate(), config.GetAdjustableThresholdExponent())
+		refreshRate = GetAdjustedRefreshrate(edge.Attrs.Threshold, config.GetThreshold(), config.GetRefreshRate(), config.GetAdjustableThresholdExponent())
 	}
 
 	removedDeptAmount := passedTime * refreshRate
-	newEdgeData := edgeData
+	newEdgeData := edge.Attrs
 	newEdgeData.A2B -= removedDeptAmount
 	if newEdgeData.A2B < 0 {
 		newEdgeData.A2B = 0
 	}
 	newEdgeData.LastEpoch = request.Epoch
-	graph.SetEdgeData(firstNodeId, secondNodeId, newEdgeData)
+	graph.SetEdgeData(edge.FromNodeId, edge.ToNodeId, newEdgeData)
 
 	return newEdgeData.A2B, true
 }
