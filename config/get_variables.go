@@ -60,7 +60,7 @@ func IsCacheEnabled() bool {
 	return theconfig.ExperimentOptions.CacheIsEnabled
 }
 
-func GetCacheSize() uint {
+func GetCacheSize() int {
 	return theconfig.ExperimentOptions.CacheSize
 }
 
@@ -325,6 +325,7 @@ func GetExperimentString() (exp string) {
 	if IsCacheEnabled() {
 		exp += "Cache-"
 		exp += strconv.Itoa(GetCacheModel())
+		exp = exp + "-" + strconv.Itoa(GetCacheSize())
 	}
 	if IsPreferredChunksEnabled() {
 		exp += "Skew"
