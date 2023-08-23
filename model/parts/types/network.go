@@ -97,13 +97,15 @@ func (network *Network) NewNode() *Node {
 	}
 	rand.Shuffle(len(choicenodes), func(i, j int) { choicenodes[i], choicenodes[j] = choicenodes[j], choicenodes[i] })
 	for _, adj := range choicenodes {
-		_, err := node.add(network.NodesMap[adj])
+		added, err := node.add(network.NodesMap[adj])
 		if err != nil {
 			panic(err)
 		}
-		_, err = network.NodesMap[adj].add(node)
-		if err != nil {
-			panic(err)
+		if added {
+			_, err = network.NodesMap[adj].add(node)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 
@@ -172,13 +174,15 @@ func (network *Network) Generate(count int, random bool) []*Node {
 		choicenodes := nodes[i+1:]
 		rand.Shuffle(len(choicenodes), func(i, j int) { choicenodes[i], choicenodes[j] = choicenodes[j], choicenodes[i] })
 		for _, node2 := range choicenodes {
-			_, err := node1.add(node2)
+			added, err := node1.add(node2)
 			if err != nil {
 				panic(err)
 			}
-			_, err = node2.add(node1)
-			if err != nil {
-				panic(err)
+			if added {
+				_, err = node2.add(node1)
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
 	}
