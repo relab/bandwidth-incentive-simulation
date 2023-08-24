@@ -160,9 +160,11 @@ func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []typ
 
 	depth := config.GetStorageDepth()
 
-	mainOriginatorNode := graph.GetNode(mainOriginatorId)
-	if mainOriginatorNode.CacheStruct.Contains(chunkId) {
-		return nil, nil, true, false, false, true
+	if config.IsCacheEnabled() {
+		mainOriginatorNode := graph.GetNode(mainOriginatorId)
+		if mainOriginatorNode.CacheStruct.Contains(chunkId) {
+			return nil, nil, true, false, false, true
+		}
 	}
 
 	if utils.FindDistance(mainOriginatorId, chunkId) >= depth {
