@@ -23,6 +23,22 @@ func InitConfig() {
 	SetExperiment(theconfig)
 }
 
+func InitConfigWithPath(path string) {
+	err := os.Chdir(path)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	config, err := ReadYamlFile("config.yaml")
+	if err != nil {
+		log.Panicln("Unable to read config file: config.yaml")
+	}
+	theconfig = config
+	ValidateBaseOptions(theconfig.BaseOptions)
+	SetExperiment(theconfig)
+}
+
 func SetExperimentId(id string) {
 	theconfig.BaseOptions.OutputOptions.ExperimentId = id
 }
@@ -101,4 +117,32 @@ func SetStorageDepth(replicationFactor int) {
 		depth++
 	}
 	theconfig.BaseOptions.StorageDepth = depth
+}
+
+func SetCacheModel(cacheMoelInt int) {
+	theconfig.ExperimentOptions.CacheIsEnabled = true
+	cacheModel := cacheModel{}
+	switch cacheMoelInt {
+	case 0:
+		cacheModel.Unlimited = true
+		cacheModel.NonProximity = false
+		cacheModel.LRU = false
+		cacheModel.LFU = false
+	case 1:
+		cacheModel.Unlimited = false
+		cacheModel.NonProximity = true
+		cacheModel.LRU = false
+		cacheModel.LFU = false
+	case 2:
+		cacheModel.Unlimited = false
+		cacheModel.NonProximity = false
+		cacheModel.LRU = true
+		cacheModel.LFU = false
+	case 3:
+		cacheModel.Unlimited = false
+		cacheModel.NonProximity = false
+		cacheModel.LRU = false
+		cacheModel.LFU = true
+	}
+	theconfig.ExperimentOptions.CacheModel = cacheModel
 }
