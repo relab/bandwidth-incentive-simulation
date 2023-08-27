@@ -17,7 +17,6 @@ func TestValidateBaseOptions(t *testing.T) {
 	theconfig = getDefaultConfig()
 	ValidateBaseOptions(theconfig.BaseOptions)
 	assert.Equal(t, theconfig.BaseOptions.NumGoroutines, runtime.NumCPU())
-	assert.Equal(t, theconfig.BaseOptions.OutputOptions.EvaluateInterval, theconfig.BaseOptions.Iterations)
 	assert.Equal(t, theconfig.BaseOptions.AddressRange, 65536)
 	assert.Equal(t, theconfig.BaseOptions.StorageDepth, 11)
 }

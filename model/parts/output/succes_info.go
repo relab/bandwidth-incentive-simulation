@@ -8,7 +8,7 @@ import (
 )
 
 type SuccessInfo struct {
-	Count               int
+	UniqueCount         int
 	Found               int
 	FromCache           int
 	FromOriginatorCache int
@@ -38,7 +38,7 @@ func (si *SuccessInfo) Close() {
 }
 
 func (si *SuccessInfo) Reset() {
-	si.Count = 0
+	si.UniqueCount = 0
 	si.Found = 0
 	si.FromCache = 0
 	si.FromOriginatorCache = 0
@@ -47,7 +47,10 @@ func (si *SuccessInfo) Reset() {
 }
 
 func (si *SuccessInfo) Update(output *Route) {
-	si.Count++
+	if output.RetryCount == 0 {
+		si.UniqueCount++
+	}
+
 	if output.Found {
 		si.Found++
 	}
@@ -66,14 +69,15 @@ func (si *SuccessInfo) Update(output *Route) {
 }
 
 func (si *SuccessInfo) Log() {
-	foundperc := float64(si.Found) * 100.0 / float64(si.Count)
+	total := si.UniqueCount
+	foundperc := float64(si.Found) * 100.0 / float64(total)
 	_, err := si.Writer.WriteString(fmt.Sprintf("Successfull found: %d, %.2f%%  \n", si.Found, foundperc))
 	if err != nil {
 		panic(err)
 	}
 
 	if config.IsCacheEnabled() {
-		cacheperc := float64(si.FromCache) * 100.0 / float64(si.Found)
+		cacheperc := float64(si.FromCache) * 100.0 / float64(total)
 		_, err = si.Writer.WriteString(fmt.Sprintf("Found from cache: %d, %.2f%%  \n", si.FromCache, cacheperc))
 		if err != nil {
 			panic(err)
@@ -85,13 +89,13 @@ func (si *SuccessInfo) Log() {
 		}
 	}
 
-	threshfailperc := float64(si.ThresholdFailed) * 100.0 / float64(si.Count)
+	threshfailperc := float64(si.ThresholdFailed) * 100.0 / float64(total)
 	_, err = si.Writer.WriteString(fmt.Sprintf("Threshold failures: %d, %.2f%%  \n", si.ThresholdFailed, threshfailperc))
 	if err != nil {
 		panic(err)
 	}
 
-	accfailperc := float64(si.AccessFailed) * 100.0 / float64(si.Count)
+	accfailperc := float64(si.AccessFailed) * 100.0 / float64(total)
 	_, err = si.Writer.WriteString(fmt.Sprintf("Access failures: %d, %.2f%%  \n", si.AccessFailed, accfailperc))
 	if err != nil {
 		panic(err)

@@ -23,6 +23,7 @@ type Route struct {
 	ThresholdFailed        bool
 	FoundByCaching         bool
 	FoundByOriginatorCache bool
+	RetryCount             int
 }
 
 func (o *Route) failed() bool {

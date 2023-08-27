@@ -14,7 +14,7 @@ type IncomeInfo struct {
 	IncomeMap  map[int]int
 	HopMap     map[int][]int
 	CostMap    map[int]int
-	Requesters map[int]bool
+	Requesters map[int]int
 	File       *os.File
 	Writer     *bufio.Writer
 }
@@ -24,7 +24,7 @@ func InitIncomeInfo() *IncomeInfo {
 	iinfo.IncomeMap = make(map[int]int)
 	iinfo.CostMap = make(map[int]int)
 	iinfo.HopMap = make(map[int][]int)
-	iinfo.Requesters = make(map[int]bool) //This map is currently used to find out who is an originator. This should instead be looked up somewhere else.
+	iinfo.Requesters = make(map[int]int) //This map is currently used to find out who is an originator. This should instead be looked up somewhere else.
 
 	iinfo.File = MakeFile("./results/income.txt")
 	iinfo.Writer = bufio.NewWriter(iinfo.File)
@@ -36,7 +36,7 @@ func (ii *IncomeInfo) Reset() {
 	ii.IncomeMap = make(map[int]int)
 	ii.CostMap = make(map[int]int)
 	ii.HopMap = make(map[int][]int)
-	ii.Requesters = make(map[int]bool) //This map is currently used to find out who is an originator. This should instead be looked up somewhere else.
+	ii.Requesters = make(map[int]int) //This map is currently used to find out who is an originator. This should instead be looked up somewhere else.
 }
 
 func (ii *IncomeInfo) Close() {
@@ -66,7 +66,7 @@ func (o *IncomeInfo) CalculateNonOIncomeFairness() float64 {
 	size := config.GetNetworkSize()
 	vals := make([]int, 0, size)
 	for id, value := range o.IncomeMap {
-		if !o.Requesters[id] {
+		if o.Requesters[id] == 0 {
 			vals = append(vals, value)
 		}
 	}
@@ -77,8 +77,21 @@ func (o *IncomeInfo) CalculateOriginatorCostFairness() float64 {
 	size := config.GetNetworkSize()
 	vals := make([]int, 0, size)
 	for id, value := range o.CostMap {
-		if o.Requesters[id] {
+		if o.Requesters[id] > 0 {
 			vals = append(vals, value)
+		}
+	}
+	return utils.Gini(vals)
+}
+
+func (o *IncomeInfo) CalculateCostAdjustedOriginatorIncomeFairness() float64 {
+	size := config.GetNetworkSize()
+	vals := make([]int, 0, size)
+	for id, cost := range o.CostMap {
+		if o.Requesters[id] > 0 {
+			income := o.IncomeMap[id]
+			vals = append(vals, income-cost+o.Requesters[id]*16)
+
 		}
 	}
 	return utils.Gini(vals)
@@ -95,14 +108,24 @@ func (o *IncomeInfo) CalculateIncomeTheilIndex() float64 {
 	return utils.Theil(vals)
 }
 
-func (o *IncomeInfo) CalculateNegativeIncome() float64 {
+func (o *IncomeInfo) CalculateNegativeIncome() (float64, float64) {
 	totalNegativeIncomeCounter := 0
-	for _, value := range o.IncomeMap {
+	nonOriNegativeIncomeCounter := 0
+	for id, value := range o.IncomeMap {
 		if value < 0 {
 			totalNegativeIncomeCounter += 1
+			if o.Requesters[id] == 0 {
+				nonOriNegativeIncomeCounter += 1
+			}
 		}
 	}
-	return float64(totalNegativeIncomeCounter) / float64(config.GetNetworkSize())
+	totalNegIncome := float64(totalNegativeIncomeCounter) / float64(config.GetNetworkSize())
+	nonOriNegIncome := 0.0
+	if len(o.Requesters) < config.GetNetworkSize() {
+		nonOriNegIncome = float64(nonOriNegativeIncomeCounter) / float64(config.GetNetworkSize()-len(o.Requesters))
+	}
+
+	return totalNegIncome, nonOriNegIncome
 }
 
 func (ii *IncomeInfo) Update(output *Route) {
@@ -117,7 +140,7 @@ func (ii *IncomeInfo) Update(output *Route) {
 		if !(payment.Payment.IsOriginator) {
 			ii.IncomeMap[payer] -= payment.Price
 		} else {
-			ii.Requesters[payee] = true
+			ii.Requesters[payee]++
 			ii.CostMap[payee] += payment.Price
 			if hop != 0 {
 				panic("First payment in list is not from originator.")
@@ -385,8 +408,13 @@ func (ii *IncomeInfo) Log() {
 	}
 
 	if config.GetNegativeIncome() {
-		negativeIncomeRes := ii.CalculateNegativeIncome()
+		negativeIncomeRes, nonOriNegIncome := ii.CalculateNegativeIncome()
 		_, err := ii.Writer.WriteString(fmt.Sprintf("Negative income: %f %% \n", negativeIncomeRes*100))
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = ii.Writer.WriteString(fmt.Sprintf("Non originators with negative income: %f %% \n", nonOriNegIncome*100))
 		if err != nil {
 			panic(err)
 		}
@@ -404,6 +432,10 @@ func (ii *IncomeInfo) Log() {
 		}
 
 		_, err = ii.Writer.WriteString(fmt.Sprintf("Org Cost fairness: %f \n", ii.CalculateOriginatorCostFairness()))
+		if err != nil {
+			panic(err)
+		}
+		_, err = ii.Writer.WriteString(fmt.Sprintf("Org Utility fairness: %f \n", ii.CalculateCostAdjustedOriginatorIncomeFairness()))
 		if err != nil {
 			panic(err)
 		}

@@ -24,7 +24,7 @@ func Worker(outputChan chan Route, wg *sync.WaitGroup) {
 		for _, logger := range loggers {
 			logger.Update(&outputStruct)
 
-			if counter%logInterval == 0 {
+			if logInterval > 0 && counter%logInterval == 0 {
 				logger.Log()
 				if reset {
 					logger.Reset()
@@ -32,7 +32,9 @@ func Worker(outputChan chan Route, wg *sync.WaitGroup) {
 			}
 		}
 	}
-
+	for _, logger := range loggers {
+		logger.Log()
+	}
 }
 
 func CreateLoggers() []LogResetUpdateCloser {

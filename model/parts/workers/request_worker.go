@@ -12,10 +12,11 @@ import (
 func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan types.Request, globalState *types.State, wg *sync.WaitGroup) {
 
 	defer wg.Done()
-	var requestQueueSize = 10
-	var counter = 0
-	var curEpoch = 0
+	requestQueueSize := 10
+	counter := 0
+	curEpoch := 0
 	var chunkId types.ChunkId
+	timeStep := 0
 	iterations := config.GetIterations()
 	numRoutingGoroutines := config.GetNumRoutingGoroutines()
 
@@ -23,14 +24,6 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 
 	for counter < iterations {
 		if len(requestChan) <= requestQueueSize {
-
-			timeStep := update.TimeStep(globalState)
-
-			if config.TimeForNewEpoch(timeStep) {
-				curEpoch = update.Epoch(globalState)
-
-				waitForRoutingWorkers(pauseChan, continueChan, numRoutingGoroutines)
-			}
 
 			originatorIndex := int(update.OriginatorIndex(globalState, timeStep))
 			originatorId := globalState.GetOriginatorId(originatorIndex)
@@ -44,6 +37,17 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 
 				if len(rerouteStruct.Reroute.RejectedNodes) > 0 {
 					chunkId = rerouteStruct.Reroute.ChunkId
+				}
+			}
+
+			if chunkId == -1 || config.RetryCausesTimeIncrease() {
+				// do not count retries towards second load.
+				timeStep = update.TimeStep(globalState)
+
+				if config.TimeForNewEpoch(timeStep) {
+					curEpoch = update.Epoch(globalState)
+
+					waitForRoutingWorkers(pauseChan, continueChan, numRoutingGoroutines)
 				}
 			}
 
@@ -91,6 +95,9 @@ func RequestWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 
 			if config.TimeForDebugPrints(timeStep) {
 				fmt.Println("TimeStep is currently:", timeStep)
+			}
+			if config.TimeForDebugPrints(counter) {
+				fmt.Println("Counter is currently:", counter)
 			}
 		}
 	}
