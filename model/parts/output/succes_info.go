@@ -8,13 +8,14 @@ import (
 )
 
 type SuccessInfo struct {
-	UniqueCount     int
-	Found           int
-	FromCache       int
-	ThresholdFailed int
-	AccessFailed    int
-	File            *os.File
-	Writer          *bufio.Writer
+	UniqueCount         int
+	Found               int
+	FromCache           int
+	FromOriginatorCache int
+	ThresholdFailed     int
+	AccessFailed        int
+	File                *os.File
+	Writer              *bufio.Writer
 }
 
 func InitSuccessInfo() *SuccessInfo {
@@ -40,6 +41,7 @@ func (si *SuccessInfo) Reset() {
 	si.UniqueCount = 0
 	si.Found = 0
 	si.FromCache = 0
+	si.FromOriginatorCache = 0
 	si.AccessFailed = 0
 	si.ThresholdFailed = 0
 }
@@ -54,6 +56,9 @@ func (si *SuccessInfo) Update(output *Route) {
 	}
 	if output.FoundByCaching {
 		si.FromCache++
+		if output.FoundByOriginatorCache {
+			si.FromOriginatorCache++
+		}
 	}
 	if output.AccessFailed {
 		si.AccessFailed++
@@ -74,6 +79,11 @@ func (si *SuccessInfo) Log() {
 	if config.IsCacheEnabled() {
 		cacheperc := float64(si.FromCache) * 100.0 / float64(total)
 		_, err = si.Writer.WriteString(fmt.Sprintf("Found from cache: %d, %.2f%%  \n", si.FromCache, cacheperc))
+		if err != nil {
+			panic(err)
+		}
+		cacheOriginatorPerc := float64(si.FromOriginatorCache) * 100 / float64(si.FromCache)
+		_, err = si.Writer.WriteString(fmt.Sprintf("Found from originator's cache: %d, %.2f%%  \n", si.FromOriginatorCache, cacheOriginatorPerc))
 		if err != nil {
 			panic(err)
 		}

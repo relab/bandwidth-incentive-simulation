@@ -55,6 +55,8 @@ func (ow *OutputWriter) Log() {
 			ow.Writer.WriteString("Found from Cache! \n")
 		} else if o.Found {
 			ow.Writer.WriteString("Found! \n")
+		} else if o.FoundByOriginatorCache {
+			ow.Writer.WriteString("Found from originator's Cache! \n")
 		}
 		if o.AccessFailed {
 			ow.Writer.WriteString("Access Failue! \n")

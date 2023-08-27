@@ -11,13 +11,14 @@ type Request struct {
 }
 
 type RequestResult struct {
-	Route           []NodeId
-	PaymentList     []Payment
-	ChunkId         ChunkId
-	Found           bool
-	AccessFailed    bool
-	ThresholdFailed bool
-	FoundByCaching  bool
+	Route                  []NodeId
+	PaymentList            []Payment
+	ChunkId                ChunkId
+	Found                  bool
+	AccessFailed           bool
+	ThresholdFailed        bool
+	FoundByCaching         bool
+	FoundByOriginatorCache bool
 }
 
 type Payment struct {
