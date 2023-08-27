@@ -16,12 +16,13 @@ type LogResetUpdateCloser interface {
 }
 
 type Route struct {
-	RouteWithPrices    []types.NodePairWithPrice
-	PaymentsWithPrices []types.PaymentWithPrice
-	Found              bool
-	AccessFailed       bool
-	ThresholdFailed    bool
-	FoundByCaching     bool
+	RouteWithPrices        []types.NodePairWithPrice
+	PaymentsWithPrices     []types.PaymentWithPrice
+	Found                  bool
+	AccessFailed           bool
+	ThresholdFailed        bool
+	FoundByCaching         bool
+	FoundByOriginatorCache bool
 }
 
 func (o *Route) failed() bool {

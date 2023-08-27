@@ -21,6 +21,7 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 	var accessFailed bool
 	var thresholdFailed bool
 	var foundByCaching bool
+	var foundByOriginatorsCache bool
 
 	for {
 		select {
@@ -32,16 +33,17 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 				return
 			}
 
-			route, paymentList, found, accessFailed, thresholdFailed, foundByCaching = FindRoute(request, globalState.Graph)
+			route, paymentList, found, accessFailed, thresholdFailed, foundByCaching, foundByOriginatorsCache = FindRoute(request, globalState.Graph)
 
 			requestResult = types.RequestResult{
-				Route:           route,
-				PaymentList:     paymentList,
-				ChunkId:         request.ChunkId,
-				Found:           found,
-				AccessFailed:    accessFailed,
-				ThresholdFailed: thresholdFailed,
-				FoundByCaching:  foundByCaching,
+				Route:                  route,
+				PaymentList:            paymentList,
+				ChunkId:                request.ChunkId,
+				Found:                  found,
+				AccessFailed:           accessFailed,
+				ThresholdFailed:        thresholdFailed,
+				FoundByCaching:         foundByCaching,
+				FoundByOriginatorCache: foundByOriginatorsCache,
 			}
 
 			curTimeStep := request.TimeStep
@@ -59,6 +61,7 @@ func RoutingWorker(pauseChan chan bool, continueChan chan bool, requestChan chan
 				output.ThresholdFailed = thresholdFailed
 				output.AccessFailed = accessFailed
 				output.FoundByCaching = foundByCaching
+				output.FoundByOriginatorCache = foundByOriginatorsCache
 				outputChan <- output
 			}
 		}
