@@ -106,6 +106,7 @@ func (network *Network) node(nodeId NodeId) *Node {
 			Size:       config.GetCacheSize(),
 			CacheMap:   make(CacheMap),
 			CacheMutex: &sync.Mutex{},
+			EvictionPolicy: GetCachePolicy(),
 		},
 		PendingStruct: PendingStruct{
 			PendingQueue: nil,
