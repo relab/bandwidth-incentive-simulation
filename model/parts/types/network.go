@@ -44,6 +44,7 @@ type Node struct {
 	CacheStruct   CacheStruct
 	PendingStruct PendingStruct
 	RerouteStruct RerouteStruct
+	K             int
 }
 
 type jsonFormat struct {
@@ -51,6 +52,7 @@ type jsonFormat struct {
 	Bin   int `json:"bin"`
 	Nodes []struct {
 		Id  int   `json:"id"`
+		K   int   `json:"k"`
 		Adj []int `json:"adj"`
 	} `json:"Nodes"`
 }
@@ -80,6 +82,10 @@ func (network *Network) Load(path string) (int, int, map[NodeId]*Node) {
 	network.NodesMap = make(map[NodeId]*Node)
 
 	for _, node := range test.Nodes {
+		network.newnode(NodeId(node.Id), node.K)
+	}
+
+	for _, node := range test.Nodes {
 		node1 := network.node(NodeId(node.Id))
 		sort.Ints(node.Adj)
 		for _, adj := range node.Adj {
@@ -92,8 +98,23 @@ func (network *Network) Load(path string) (int, int, map[NodeId]*Node) {
 }
 
 func (network *Network) node(nodeId NodeId) *Node {
+	return network.newnode(nodeId, network.Bin)
+}
+
+func (network *Network) newnode(nodeId NodeId, k int) *Node {
 	if nodeId < 0 || nodeId >= (1<<network.Bits) {
 		panic("address out of range")
+	}
+
+	if len(network.NodesMap) == 0 {
+		network.NodesMap = make(map[NodeId]*Node)
+	}
+	if node, ok := network.NodesMap[nodeId]; ok {
+		return node
+	}
+
+	if k <= 0 {
+		k = network.Bin
 	}
 	res := Node{
 		Network: network,
@@ -119,19 +140,15 @@ func (network *Network) node(nodeId NodeId) *Node {
 			History:      make(map[ChunkId][]NodeId),
 			RerouteMutex: &sync.Mutex{},
 		},
+		K: k,
 	}
-	if len(network.NodesMap) == 0 {
-		network.NodesMap = make(map[NodeId]*Node)
-	}
-	if _, ok := network.NodesMap[nodeId]; !ok {
-		network.NodesMap[nodeId] = &res
-		return &res
-	}
-	return network.NodesMap[nodeId]
+
+	network.NodesMap[nodeId] = &res
+	return &res
 
 }
 
-func (network *Network) Generate(count int, random bool) []*Node {
+func (network *Network) Generate(count, doubleBin int, random bool) []*Node {
 	nodeIds := generateIds(count, (1<<network.Bits)-1)
 	if !random {
 		nodeIds = generateIdsEven(count, (1<<network.Bits)-1)
@@ -141,6 +158,8 @@ func (network *Network) Generate(count int, random bool) []*Node {
 		node := network.node(NodeId(i))
 		nodes = append(nodes, node)
 	}
+
+	network.doubleBinSize(&nodes, doubleBin)
 
 	for i, node1 := range nodes {
 		choicenodes := nodes[i+1:]
@@ -161,11 +180,13 @@ func (network *Network) Dump(path string) error {
 		Bin   int `json:"bin"`
 		Nodes []struct {
 			Id  int   `json:"id"`
+			K   int   `json:"k"`
 			Adj []int `json:"adj"`
 		} `json:"nodes"`
 	}
 	data := NetworkData{network.Bits, network.Bin, make([]struct {
 		Id  int   `json:"id"`
+		K   int   `json:"k"`
 		Adj []int `json:"adj"`
 	}, 0)}
 	for _, node := range network.NodesMap {
@@ -178,8 +199,9 @@ func (network *Network) Dump(path string) error {
 		}
 		data.Nodes = append(data.Nodes, struct {
 			Id  int   `json:"id"`
+			K   int   `json:"k"`
 			Adj []int `json:"adj"`
-		}{Id: int(node.Id), Adj: result})
+		}{Id: int(node.Id), K: node.K, Adj: result})
 	}
 	file, _ := json.Marshal(data)
 	err := os.WriteFile(path, file, 0644)
@@ -225,7 +247,24 @@ func generateIdsEven(totalNumbers int, maxValue int) []int {
 	return result[:totalNumbers]
 }
 
+func (network *Network) doubleBinSize(nodes *[]*Node, doubleBin int) {
+	for i := 0; i < doubleBin; i++ {
+		if i == len(*nodes) {
+			return
+		}
+		(*nodes)[i].K = 2 * network.Bin
+	}
+}
+
 func (node *Node) add(other *Node) (bool, error) {
+	if node == nil {
+		panic("Adding neighbor to nil node")
+	}
+
+	if other == nil {
+		panic("Adding nil node as neighbor")
+	}
+
 	if node.Network == nil || node.Network != other.Network {
 		return false, errors.New("Trying to add nodes with different networks")
 	}
@@ -233,17 +272,17 @@ func (node *Node) add(other *Node) (bool, error) {
 		return false, nil
 	}
 	if node.AdjIds == nil {
-		node.AdjIds = make([][]NodeId, node.Network.Bits)
+		node.AdjIds = make([][]NodeId, node.K)
 	}
 	if other.AdjIds == nil {
-		other.AdjIds = make([][]NodeId, other.Network.Bits)
+		other.AdjIds = make([][]NodeId, other.K)
 	}
 	bit := node.Network.Bits - general.BitLength(node.Id.ToInt()^other.Id.ToInt())
 	if bit < 0 || bit >= node.Network.Bits {
 		return false, errors.New("Nodes have distance outside XOr metric")
 	}
 	isDup := general.Contains(node.AdjIds[bit], other.Id) || general.Contains(other.AdjIds[bit], node.Id)
-	if len(node.AdjIds[bit]) < node.Network.Bin && len(other.AdjIds[bit]) < node.Network.Bin && !isDup {
+	if len(node.AdjIds[bit]) < node.K && len(other.AdjIds[bit]) < node.K && !isDup {
 		node.AdjIds[bit] = append(node.AdjIds[bit], other.Id)
 		other.AdjIds[bit] = append(other.AdjIds[bit], node.Id)
 		return true, nil

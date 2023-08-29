@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"go-incentive-simulation/config"
+	"go-incentive-simulation/model/parts/types"
 	"go-incentive-simulation/model/parts/utils"
 	"os"
 )
@@ -13,15 +14,17 @@ type AttackInfo struct {
 	Requesters map[int]int
 	File       *os.File
 	Writer     *bufio.Writer
+	Graph      *types.Graph
 }
 
-func InitAttackInfo() *AttackInfo {
+func InitAttackInfo(graph *types.Graph) *AttackInfo {
 	ai := AttackInfo{}
 	ai.IncomeMap = make(map[int]int)
 	ai.Requesters = make(map[int]int) //This map is currently used to find out who is an originator. This should instead be looked up somewhere else.
 
 	ai.File = MakeFile("./results/attack.txt")
 	ai.Writer = bufio.NewWriter(ai.File)
+	ai.Graph = graph
 	LogExpSting(ai.Writer)
 	return &ai
 }
@@ -42,8 +45,8 @@ func (ai *AttackInfo) Close() {
 	}
 }
 
-func isAttacker(nodeid int) bool {
-	return nodeid%10 == 1
+func (ai *AttackInfo) isAttacker(nodeid int) bool {
+	return ai.Graph.NodeK(types.NodeId(nodeid)) != ai.Graph.Bin
 }
 
 func (o *AttackInfo) CalculateAvgIncome() (attackAvg, normalAvg float64) {
@@ -51,7 +54,7 @@ func (o *AttackInfo) CalculateAvgIncome() (attackAvg, normalAvg float64) {
 	normalincome := make([]int, 0, size)
 	attackerincome := make([]int, 0, size/10)
 	for id, value := range o.IncomeMap {
-		if isAttacker(id) {
+		if o.isAttacker(id) {
 			attackerincome = append(attackerincome, value)
 		} else {
 			normalincome = append(normalincome, value)

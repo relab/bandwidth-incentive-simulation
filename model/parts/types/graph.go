@@ -132,6 +132,14 @@ func (g *Graph) GetNode(nodeId NodeId) *Node {
 	return nil
 }
 
+func (g *Graph) NodeK(nodeId NodeId) int {
+	node, ok := g.NodesMap[nodeId]
+	if ok {
+		return node.K
+	}
+	return 0
+}
+
 func ContainsNode(Nodes []*Node, node *Node) bool {
 	for _, curNode := range Nodes {
 		if curNode.Id == node.Id {

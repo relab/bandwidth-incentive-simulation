@@ -2,15 +2,16 @@ package output
 
 import (
 	"go-incentive-simulation/config"
+	"go-incentive-simulation/model/parts/types"
 	"sync"
 )
 
-func Worker(outputChan chan Route, wg *sync.WaitGroup) {
+func Worker(outputChan chan Route, wg *sync.WaitGroup, graph *types.Graph) {
 	defer wg.Done()
 	var outputStruct Route
 	counter := 0
 
-	loggers := CreateLoggers()
+	loggers := CreateLoggers(graph)
 	logInterval := config.GetEvaluateInterval()
 	reset := config.DoReset()
 
@@ -37,7 +38,7 @@ func Worker(outputChan chan Route, wg *sync.WaitGroup) {
 	}
 }
 
-func CreateLoggers() []LogResetUpdateCloser {
+func CreateLoggers(graph *types.Graph) []LogResetUpdateCloser {
 	loggers := make([]LogResetUpdateCloser, 0)
 
 	successInfo := InitSuccessInfo()
@@ -99,7 +100,7 @@ func CreateLoggers() []LogResetUpdateCloser {
 		loggers = append(loggers, outputWriter)
 	}
 
-	attackInfo := InitAttackInfo()
+	attackInfo := InitAttackInfo(graph)
 	loggers = append(loggers, attackInfo)
 	return loggers
 }

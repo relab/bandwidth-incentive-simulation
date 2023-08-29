@@ -84,7 +84,7 @@ func run(iteration int, graphId string, maxPO int) {
 	wgMain.Add(1)
 
 	if config.IsOutputEnabled() {
-		go output.Worker(outputChan, wgOutput)
+		go output.Worker(outputChan, wgOutput, globalState.Graph)
 		wgOutput.Add(1)
 	}
 

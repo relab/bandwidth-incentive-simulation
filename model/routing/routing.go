@@ -25,13 +25,13 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 
 	firstNodeAdjIds := graph.GetNodeAdj(firstNodeId)
 
-	if int(firstNodeId)%10 == 1 {
-		// pick some random nodes which we assume are attackers
-		if !prevNodePaid {
-			// if not payed, pretend we do not have threshold
-			return nextNodeId, true, false, false, payment
-		}
-	}
+	// if int(firstNodeId)%10 == 1 {
+	// 	// pick some random nodes which we assume are attackers
+	// 	if !prevNodePaid {
+	// 		// if not payed, pretend we do not have threshold
+	// 		return nextNodeId, true, false, false, payment
+	// 	}
+	// }
 
 	for _, nodeId := range firstNodeAdjIds[bin] {
 		dist := nodeId.ToInt() ^ chunkId.ToInt()
