@@ -30,6 +30,9 @@ type CachePolicy interface {
 }
 
 type (
+	unlimitedPolicy struct {
+	}
+
 	proximityPolicy struct {
 		ChunkSet *sortedset.SortedSet[ChunkId, int, CacheData]
 	}
@@ -50,7 +53,9 @@ func GetCachePolicy() CachePolicy {
 		return nil
 	}
 
-	if policy == 1 {
+	if policy == 0 {
+		return &unlimitedPolicy{}
+	} else if policy == 1 {
 		return &proximityPolicy{ChunkSet: sortedset.New[ChunkId, int, CacheData]()}
 	} else if policy == 2 {
 		return &lruPolicy{ChunkSet: sortedset.New[ChunkId, int, CacheData]()}
@@ -87,6 +92,9 @@ func (c *CacheStruct) AddToCache(chunkId ChunkId, nodeId NodeId) CacheMap {
 	c.EvictionPolicy.UpdateCacheMap(c, chunkId, distance)
 
 	return c.CacheMap
+}
+
+func (p *unlimitedPolicy) UpdateCacheMap(c *CacheStruct, newChunkId ChunkId, distance int) {
 }
 
 func (p *proximityPolicy) UpdateCacheMap(c *CacheStruct, newChunkId ChunkId, distance int) {
