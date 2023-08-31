@@ -31,7 +31,7 @@ func TestAddToCache_Unlimited(t *testing.T) {
 }
 
 func TestAddToCache_Proximity(t *testing.T) {
-	config.InitConfigWithPath(path)
+	config.InitConfig()
 	config.SetCacheModel(1)
 
 	cache := CacheStruct{
@@ -63,7 +63,7 @@ func TestAddToCache_Proximity(t *testing.T) {
 }
 
 func TestAddToCache_LeastRecentUsed(t *testing.T) {
-	config.InitConfigWithPath(path)
+	config.InitConfig()
 	config.SetCacheModel(2)
 
 	cache := CacheStruct{
@@ -97,7 +97,7 @@ func TestAddToCache_LeastRecentUsed(t *testing.T) {
 }
 
 func TestAddToCache_LeastFrequentlyUsed(t *testing.T) {
-	config.InitConfigWithPath(path)
+	config.InitConfig()
 	config.SetCacheModel(3)
 
 	cache := CacheStruct{
@@ -124,7 +124,6 @@ func TestAddToCache_LeastFrequentlyUsed(t *testing.T) {
 		t.Errorf("Expected ChunkId 2 to be removed")
 	}
 
-	
 	if _, exists := cache.CacheMap[ChunkId(1)]; !exists {
 		t.Errorf("Expected ChunkId 1 to be added")
 	}
@@ -137,7 +136,7 @@ func TestAddToCache_LeastFrequentlyUsed(t *testing.T) {
 }
 
 func TestCacheStruct_Contains(t *testing.T) {
-	config.InitConfigWithPath(path)
+	config.InitConfig()
 	config.SetCacheModel(0)
 
 	cache := CacheStruct{
