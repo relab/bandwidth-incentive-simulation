@@ -52,6 +52,7 @@ type State struct {
 	TimeStep             int64
 	CurrPosition         int64 // current position in the dataset file
 	ChunkIds             *[]ChunkId
+	CidsData             *[]CidStruct
 	Epoch                int
 }
 

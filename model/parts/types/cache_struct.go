@@ -1,7 +1,6 @@
 package types
 
 import (
-	"fmt"
 	"github.com/zavitax/sortedset-go"
 	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
@@ -49,7 +48,6 @@ type (
 func GetCachePolicy() CachePolicy {
 	policy := config.GetCacheModel()
 	if policy == -1 {
-		fmt.Println("No cache model is selected.")
 		return nil
 	}
 
@@ -89,7 +87,9 @@ func (c *CacheStruct) AddToCache(chunkId ChunkId, nodeId NodeId) CacheMap {
 		c.CacheMap[chunkId] = newCacheData
 	}
 
-	c.EvictionPolicy.UpdateCacheMap(c, chunkId, distance)
+	if c.EvictionPolicy != nil {
+		c.EvictionPolicy.UpdateCacheMap(c, chunkId, distance)
+	}
 
 	return c.CacheMap
 }
@@ -104,7 +104,7 @@ func (p *proximityPolicy) UpdateCacheMap(c *CacheStruct, newChunkId ChunkId, dis
 		return
 	}
 
-	chunkIdToDelete := p.ChunkSet.PopMin().Key()
+	chunkIdToDelete := p.ChunkSet.PopMax().Key()
 	delete(c.CacheMap, chunkIdToDelete)
 }
 
@@ -132,8 +132,11 @@ func (p *lfuPolicy) UpdateCacheMap(c *CacheStruct, newChunkId ChunkId, distance 
 		return
 	}
 
-	chunkIdToDelete := p.ChunkSet.PopMin().Key()
-	delete(c.CacheMap, chunkIdToDelete)
+	itemToDelete := p.ChunkSet.PopMin()
+	if itemToDelete.Key() == newChunkId {
+		itemToDelete, _ = p.ChunkSet.PopMin(), p.ChunkSet.AddOrUpdate(itemToDelete.Key(), itemToDelete.Score(), itemToDelete.Value)
+	}
+	delete(c.CacheMap, itemToDelete.Key())
 }
 
 func (c *CacheStruct) Contains(chunkId ChunkId) bool {

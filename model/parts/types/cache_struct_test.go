@@ -1,101 +1,36 @@
 package types
 
 import (
-	"fmt"
 	"go-incentive-simulation/config"
 	"sync"
 	"testing"
-	"time"
 )
 
 const path = "../../../"
 
-func TestAddToChche(t *testing.T) {
-	cache := CacheStruct{
-		Size:       3,
-		CacheMap:   make(CacheMap),
-		CacheMutex: &sync.Mutex{},
-	}
-
+func TestAddToCache_Unlimited(t *testing.T) {
 	config.InitConfigWithPath(path)
 	config.SetCacheModel(0)
-	cache.EvictionPolicy = GetCachePolicy()
 
-	network := &Network{}
-	network.Bits = config.GetBits()
-	node := network.node(NodeId(1))
-
-	cache.AddToCache(ChunkId(1), node.Id)
-	cache.AddToCache(ChunkId(200), node.Id)
-	cache.AddToCache(ChunkId(3000), node.Id)
-
-	if len(cache.CacheMap) != 3 {
-		t.Errorf("Expected cache size to be 3, but got %d", len(cache.CacheMap))
+	cache := CacheStruct{
+		Size:           3,
+		CacheMap:       make(CacheMap),
+		CacheMutex:     &sync.Mutex{},
+		EvictionPolicy: GetCachePolicy(),
 	}
 
-	config.SetCacheModel(1)
-	cache.EvictionPolicy = GetCachePolicy()
-
-	cache.AddToCache(ChunkId(400), node.Id)
-	if len(cache.CacheMap) != 3 {
-		t.Errorf("Expected cache size to be 3, but got %d", len(cache.CacheMap))
+	for i := 0; i < 100; i++ {
+		cache.AddToCache(ChunkId(i), NodeId(1))
 	}
 
-	if _, exists := cache.CacheMap[ChunkId(3000)]; exists {
-		t.Errorf("Expected ChunkId 3000 to be removed")
-	}
-
-	config.SetCacheModel(2)
-	cache.EvictionPolicy = GetCachePolicy()
-
-	now := time.Now()
-	dummyCounter := 1
-	for id, cacheData := range cache.CacheMap {
-		dummyCounter++
-		cacheData.LastTimeUsed = now.Add(-time.Hour * time.Duration(dummyCounter*int(id)))
-		cache.CacheMap[id] = cacheData
-		fmt.Println(id, cache.CacheMap[id].LastTimeUsed)
-	}
-	cache.AddToCache(ChunkId(4), node.Id)
-	if len(cache.CacheMap) != 3 {
-		t.Errorf("Expected cache size to be 3, but got %d", len(cache.CacheMap))
-	}
-
-	if _, exists := cache.CacheMap[ChunkId(400)]; exists {
-		t.Errorf("Expected ChunkId 400 to be removed")
-	}
-
-	config.SetCacheModel(3)
-	cache.EvictionPolicy = GetCachePolicy()
-
-	for nodeId, cacheData := range cache.CacheMap {
-		dummyCounter++
-		cacheData.Frequency = dummyCounter * int(nodeId)
-		cache.CacheMap[nodeId] = cacheData
-	}
-	cache.AddToCache(ChunkId(4000), node.Id)
-	if len(cache.CacheMap) != 3 {
-		t.Errorf("Expected cache size to be 3, but got %d", len(cache.CacheMap))
-	}
-
-	if _, exists := cache.CacheMap[ChunkId(4000)]; exists {
-		t.Errorf("Expected ChunkId 4000 to be removed")
-	}
-
-	config.SetCacheModel(0)
-	cache.EvictionPolicy = GetCachePolicy()
-
-	cache.AddToCache(ChunkId(5), node.Id)
-	if len(cache.CacheMap) != 4 {
-		t.Errorf("Expected cache size to be 4 (Unlimited caching) after adding one more entry, but got %d", len(cache.CacheMap))
-	}
-
-	if _, exists := cache.CacheMap[ChunkId(5)]; !exists {
-		t.Errorf("Expected ChunkId 5 to be added")
+	for i := 0; i < 100; i++ {
+		if _, exists := cache.CacheMap[ChunkId(i)]; !exists {
+			t.Errorf("Expected ChunkId %d to be added", i)
+		}
 	}
 }
 
-func TestUpdateCacheMap_Proximity(t *testing.T) {
+func TestAddToCache_Proximity(t *testing.T) {
 	config.InitConfigWithPath(path)
 	config.SetCacheModel(1)
 
@@ -115,9 +50,19 @@ func TestUpdateCacheMap_Proximity(t *testing.T) {
 	if _, exists := cache.CacheMap[ChunkId(76)]; exists {
 		t.Errorf("Expected ChunkId 76 to be removed")
 	}
+
+	if _, exists := cache.CacheMap[ChunkId(80)]; !exists {
+		t.Errorf("Expected ChunkId 80 to be added")
+	}
+	if _, exists := cache.CacheMap[ChunkId(00)]; !exists {
+		t.Errorf("Expected ChunkId 00 to be added")
+	}
+	if _, exists := cache.CacheMap[ChunkId(64)]; !exists {
+		t.Errorf("Expected ChunkId 64 to be added")
+	}
 }
 
-func TestUpdateCacheMap_LeastRecentUsed(t *testing.T) {
+func TestAddToCache_LeastRecentUsed(t *testing.T) {
 	config.InitConfigWithPath(path)
 	config.SetCacheModel(2)
 
@@ -130,17 +75,28 @@ func TestUpdateCacheMap_LeastRecentUsed(t *testing.T) {
 
 	cache.AddToCache(ChunkId(1), NodeId(1))
 	cache.AddToCache(ChunkId(2), NodeId(1))
+	cache.AddToCache(ChunkId(1), NodeId(1))
 	cache.AddToCache(ChunkId(3), NodeId(1))
 	cache.AddToCache(ChunkId(4), NodeId(1))
 
 	cache.EvictionPolicy.UpdateCacheMap(&cache, ChunkId(4), 0)
 
-	if _, exists := cache.CacheMap[ChunkId(1)]; exists {
-		t.Errorf("Expected ChunkId 1 to be removed")
+	if _, exists := cache.CacheMap[ChunkId(2)]; exists {
+		t.Errorf("Expected ChunkId 2 to be removed")
+	}
+
+	if _, exists := cache.CacheMap[ChunkId(1)]; !exists {
+		t.Errorf("Expected ChunkId 1 to be added")
+	}
+	if _, exists := cache.CacheMap[ChunkId(3)]; !exists {
+		t.Errorf("Expected ChunkId 3 to be added")
+	}
+	if _, exists := cache.CacheMap[ChunkId(4)]; !exists {
+		t.Errorf("Expected ChunkId 4 to be added")
 	}
 }
 
-func TestUpdateCacheMap_LeastFrequentlyUsed(t *testing.T) {
+func TestAddToCache_LeastFrequentlyUsed(t *testing.T) {
 	config.InitConfigWithPath(path)
 	config.SetCacheModel(3)
 
@@ -166,6 +122,17 @@ func TestUpdateCacheMap_LeastFrequentlyUsed(t *testing.T) {
 	// 4 should be removed, but there's not way for it to make it into the cache
 	if _, exists := cache.CacheMap[ChunkId(2)]; exists {
 		t.Errorf("Expected ChunkId 2 to be removed")
+	}
+
+	
+	if _, exists := cache.CacheMap[ChunkId(1)]; !exists {
+		t.Errorf("Expected ChunkId 1 to be added")
+	}
+	if _, exists := cache.CacheMap[ChunkId(8)]; !exists {
+		t.Errorf("Expected ChunkId 8 to be added")
+	}
+	if _, exists := cache.CacheMap[ChunkId(4)]; !exists {
+		t.Errorf("Expected ChunkId 4 to be added")
 	}
 }
 

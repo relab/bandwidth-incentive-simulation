@@ -3,11 +3,15 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"go-incentive-simulation/config"
 	"os"
 	"strconv"
 )
 
 func extract_cid_frequency() {
+	if !config.GetRealWorkload() {
+		return
+	}
 	filePath := "data.csv"
 	outputFilePath := "output.csv"
 
