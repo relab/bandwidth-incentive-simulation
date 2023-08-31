@@ -77,6 +77,10 @@ func GetNewChunkId() types.ChunkId {
 //	}
 
 func GetRealWorkLoadFromFileAndAddToOriginators(g *types.Graph) bool {
+	if !config.GetRealWorkload() {
+		return false
+	}
+
 	allCidData := make([]types.CidStruct, 0)
 
 	file, err := os.Open("network_data/workload.csv")
