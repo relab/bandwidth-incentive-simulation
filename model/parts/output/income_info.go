@@ -73,7 +73,7 @@ func (o *IncomeInfo) CalculateNonOIncomeFairness() float64 {
 	return utils.Gini(vals)
 }
 
-func (o *IncomeInfo) CalculateOriginatorCostFairness() float64 {
+func (o *IncomeInfo) CalculateOriginatorCostFairness() (float64, int, int, float64) {
 	size := config.GetNetworkSize()
 	vals := make([]int, 0, size)
 	for id, value := range o.CostMap {
@@ -81,7 +81,8 @@ func (o *IncomeInfo) CalculateOriginatorCostFairness() float64 {
 			vals = append(vals, value)
 		}
 	}
-	return utils.Gini(vals)
+	min, max := utils.MinAndMax(vals)
+	return utils.Gini(vals), min, max, utils.Mean(vals) // min, max, average
 }
 
 func (o *IncomeInfo) CalculateCostAdjustedOriginatorIncomeFairness() float64 {
@@ -431,7 +432,8 @@ func (ii *IncomeInfo) Log() {
 			panic(err)
 		}
 
-		_, err = ii.Writer.WriteString(fmt.Sprintf("Org Cost fairness: %f \n", ii.CalculateOriginatorCostFairness()))
+		orgCostFairness, min, max, mean := ii.CalculateOriginatorCostFairness()
+		_, err = ii.Writer.WriteString(fmt.Sprintf("Org Cost fairness: %f, min cost: %d, max cost: %d, mean cost: %f \n", orgCostFairness, min, max, mean))
 		if err != nil {
 			panic(err)
 		}

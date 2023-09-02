@@ -34,3 +34,17 @@ func Stdev(x []int, mean float64) float64 {
 	}
 	return math.Sqrt(sum / float64(len(x)))
 }
+
+func MinAndMax(x []int) (min int, max int) {
+	min = x[0]
+	max = x[0]
+	for _, value := range x {
+		if value < min {
+			min = value
+		}
+		if value > max {
+			max = value
+		}
+	}
+	return min, max
+}
