@@ -128,9 +128,9 @@ func (network *Network) node(nodeId NodeId) *Node {
 			RequestCount: 0,
 		},
 		CacheStruct: CacheStruct{
-			Size:       config.GetCacheSize(),
-			CacheMap:   make(CacheMap),
-			CacheMutex: &sync.Mutex{},
+			Size:           config.GetCacheSize(),
+			CacheMap:       make(CacheMap),
+			CacheMutex:     &sync.Mutex{},
 			EvictionPolicy: GetCachePolicy(),
 		},
 		PendingStruct: PendingStruct{

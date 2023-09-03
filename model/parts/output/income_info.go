@@ -40,6 +40,7 @@ func (ii *IncomeInfo) Reset() {
 }
 
 func (ii *IncomeInfo) Close() {
+	fmt.Println("In the close function.")
 	err := ii.Writer.Flush()
 	if err != nil {
 		fmt.Println("Couldn't flush the remaining buffer in the writer for output")
