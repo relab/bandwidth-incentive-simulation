@@ -35,6 +35,18 @@ func GetAdjustableThresholdExponent() int {
 	return theconfig.BaseOptions.AdjustableThresholdExponent
 }
 
+func GetAddressChangeThreshold() int {
+	return theconfig.BaseOptions.AddressChangeThreshold
+}
+
+func GetOriginatorShuffleProbability() float32 {
+	return theconfig.BaseOptions.OriginatorShuffleProbability
+}
+
+func GetNonOriginatorShuffleProbability() float32 {
+	return theconfig.BaseOptions.NonOriginatorShuffleProbability
+}
+
 func IsForgivenessEnabled() bool {
 	return theconfig.ExperimentOptions.ForgivenessEnabled
 }

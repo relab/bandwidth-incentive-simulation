@@ -54,9 +54,13 @@ func (o *IncomeInfo) CalculateIncomeFairness() float64 {
 	size := config.GetNetworkSize()
 	vals := make([]int, size)
 	i := 0
+	println("IncomeMap size" ,len(o.IncomeMap))
 	for _, value := range o.IncomeMap {
 		vals[i] = value
 		i++
+		if i == size {
+			break
+		}
 	}
 	return utils.Gini(vals)
 }
@@ -103,6 +107,9 @@ func (o *IncomeInfo) CalculateIncomeTheilIndex() float64 {
 	for _, value := range o.IncomeMap {
 		vals[i] = value
 		i++
+		if i == size {
+			break
+		}
 	}
 	return utils.Theil(vals)
 }
@@ -139,8 +146,8 @@ func (ii *IncomeInfo) Update(output *Route) {
 		if !(payment.Payment.IsOriginator) {
 			ii.IncomeMap[payer] -= payment.Price
 		} else {
-			ii.Requesters[payee]++
-			ii.CostMap[payee] += payment.Price
+			ii.Requesters[payer]++
+			ii.CostMap[payer] += payment.Price
 			if hop != 0 {
 				panic("First payment in list is not from originator.")
 			}

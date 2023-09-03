@@ -26,26 +26,18 @@ func SortedKeys(nodeMap map[types.NodeId]*types.Node) []types.NodeId {
 func CreateGraphNetwork(net *types.Network) (*types.Graph, error) {
 	//fmt.Println("Creating graph network...")
 	sortedNodeIds := SortedKeys(net.NodesMap)
-	numNodes := len(net.NodesMap)
 
 	Edges := make(map[types.NodeId]map[types.NodeId]*types.Edge)
 
 	graph := &types.Graph{
 		Network: net,
-		Nodes:   make([]*types.Node, 0, numNodes),
 		Edges:   Edges,
-		NodeIds: sortedNodeIds,
 	}
 
 	for _, nodeId := range sortedNodeIds {
 		graph.Edges[nodeId] = make(map[types.NodeId]*types.Edge)
 
 		node := net.NodesMap[nodeId]
-		err1 := graph.AddNode(node)
-		if err1 != nil {
-			return nil, err1
-		}
-
 		nodeAdj := node.AdjIds
 		for _, adjItems := range nodeAdj {
 			for _, otherNodeId := range adjItems {
@@ -101,7 +93,6 @@ func PeerPriceChunk(firstNodeId types.NodeId, chunkId types.ChunkId) int {
 func CreateDownloadersList(g *types.Graph) []types.NodeId {
 	//fmt.Println("Creating downloaders list...")
 
-	//downloadersList := types.Choice(g.NodeIds, config.GetOriginators())
 	downloadersList := make([]types.NodeId, 0)
 	counter := 0
 	for _, originator := range g.NodesMap {
@@ -114,11 +105,4 @@ func CreateDownloadersList(g *types.Graph) []types.NodeId {
 
 	//fmt.Println("Downloaders list create...!")
 	return downloadersList
-}
-
-func CreateNodesList(g *types.Graph) []types.NodeId {
-	//fmt.Println("Creating nodes list...")
-	nodesValue := g.NodeIds
-	//fmt.Println("NodesMap list create...!")
-	return nodesValue
 }

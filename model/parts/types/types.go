@@ -1,5 +1,7 @@
 package types
 
+import "go-incentive-simulation/config"
+
 type Request struct {
 	TimeStep        int
 	Epoch           int
@@ -43,7 +45,6 @@ type Threshold [2]NodeId
 type State struct {
 	Graph                *Graph
 	Originators          []NodeId
-	NodesId              []NodeId
 	RouteLists           []RequestResult
 	UniqueWaitingCounter int64
 	UniqueRetryCounter   int64
@@ -53,6 +54,23 @@ type State struct {
 }
 
 func (s *State) GetOriginatorId(originatorIndex int) NodeId {
+	if config.GetAddressChangeThreshold() > 0 {
+		nodeId := s.Originators[originatorIndex]
+		node := s.Graph.GetNode(nodeId)
+		if node == nil {
+			panic("Node not found")
+		}
+		if node.OriginatorStruct.RequestCount > config.GetAddressChangeThreshold() {
+			newNode, err := s.Graph.NewNode()
+			if err != nil {
+				panic(err)
+			}
+			// The new node is not going to get requests
+			newNode.Deactivate()
+			s.Originators[originatorIndex] = newNode.Id
+		}
+	}
+
 	return s.Originators[originatorIndex]
 }
 

@@ -24,7 +24,7 @@ func TestCreateGraphNetwork(t *testing.T) {
 	graph.UnlockEdge(49584, 0)
 	node := graph.GetNode(0)
 	assert.Equal(t, err, nil)
-	assert.Equal(t, len(graph.Nodes), 10000)
+	assert.Equal(t, len(graph.NodesMap), 10000)
 	assert.Equal(t, len(graph.Edges), 10000)
 	assert.Check(t, *edge != types.Edge{})
 	assert.Check(t, node != nil)
@@ -43,11 +43,13 @@ func TestBinSize(t *testing.T) {
 	network.Load(path)
 	graph, err := CreateGraphNetwork(network)
 
-	bins := graph.GetNodeAdj(graph.NodeIds[0])
-
+	nodeId := types.NodeId(47391)
+	bins := graph.GetNodeAdj(nodeId)
 	assert.Equal(t, err, nil)
-	assert.Equal(t, len(bins[0]), network.Bin)
-	assert.Equal(t, len(bins[1]), graph.Bin)
+	assert.Equal(t, network.Bin, 8)
+	assert.Equal(t, graph.Bin, 8)
+	assert.Equal(t, len(bins[0]), 8)
+	assert.Equal(t, len(bins[1]), 7)
 }
 
 // TODO: not working right now
