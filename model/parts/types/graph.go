@@ -106,19 +106,15 @@ func (g *Graph) UnlockEdge(nodeA NodeId, nodeB NodeId) {
 }
 
 func (g *Graph) GetEdge(fromNodeId NodeId, toNodeId NodeId) *Edge {
-	g.rwMutex.RLock()
-	if _, ok := g.Edges[fromNodeId][toNodeId]; ok {
-		g.rwMutex.RUnlock()
-		return g.Edges[fromNodeId][toNodeId]
-	}
-	g.rwMutex.RUnlock()
-
 	g.rwMutex.Lock()
 	defer g.rwMutex.Unlock()
+	if _, ok := g.Edges[fromNodeId][toNodeId]; ok {
+		return g.Edges[fromNodeId][toNodeId]
+	}
 
 	err := g.AddEdge(fromNodeId, toNodeId, EdgeAttrs{})
 	if err != nil {
-		return nil
+		panic(err.Error())
 	}
 
 	return g.Edges[fromNodeId][toNodeId]
