@@ -50,11 +50,11 @@ func (ii *IncomeInfo) Close() {
 	}
 }
 
-func (o *IncomeInfo) CalculateIncomeFairness() float64 {
+func (o *IncomeInfo) CalculateIncomeFairness() (float64, int, int, float64) {
 	size := config.GetNetworkSize()
 	vals := make([]int, size)
 	i := 0
-	println("IncomeMap size" ,len(o.IncomeMap))
+	println("IncomeMap size", len(o.IncomeMap))
 	for _, value := range o.IncomeMap {
 		vals[i] = value
 		i++
@@ -62,10 +62,11 @@ func (o *IncomeInfo) CalculateIncomeFairness() float64 {
 			break
 		}
 	}
-	return utils.Gini(vals)
+	min, max := utils.MinAndMax(vals)
+	return utils.Gini(vals), min, max, utils.Mean(vals)
 }
 
-func (o *IncomeInfo) CalculateNonOIncomeFairness() float64 {
+func (o *IncomeInfo) CalculateNonOIncomeFairness() (float64, int, int, float64) {
 	size := config.GetNetworkSize()
 	vals := make([]int, 0, size)
 	for id, value := range o.IncomeMap {
@@ -73,10 +74,11 @@ func (o *IncomeInfo) CalculateNonOIncomeFairness() float64 {
 			vals = append(vals, value)
 		}
 	}
-	return utils.Gini(vals)
+	min, max := utils.MinAndMax(vals)
+	return utils.Gini(vals), min, max, utils.Mean(vals)
 }
 
-func (o *IncomeInfo) CalculateOriginatorCostFairness() float64 {
+func (o *IncomeInfo) CalculateOriginatorCostFairness() (float64, int, int, float64) {
 	size := config.GetNetworkSize()
 	vals := make([]int, 0, size)
 	for id, value := range o.CostMap {
@@ -84,7 +86,8 @@ func (o *IncomeInfo) CalculateOriginatorCostFairness() float64 {
 			vals = append(vals, value)
 		}
 	}
-	return utils.Gini(vals)
+	min, max := utils.MinAndMax(vals)
+	return utils.Gini(vals), min, max, utils.Mean(vals) // min, max, average
 }
 
 func (o *IncomeInfo) CalculateCostAdjustedOriginatorIncomeFairness() float64 {
@@ -341,7 +344,6 @@ func (ii *IncomeInfo) AvgHopIncome() (income, count map[int]int) {
 }
 
 func (ii *IncomeInfo) Log() {
-
 	if config.GetHopIncome() {
 		avgHopIncome, avgHopCount := ii.AvgHopIncome()
 		for hop, income := range avgHopIncome {
@@ -428,17 +430,19 @@ func (ii *IncomeInfo) Log() {
 	}
 
 	if config.GetIncomeGini() {
-		incomeFaireness := ii.CalculateIncomeFairness()
-		_, err := ii.Writer.WriteString(fmt.Sprintf("Income fairness: %f \n", incomeFaireness))
+		incomeFaireness, min, max, mean := ii.CalculateIncomeFairness()
+		_, err := ii.Writer.WriteString(fmt.Sprintf("Income fairness: %f, min income: %d, max income: %d, mean income: %f \n", incomeFaireness, min, max, mean))
 		if err != nil {
 			panic(err)
 		}
-		_, err = ii.Writer.WriteString(fmt.Sprintf("Non Org Income fairness: %f \n", ii.CalculateNonOIncomeFairness()))
+		nonOIncomeFairness, min, max, mean := ii.CalculateNonOIncomeFairness()
+		_, err = ii.Writer.WriteString(fmt.Sprintf("Non Org Income fairness: %f, min income: %d, max income: %d, mean income: %f \n", nonOIncomeFairness, min, max, mean))
 		if err != nil {
 			panic(err)
 		}
 
-		_, err = ii.Writer.WriteString(fmt.Sprintf("Org Cost fairness: %f \n", ii.CalculateOriginatorCostFairness()))
+		orgCostFairness, min, max, mean := ii.CalculateOriginatorCostFairness()
+		_, err = ii.Writer.WriteString(fmt.Sprintf("Org Cost fairness: %f, min cost: %d, max cost: %d, mean cost: %f \n", orgCostFairness, min, max, mean))
 		if err != nil {
 			panic(err)
 		}

@@ -20,10 +20,9 @@ func Cache(state *types.State, requestResult types.RequestResult) bool {
 				// 	continue
 				// }
 				node := state.Graph.GetNode(nodeId)
-				node.CacheStruct.AddToCache(chunkId)
-				return true
+				node.CacheStruct.AddToCache(chunkId, nodeId)
 			}
-
+			return true
 		}
 
 	}

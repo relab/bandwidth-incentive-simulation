@@ -144,7 +144,7 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 	return nextNodeId, thresholdFailed, accessFailed, prevNodePaid, payment
 }
 
-func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []types.Payment, bool, bool, bool, bool) {
+func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []types.Payment, bool, bool, bool, bool, bool) {
 	chunkId := request.ChunkId
 	mainOriginatorId := request.OriginatorId
 	curNextNodeId := request.OriginatorId
@@ -159,6 +159,13 @@ func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []typ
 	var nextNodeId types.NodeId
 
 	depth := config.GetStorageDepth()
+
+	if config.IsCacheEnabled() {
+		mainOriginatorNode := graph.GetNode(mainOriginatorId)
+		if mainOriginatorNode.CacheStruct.Contains(chunkId) {
+			return nil, nil, true, false, false, true, true
+		}
+	}
 
 	if utils.FindDistance(mainOriginatorId, chunkId) >= depth {
 		found = true
@@ -227,5 +234,5 @@ func FindRoute(request types.Request, graph *types.Graph) ([]types.NodeId, []typ
 		}
 	}
 
-	return route, paymentList, found, accessFailed, thresholdFailed, foundByCaching
+	return route, paymentList, found, accessFailed, thresholdFailed, foundByCaching, false // the last one for found fromOriginator's cache
 }

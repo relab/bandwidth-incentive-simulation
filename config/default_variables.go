@@ -31,6 +31,7 @@ func getDefaultConfig() Config {
 			NonOriginatorShuffleProbability: 0.0,       // 0.0
 			ReplicationFactor:               4,
 			AdjustableThresholdExponent:     3,
+			RealWorkload:                    false,
 			OutputOptions: outputOptions{
 				MeanRewardPerForward:      false,     // false
 				AverageNumberOfHops:       false,     // false
@@ -62,9 +63,16 @@ func getDefaultConfig() Config {
 			ForwardersPayForceOriginatorToPay: false, // false
 			WaitingEnabled:                    false, // false
 			RetryWithAnotherPeer:              false, // false
-			CacheIsEnabled:                    false, // false
 			PreferredChunks:                   false, // false
 			AdjustableThreshold:               false, // false
+			CacheIsEnabled:                    false, // false
+			CacheSize:                         100000,
+			CacheModel: cacheModel{
+				Unlimited:    false,
+				NonProximity: false,
+				LRU:          false,
+				LFU:          false,
+			},
 		},
 	}
 }

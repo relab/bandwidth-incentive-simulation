@@ -30,6 +30,7 @@ func MakeInitialState(path string) types.State {
 		UniqueRetryCounter:   0,
 		OriginatorIndex:      0,
 		TimeStep:             0,
+		CidsDataLoaded:       utils.GetRealWorkLoadFromFileAndAddToOriginators(graph),
 		Epoch:                0,
 	}
 	return initialState

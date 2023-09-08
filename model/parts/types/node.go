@@ -11,15 +11,17 @@ import (
 )
 
 type Node struct {
-	Network          *Network
-	Id               NodeId
-	Active           bool
-	AdjIds           [][]NodeId
-	OriginatorStruct OriginatorStruct
-	CacheStruct      CacheStruct
-	PendingStruct    PendingStruct
-	RerouteStruct    RerouteStruct
-	AdjLock          sync.RWMutex
+	Network           *Network
+	Id                NodeId
+	Active            bool
+	AdjIds            [][]NodeId
+	OriginatorStruct  OriginatorStruct
+	CacheStruct       CacheStruct
+	PendingStruct     PendingStruct
+	RerouteStruct     RerouteStruct
+	AdjLock           sync.RWMutex
+	ChunksQueueStruct CidQueueStruct
+	IsOriginator      bool
 }
 
 // Adds a one-way connection from node to other

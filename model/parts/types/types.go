@@ -11,13 +11,14 @@ type Request struct {
 }
 
 type RequestResult struct {
-	Route           []NodeId
-	PaymentList     []Payment
-	ChunkId         ChunkId
-	Found           bool
-	AccessFailed    bool
-	ThresholdFailed bool
-	FoundByCaching  bool
+	Route                  []NodeId
+	PaymentList            []Payment
+	ChunkId                ChunkId
+	Found                  bool
+	AccessFailed           bool
+	ThresholdFailed        bool
+	FoundByCaching         bool
+	FoundByOriginatorCache bool
 }
 
 type Payment struct {
@@ -50,6 +51,9 @@ type State struct {
 	UniqueRetryCounter   int64
 	OriginatorIndex      int64
 	TimeStep             int64
+	CurrPosition         int64 // current position in the dataset file
+	ChunkIds             *[]ChunkId
+	CidsDataLoaded       bool
 	Epoch                int
 }
 
@@ -67,6 +71,7 @@ func (s *State) GetOriginatorId(originatorIndex int) NodeId {
 			}
 			// The new node is not going to get requests
 			newNode.Deactivate()
+			newNode.ChunksQueueStruct = node.ChunksQueueStruct
 			s.Originators[originatorIndex] = newNode.Id
 		}
 	}

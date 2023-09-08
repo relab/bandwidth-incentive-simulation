@@ -36,25 +36,28 @@ type baseOptions struct {
 	AddressChangeThreshold          int           `yaml:"AddressChangeThreshold"`
 	OriginatorShuffleProbability    float32       `yaml:"OriginatorShuffleProbability"`
 	NonOriginatorShuffleProbability float32       `yaml:"NonOriginatorShuffleProbability"`
+	RealWorkload                    bool          `yaml:"RealWorkload"`
 	AddressRange                    int
 	StorageDepth                    int
 }
 
 type experimentOptions struct {
-	ThresholdEnabled                  bool `yaml:"ThresholdEnabled"`
-	ReciprocityEnabled                bool `yaml:"ReciprocityEnabled"`
-	ForgivenessEnabled                bool `yaml:"ForgivenessEnabled"`
-	PaymentEnabled                    bool `yaml:"PaymentEnabled"`
-	MaxPOCheckEnabled                 bool `yaml:"MaxPOCheckEnabled"`
-	OnlyOriginatorPays                bool `yaml:"OnlyOriginatorPays"`
-	PayOnlyForCurrentRequest          bool `yaml:"PayOnlyForCurrentRequest"`
-	ForwardersPayForceOriginatorToPay bool `yaml:"ForwardersPayForceOriginatorToPay"`
-	WaitingEnabled                    bool `yaml:"WaitingEnabled"`
-	RetryWithAnotherPeer              bool `yaml:"RetryWithAnotherPeer"`
-	CacheIsEnabled                    bool `yaml:"CacheIsEnabled"`
-	PreferredChunks                   bool `yaml:"PreferredChunks"`
-	AdjustableThreshold               bool `yaml:"AdjustableThreshold"`
-	PayIfOrigPays                     bool `yaml:"PayIfOrigPays"`
+	ThresholdEnabled                  bool       `yaml:"ThresholdEnabled"`
+	ReciprocityEnabled                bool       `yaml:"ReciprocityEnabled"`
+	ForgivenessEnabled                bool       `yaml:"ForgivenessEnabled"`
+	PaymentEnabled                    bool       `yaml:"PaymentEnabled"`
+	MaxPOCheckEnabled                 bool       `yaml:"MaxPOCheckEnabled"`
+	OnlyOriginatorPays                bool       `yaml:"OnlyOriginatorPays"`
+	PayOnlyForCurrentRequest          bool       `yaml:"PayOnlyForCurrentRequest"`
+	ForwardersPayForceOriginatorToPay bool       `yaml:"ForwardersPayForceOriginatorToPay"`
+	WaitingEnabled                    bool       `yaml:"WaitingEnabled"`
+	RetryWithAnotherPeer              bool       `yaml:"RetryWithAnotherPeer"`
+	PreferredChunks                   bool       `yaml:"PreferredChunks"`
+	AdjustableThreshold               bool       `yaml:"AdjustableThreshold"`
+	PayIfOrigPays                     bool       `yaml:"PayIfOrigPays"`
+	CacheIsEnabled                    bool       `yaml:"CacheIsEnabled"`
+	CacheSize                         int        `yaml:"CacheSize"`
+	CacheModel                        cacheModel `yaml:"CacheModel"`
 }
 
 type outputOptions struct {
@@ -73,4 +76,11 @@ type outputOptions struct {
 	ExperimentId              string `yaml:"ExperimentId"`
 	Reset                     bool   `yaml:"Reset"`
 	EvaluateInterval          int    `yaml:"EvaluateInterval"`
+}
+
+type cacheModel struct {
+	Unlimited    bool `yaml:"Unlimited"`
+	NonProximity bool `yaml:"NonProximity"`
+	LRU          bool `yaml:"LRU"`
+	LFU          bool `yaml:"LFU"`
 }
