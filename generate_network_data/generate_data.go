@@ -42,11 +42,11 @@ func main() {
 	println("binSize:", *binSize, "bits:", *bits, "networkSize:", *networkSize, "rSeed:", *rSeed, "id:", *id, "count:", *count, "random:", *random)
 
 	if *count < 0 {
-		filename := "network_data/" + networkdata.GetNetworkDataName(*bits, *binSize, *networkSize, *id, -1)
+		filename := "../network_data/" + networkdata.GetNetworkDataName(*bits, *binSize, *networkSize, *id, -1)
 		generateAndDump(*bits, *binSize, *networkSize, *random, filename)
 	}
 	for i := 0; i < *count; i++ {
-		filename := "network_data/" + networkdata.GetNetworkDataName(*bits, *binSize, *networkSize, *id, i)
+		filename := "../network_data/" + networkdata.GetNetworkDataName(*bits, *binSize, *networkSize, *id, i)
 		generateAndDump(*bits, *binSize, *networkSize, *random, filename)
 	}
 }
