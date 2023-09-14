@@ -14,8 +14,8 @@ import (
 // theconfig This is the current configuration.
 var theconfig Config
 
-func InitConfig() {
-	config, err := ReadYamlFile("config.yaml")
+func InitConfig(configfile string) {
+	config, err := ReadYamlFile(configfile)
 	if err != nil {
 		log.Panicln("Unable to read config file: config.yaml")
 	}
