@@ -2,7 +2,9 @@ package types
 
 import (
 	"fmt"
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/general"
+	"math"
 	"sync"
 )
 
@@ -11,7 +13,7 @@ type Graph struct {
 	*Network
 	CurState State
 	Edges    map[NodeId]map[NodeId]*Edge
-	rwMutex    sync.RWMutex
+	rwMutex  sync.RWMutex
 }
 
 // Edge that connects to NodesMap with attributes about the connection
@@ -27,9 +29,10 @@ type Edge struct {
 // "lastEpoch" is the epoch where it was last forgiven.
 // "threshold" is for the adjustable threshold limit.
 type EdgeAttrs struct {
-	A2B       int
-	LastEpoch int
-	Threshold int
+	A2B         int
+	LastEpoch   int
+	Threshold   int
+	Refreshrate int
 }
 
 func (g *Graph) GetNodeAdj(nodeId NodeId) [][]NodeId {
@@ -43,7 +46,7 @@ func (g *Graph) GetNodeAdj(nodeId NodeId) [][]NodeId {
 }
 
 // AddEdge will add an edge from a node to a node
-func (g *Graph) AddEdge(fromNodeId NodeId, toNodeId NodeId, attrs EdgeAttrs) error {
+func (g *Graph) AddEdge(fromNodeId NodeId, toNodeId NodeId) error {
 	toNode := g.NodesMap[toNodeId]
 	fromNode := g.NodesMap[fromNodeId]
 	if toNode == nil || fromNode == nil {
@@ -55,10 +58,27 @@ func (g *Graph) AddEdge(fromNodeId NodeId, toNodeId NodeId, attrs EdgeAttrs) err
 		if g.unsafeEdgeExists(toNodeId, fromNodeId) {
 			mutex = g.Edges[toNodeId][fromNodeId].Mutex
 		}
-		newEdge := &Edge{FromNodeId: fromNodeId, ToNodeId: toNodeId, Attrs: attrs, Mutex: mutex}
+		newEdge := &Edge{FromNodeId: fromNodeId, ToNodeId: toNodeId, Attrs: EdgeAttrs{}, Mutex: mutex}
+		newEdge.InitThresholdAndRefreshrate()
 		g.Edges[fromNodeId][toNodeId] = newEdge
 		return nil
 	}
+}
+
+func (e *Edge) InitThresholdAndRefreshrate() {
+	threshold := config.GetThreshold()
+	refreshrate := config.GetRefreshRate()
+	if config.IsAdjustableThreshold() {
+		threshold = config.GetThreshold() - config.GetBits() + general.BitLength(e.FromNodeId.ToInt()^e.ToNodeId.ToInt())
+		refreshrate = GetAdjustedRefreshrate(threshold, config.GetThreshold(), config.GetRefreshRate(), config.GetAdjustableThresholdExponent())
+	}
+	e.Attrs.Threshold = threshold
+	e.Attrs.Refreshrate = refreshrate
+}
+
+func GetAdjustedRefreshrate(adjustedThreshold, threshold, refreshRate, power int) int {
+	ratio := float64(adjustedThreshold) / float64(threshold)
+	return int(math.Ceil(float64(refreshRate) * math.Pow(ratio, float64(power))))
 }
 
 func (g *Graph) NewNode() (*Node, error) {
@@ -71,13 +91,11 @@ func (g *Graph) NewNode() (*Node, error) {
 	nodeAdj := node.AdjIds
 	for _, adjItems := range nodeAdj {
 		for _, otherNodeId := range adjItems {
-			threshold := general.BitLength(node.Id.ToInt() ^ otherNodeId.ToInt())
-			attrs := EdgeAttrs{A2B: 0, LastEpoch: 0, Threshold: threshold}
-			err := g.AddEdge(node.Id, otherNodeId, attrs)
+			err := g.AddEdge(node.Id, otherNodeId)
 			if err != nil {
 				return nil, err
 			}
-			err = g.AddEdge(otherNodeId, node.Id, attrs)
+			err = g.AddEdge(otherNodeId, node.Id)
 			if err != nil {
 				return nil, err
 			}
@@ -116,7 +134,7 @@ func (g *Graph) GetEdge(fromNodeId NodeId, toNodeId NodeId) *Edge {
 	g.rwMutex.Lock()
 	defer g.rwMutex.Unlock()
 
-	err := g.AddEdge(fromNodeId, toNodeId, EdgeAttrs{})
+	err := g.AddEdge(fromNodeId, toNodeId)
 	if err != nil {
 		return nil
 	}

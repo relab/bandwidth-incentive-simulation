@@ -16,10 +16,7 @@ func IsThresholdFailed(firstNodeId types.NodeId, secondNodeId types.NodeId, grap
 	edgeDataSecond := graph.GetEdgeData(secondNodeId, firstNodeId)
 	p2pSecond := edgeDataSecond.A2B
 
-	threshold := config.GetThreshold()
-	if config.IsAdjustableThreshold() {
-		threshold = edgeDataFirst.Threshold
-	}
+	threshold := edgeDataFirst.Threshold
 
 	peerPriceChunk := utils.PeerPriceChunk(secondNodeId, request.ChunkId)
 
