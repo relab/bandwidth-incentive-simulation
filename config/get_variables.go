@@ -31,6 +31,10 @@ func IsAdjustableThreshold() bool {
 	return theconfig.ExperimentOptions.AdjustableThreshold
 }
 
+func IsVariableRefreshrate() bool {
+	return theconfig.ExperimentOptions.VariableRefreshrate
+}
+
 func GetAdjustableThresholdExponent() int {
 	return theconfig.BaseOptions.AdjustableThresholdExponent
 }

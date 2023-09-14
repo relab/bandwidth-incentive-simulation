@@ -68,10 +68,18 @@ func (g *Graph) AddEdge(fromNodeId NodeId, toNodeId NodeId) error {
 func (e *Edge) InitThresholdAndRefreshrate() {
 	threshold := config.GetThreshold()
 	refreshrate := config.GetRefreshRate()
+	if config.IsVariableRefreshrate() {
+		threshold = config.GetMaxProximityOrder()
+	}
+
 	if config.IsAdjustableThreshold() {
-		threshold = config.GetThreshold() - config.GetBits() + general.BitLength(e.FromNodeId.ToInt()^e.ToNodeId.ToInt())
+		threshold = threshold - config.GetBits() + general.BitLength(e.FromNodeId.ToInt()^e.ToNodeId.ToInt())
+		if threshold < 0 {
+			threshold = 0
+		}
 		refreshrate = GetAdjustedRefreshrate(threshold, config.GetThreshold(), config.GetRefreshRate(), config.GetAdjustableThresholdExponent())
 	}
+
 	e.Attrs.Threshold = threshold
 	e.Attrs.Refreshrate = refreshrate
 }
@@ -168,6 +176,30 @@ func (g *Graph) unsafeEdgeExists(fromNodeId NodeId, toNodeId NodeId) bool {
 func (g *Graph) SetEdgeA2B(fromNodeId NodeId, toNodeId NodeId, a2b int) bool {
 	if g.EdgeExists(fromNodeId, toNodeId) {
 		g.Edges[fromNodeId][toNodeId].Attrs.A2B = a2b
+		return true
+	}
+	return false
+}
+
+func (g *Graph) SetEdgeIncrementThreshold(fromNodeId NodeId, toNodeId NodeId) bool {
+	if g.EdgeExists(fromNodeId, toNodeId) {
+		threshold := g.Edges[fromNodeId][toNodeId].Attrs.Threshold
+		if threshold < config.GetThreshold() {
+			g.Edges[fromNodeId][toNodeId].Attrs.Threshold++
+		}
+		if g.Edges[fromNodeId][toNodeId].Attrs.Refreshrate < config.GetThreshold()/2 {
+			g.Edges[fromNodeId][toNodeId].Attrs.Refreshrate++
+		}
+		return true
+	}
+	return false
+}
+
+func (g *Graph) SetEdgeDecrementThreshold(fromNodeId NodeId, toNodeId NodeId) bool {
+	if g.EdgeExists(fromNodeId, toNodeId) {
+		if g.Edges[fromNodeId][toNodeId].Attrs.Refreshrate > config.GetRefreshRate() {
+			g.Edges[fromNodeId][toNodeId].Attrs.Refreshrate--
+		}
 		return true
 	}
 	return false

@@ -65,6 +65,7 @@ func getDefaultConfig() Config {
 			CacheIsEnabled:                    false, // false
 			PreferredChunks:                   false, // false
 			AdjustableThreshold:               false, // false
+			VariableRefreshrate:               false, // false
 		},
 	}
 }

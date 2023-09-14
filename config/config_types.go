@@ -54,6 +54,7 @@ type experimentOptions struct {
 	CacheIsEnabled                    bool `yaml:"CacheIsEnabled"`
 	PreferredChunks                   bool `yaml:"PreferredChunks"`
 	AdjustableThreshold               bool `yaml:"AdjustableThreshold"`
+	VariableRefreshrate               bool `yaml:VariableRefreshrate`
 	PayIfOrigPays                     bool `yaml:"PayIfOrigPays"`
 }
 
