@@ -165,6 +165,14 @@ func (g *Graph) unsafeEdgeExists(fromNodeId NodeId, toNodeId NodeId) bool {
 	return false
 }
 
+func (g *Graph) SetEdgeA2B(fromNodeId NodeId, toNodeId NodeId, a2b int) bool {
+	if g.EdgeExists(fromNodeId, toNodeId) {
+		g.Edges[fromNodeId][toNodeId].Attrs.A2B = a2b
+		return true
+	}
+	return false
+}
+
 func (g *Graph) SetEdgeData(fromNodeId NodeId, toNodeId NodeId, edgeAttrs EdgeAttrs) bool {
 	if g.EdgeExists(fromNodeId, toNodeId) {
 		g.Edges[fromNodeId][toNodeId].Attrs = edgeAttrs
