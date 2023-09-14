@@ -25,7 +25,7 @@ func main() {
 	flag.Parse()
 
 	if *useconfig {
-		config.InitConfig()
+		config.InitConfig("config.yaml")
 		*binSize = config.GetBinSize()
 		*bits = config.GetBits()
 		*networkSize = config.GetNetworkSize()
