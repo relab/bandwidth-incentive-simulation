@@ -21,11 +21,12 @@ func main() {
 	count := flag.Int("count", -1, "generate count many networks with ids i0,i1,...")
 	random := flag.Bool("random", true, "spread nodes randomly")
 	useconfig := flag.Bool("config", false, "use config.yaml to initialize bits, binSize, NetworkSize and randomness")
+	conffile := flag.String("conffile", "config.yaml", "specify config file")
 
 	flag.Parse()
 
 	if *useconfig {
-		config.InitConfig("config.yaml")
+		config.InitConfig(*conffile)
 		*binSize = config.GetBinSize()
 		*bits = config.GetBits()
 		*networkSize = config.GetNetworkSize()
