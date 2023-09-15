@@ -60,13 +60,15 @@ func (s *State) GetOriginatorId(originatorIndex int) NodeId {
 		if node == nil {
 			panic("Node not found")
 		}
-		if node.OriginatorStruct.RequestCount > config.GetAddressChangeThreshold() {
+		if node.CreationEpoch + config.GetShufflingPeriod() <= s.Epoch {
+			
 			newNode, err := s.Graph.NewNode()
 			if err != nil {
 				panic(err)
 			}
 			// The new node is not going to get requests
 			newNode.Deactivate()
+			newNode.CreationEpoch = s.Epoch
 			s.Originators[originatorIndex] = newNode.Id
 		}
 	}

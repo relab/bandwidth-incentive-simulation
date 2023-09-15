@@ -36,6 +36,7 @@ type baseOptions struct {
 	AddressChangeThreshold          int           `yaml:"AddressChangeThreshold"`
 	OriginatorShuffleProbability    float32       `yaml:"OriginatorShuffleProbability"`
 	NonOriginatorShuffleProbability float32       `yaml:"NonOriginatorShuffleProbability"`
+	ShufflingPeriod                 int           `yaml:"ShufflingPeriod"`
 	AddressRange                    int
 	StorageDepth                    int
 }

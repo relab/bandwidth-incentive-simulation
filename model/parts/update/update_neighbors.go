@@ -7,6 +7,13 @@ import (
 )
 
 func Neighbors(globalState *types.State) bool {
+	if config.GetShufflingPeriod() <= 0 {
+		return true
+	}
+	if globalState.Epoch%config.GetShufflingPeriod() != 0 {
+		return true
+	}
+
 	// Update neighbors with probability p
 	if config.GetOriginatorShuffleProbability() <= 0 && config.GetNonOriginatorShuffleProbability() <= 0 {
 		return true

@@ -20,6 +20,7 @@ type Node struct {
 	PendingStruct    PendingStruct
 	RerouteStruct    RerouteStruct
 	AdjLock          sync.RWMutex
+	CreationEpoch    int
 }
 
 // Adds a one-way connection from node to other
