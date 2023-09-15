@@ -29,6 +29,7 @@ func getDefaultConfig() Config {
 			AddressChangeThreshold:          0,         // non-positive means no limit
 			OriginatorShuffleProbability:    0.0,       // 0.0
 			NonOriginatorShuffleProbability: 0.0,       // 0.0
+			ShufflingPeriod:                 0,         // 0
 			ReplicationFactor:               4,
 			AdjustableThresholdExponent:     3,
 			OutputOptions: outputOptions{

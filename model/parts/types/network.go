@@ -147,6 +147,7 @@ func (network *Network) node(nodeId NodeId) *Node {
 			RerouteMutex: &sync.Mutex{},
 		},
 		AdjLock: sync.RWMutex{},
+		CreationEpoch: 0,
 	}
 	if len(network.NodesMap) == 0 {
 		network.NodesMap = make(map[NodeId]*Node)

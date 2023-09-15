@@ -47,6 +47,10 @@ func GetNonOriginatorShuffleProbability() float32 {
 	return theconfig.BaseOptions.NonOriginatorShuffleProbability
 }
 
+func GetShufflingPeriod() int {
+	return theconfig.BaseOptions.ShufflingPeriod
+}
+
 func IsForgivenessEnabled() bool {
 	return theconfig.ExperimentOptions.ForgivenessEnabled
 }
