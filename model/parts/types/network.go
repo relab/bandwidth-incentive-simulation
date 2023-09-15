@@ -165,6 +165,7 @@ func (network *Network) Generate(count int, random bool) []*Node {
 	nodeIds := generateIds(count, (1<<network.Bits)-1)
 	if !random {
 		if config.GetBits() > 0 {
+			fmt.Println("second choice!")
 			nodeIds = generateIdsSecondChoice(count, (1<<network.Bits)-1)
 		} else {
 			nodeIds = generateIdsEven(count, (1<<network.Bits)-1)
