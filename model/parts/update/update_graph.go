@@ -27,15 +27,17 @@ func Graph(state *types.State, requestResult types.RequestResult, curTimeStep in
 				}
 				if actualPrice < 0 {
 					continue
+				}
+				if !config.IsPayOnlyForCurrentRequest() {
+					state.Graph.SetEdgeA2B(payment.FirstNodeId, payment.PayNextId, 0)
+					state.Graph.SetEdgeA2B(payment.PayNextId, payment.FirstNodeId, 0)
 				} else {
-					if !config.IsPayOnlyForCurrentRequest() {
-						state.Graph.SetEdgeA2B(payment.FirstNodeId, payment.PayNextId, 0)
-						state.Graph.SetEdgeA2B(payment.PayNextId, payment.FirstNodeId, 0)
-					} else {
-						// Important fix: Reduce debt here, since it debt will be added again below.
-						// Idea is, paying for the current request should not effect the edge balance.
-						state.Graph.SetEdgeA2B(payment.FirstNodeId, payment.PayNextId, edgeData1.A2B-price)
-					}
+					// Important fix: Reduce debt here, since it debt will be added again below.
+					// Idea is, paying for the current request should not effect the edge balance.
+					state.Graph.SetEdgeA2B(payment.FirstNodeId, payment.PayNextId, edgeData1.A2B-price)
+				}
+				if config.IsVariableRefreshrate() {
+					state.Graph.SetEdgeIncrementThreshold(payment.FirstNodeId, payment.PayNextId)
 				}
 				// fmt.Println("Payment from ", payment.FirstNodeId, " to ", payment.PayNextId, " for chunk ", payment.ChunkId, " with price ", actualPrice)
 				paymentWithPrice = types.PaymentWithPrice{Payment: payment, Price: actualPrice}

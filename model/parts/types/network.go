@@ -3,6 +3,8 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"go-incentive-simulation/config"
+	"go-incentive-simulation/model/general"
 	"math/rand"
 	"os"
 	"sync"
@@ -119,10 +121,10 @@ func (network *Network) node(nodeId NodeId) *Node {
 		panic("address out of range")
 	}
 	res := Node{
-		Network:      network,
-		Id:           nodeId,
-		AdjIds:       make([][]NodeId, network.Bits),
-		Active: 	  true,
+		Network: network,
+		Id:      nodeId,
+		AdjIds:  make([][]NodeId, network.Bits),
+		Active:  true,
 		OriginatorStruct: OriginatorStruct{
 			RequestCount: 0,
 		},
@@ -162,8 +164,13 @@ func (network *Network) node(nodeId NodeId) *Node {
 func (network *Network) Generate(count int, random bool) []*Node {
 	nodeIds := generateIds(count, (1<<network.Bits)-1)
 	if !random {
-		nodeIds = generateIdsEven(count, (1<<network.Bits)-1)
+		if config.GetBits() > 0 {
+			nodeIds = generateIdsSecondChoice(count, (1<<network.Bits)-1)
+		} else {
+			nodeIds = generateIdsEven(count, (1<<network.Bits)-1)
+		}
 	}
+
 	nodes := make([]*Node, 0)
 	for _, i := range nodeIds {
 		node := network.node(NodeId(i))
@@ -241,6 +248,44 @@ func generateIds(totalNumbers int, maxValue int) []int {
 	return result
 }
 
+func isneighbor(ida, idb int) bool {
+	return config.GetBits()-general.BitLength(ida^idb) >= config.GetStorageDepth()
+}
+
+func generateIdsSecondChoice(totalNumbers int, maxValue int) []int {
+	generatedNumbers := make(map[int]bool)
+	for len(generatedNumbers) < totalNumbers {
+		num1 := rand.Intn(maxValue-1) + 1
+		for generatedNumbers[num1] == true {
+			num1 = rand.Intn(maxValue-1) + 1
+		}
+		num2 := rand.Intn(maxValue-1) + 1
+		for generatedNumbers[num2] == true {
+			num2 = rand.Intn(maxValue-1) + 1
+		}
+		cnt1, cnt2 := 0, 0
+		for num := range generatedNumbers {
+			if isneighbor(num1, num) {
+				cnt1++
+			}
+			if isneighbor(num2, num) {
+				cnt2++
+			}
+		}
+		if cnt1 <= cnt2 {
+			generatedNumbers[num1] = true
+		} else {
+			generatedNumbers[num2] = true
+		}
+	}
+
+	result := make([]int, 0, totalNumbers)
+	for num := range generatedNumbers {
+		result = append(result, num)
+	}
+	return result
+}
+
 func generateIdsEven(totalNumbers int, maxValue int) []int {
 	result := make([]int, 0, totalNumbers)
 	step := float64(maxValue) / float64(totalNumbers)
@@ -252,4 +297,3 @@ func generateIdsEven(totalNumbers int, maxValue int) []int {
 	}
 	return result[:totalNumbers]
 }
-

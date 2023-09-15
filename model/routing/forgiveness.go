@@ -1,6 +1,7 @@
 package routing
 
 import (
+	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/parts/types"
 )
 
@@ -21,6 +22,9 @@ func CheckForgiveness(edgeData types.EdgeAttrs, firstNodeId types.NodeId, second
 	}
 	newEdgeData.LastEpoch = request.Epoch
 	graph.SetEdgeData(firstNodeId, secondNodeId, newEdgeData)
+	if config.IsVariableRefreshrate() {
+		graph.SetEdgeDecrementThreshold(firstNodeId, secondNodeId)
+	}
 
 	return newEdgeData.A2B, true
 }

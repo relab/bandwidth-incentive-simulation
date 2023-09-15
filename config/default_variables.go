@@ -66,6 +66,7 @@ func getDefaultConfig() Config {
 			PreferredChunks:                   false, // false
 			AdjustableThreshold:               false, // false
 			VariableRefreshrate:               false, // false
+			RouteOnlyNearest:                  false, // false
 		},
 	}
 }

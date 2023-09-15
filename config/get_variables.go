@@ -75,6 +75,10 @@ func IsPayIfOrigPays() bool {
 	return theconfig.ExperimentOptions.PayIfOrigPays
 }
 
+func IsRouteOnlyNearest() bool {
+	return theconfig.ExperimentOptions.RouteOnlyNearest
+}
+
 func IsPayOnlyForCurrentRequest() bool {
 	return theconfig.ExperimentOptions.PayOnlyForCurrentRequest
 }
@@ -325,6 +329,12 @@ func GetExperimentString() (exp string) {
 	}
 	if IsAdjustableThreshold() {
 		exp += "FgAdj"
+	}
+	if !IsPayOnlyForCurrentRequest() {
+		exp += "FullDept"
+	}
+	if IsRouteOnlyNearest() {
+		exp += "Nearest"
 	}
 
 	exp += "-" + GetExpeimentId()

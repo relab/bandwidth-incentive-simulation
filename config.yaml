@@ -55,7 +55,7 @@ BaseOptions:
     MeanRewardPerForward: false
     AverageNumberOfHops: false
     HopFractionOfTotalRewards: false
-    NegaticeIncome: false
+    NegativeIncome: false
     IncomeGini: true
     IncomeTheil: false
     HopIncome: false
