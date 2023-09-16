@@ -73,6 +73,8 @@ func getDefaultConfig() Config {
 				LRU:          false,
 				LFU:          false,
 			},
+			VariableRefreshrate: false, // false
+			RouteOnlyNearest:    false, // false
 		},
 	}
 }

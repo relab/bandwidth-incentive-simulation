@@ -17,6 +17,7 @@ import (
 )
 
 func main() {
+	configfile := flag.String("conf", "config.yaml", "path to config file to use")
 	graphId := flag.String("graphId", "", "an Id for the graph, e.g. even")
 	count := flag.Int("count", -1, "run for different networks with ids i0,i1,...")
 	maxPOs := flag.String("maxPOs", "", "min:max maxPO value")
@@ -46,18 +47,18 @@ func main() {
 
 	for maxPO := min; maxPO < max; maxPO++ {
 		if *count < 0 {
-			run(-1, *graphId, maxPO)
+			run(-1, *graphId, maxPO, *configfile)
 		}
 		for i := 0; i < *count; i++ {
-			run(i, *graphId, maxPO)
+			run(i, *graphId, maxPO, *configfile)
 		}
 	}
 
 }
 
-func run(iteration int, graphId string, maxPO int) {
+func run(iteration int, graphId string, maxPO int, configfile string) {
 	start := time.Now()
-	config.InitConfig()
+	config.InitConfig(configfile)
 	if maxPO > -1 {
 		config.SetMaxPO(maxPO)
 	}

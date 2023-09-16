@@ -32,6 +32,10 @@ func IsAdjustableThreshold() bool {
 	return theconfig.ExperimentOptions.AdjustableThreshold
 }
 
+func IsVariableRefreshrate() bool {
+	return theconfig.ExperimentOptions.VariableRefreshrate
+}
+
 func GetAdjustableThresholdExponent() int {
 	return theconfig.BaseOptions.AdjustableThresholdExponent
 }
@@ -78,6 +82,10 @@ func IsForwardersPayForceOriginatorToPay() bool {
 
 func IsPayIfOrigPays() bool {
 	return theconfig.ExperimentOptions.PayIfOrigPays
+}
+
+func IsRouteOnlyNearest() bool {
+	return theconfig.ExperimentOptions.RouteOnlyNearest
 }
 
 func IsPayOnlyForCurrentRequest() bool {
@@ -346,6 +354,12 @@ func GetExperimentString() (exp string) {
 		exp += "NonOrgShProb-"
 		s := fmt.Sprintf("%v", GetNonOriginatorShuffleProbability())
 		exp += s
+	}
+	if !IsPayOnlyForCurrentRequest() {
+		exp += "FullDept"
+	}
+	if IsRouteOnlyNearest() {
+		exp += "Nearest"
 	}
 
 	exp += "-" + GetExpeimentId()

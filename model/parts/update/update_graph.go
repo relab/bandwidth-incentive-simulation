@@ -27,22 +27,17 @@ func Graph(state *types.State, requestResult types.RequestResult, curTimeStep in
 				}
 				if actualPrice < 0 {
 					continue
+				}
+				if !config.IsPayOnlyForCurrentRequest() {
+					state.Graph.SetEdgeA2B(payment.FirstNodeId, payment.PayNextId, 0)
+					state.Graph.SetEdgeA2B(payment.PayNextId, payment.FirstNodeId, 0)
 				} else {
-					if !config.IsPayOnlyForCurrentRequest() {
-						newEdgeData1 := edgeData1
-						newEdgeData1.A2B = 0
-						state.Graph.SetEdgeData(payment.FirstNodeId, payment.PayNextId, newEdgeData1)
-
-						newEdgeData2 := edgeData2
-						newEdgeData2.A2B = 0
-						state.Graph.SetEdgeData(payment.PayNextId, payment.FirstNodeId, newEdgeData2)
-					} else {
-						// Important fix: Reduce debt here, since it debt will be added again below.
-						// Idea is, paying for the current request should not effect the edge balance.
-						newEdgeData1 := edgeData1
-						newEdgeData1.A2B = edgeData1.A2B - price
-						state.Graph.SetEdgeData(payment.FirstNodeId, payment.PayNextId, newEdgeData1)
-					}
+					// Important fix: Reduce debt here, since it debt will be added again below.
+					// Idea is, paying for the current request should not effect the edge balance.
+					state.Graph.SetEdgeA2B(payment.FirstNodeId, payment.PayNextId, edgeData1.A2B-price)
+				}
+				if config.IsVariableRefreshrate() {
+					state.Graph.SetEdgeIncrementThreshold(payment.FirstNodeId, payment.PayNextId)
 				}
 				// fmt.Println("Payment from ", payment.FirstNodeId, " to ", payment.PayNextId, " for chunk ", payment.ChunkId, " with price ", actualPrice)
 				paymentWithPrice = types.PaymentWithPrice{Payment: payment, Price: actualPrice}
@@ -58,9 +53,7 @@ func Graph(state *types.State, requestResult types.RequestResult, curTimeStep in
 			providerNode := route[i+1]
 			price := utils.PeerPriceChunk(providerNode, chunkId)
 			edgeData := state.Graph.GetEdgeData(requesterNode, providerNode)
-			newEdgeData := edgeData
-			newEdgeData.A2B += price
-			state.Graph.SetEdgeData(requesterNode, providerNode, newEdgeData)
+			state.Graph.SetEdgeA2B(requesterNode, providerNode, edgeData.A2B+price)
 
 			if config.GetMaxPOCheckEnabled() {
 				nodePairWithPrice = types.NodePairWithPrice{RequesterNode: requesterNode, ProviderNode: providerNode, Price: price}

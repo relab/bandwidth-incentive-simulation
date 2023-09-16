@@ -65,10 +65,11 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 					// found new nextNode, release lock on previous found.
 					graph.UnlockEdge(firstNodeId, nextNodeId)
 				}
-				if !payNextId.IsNil() {
+				if !payNextId.IsNil() && dist <= payDist {
 					// found new nextNode, without payment, release lock on previous found payNext.
 					graph.UnlockEdge(firstNodeId, payNextId)
 					payNextId = -1 // IMPORTANT!
+					payDist = dist
 				}
 			}
 
@@ -78,16 +79,18 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 			thresholdFailed = true
 
 			if config.GetPaymentEnabled() {
-				if dist < payDist && nextNodeId.IsNil() {
+				if dist < payDist {
 					if config.IsEdgeLock() && !payNextId.IsNil() {
 						graph.UnlockEdge(firstNodeId, payNextId)
 					}
 					payDist = dist
 					payNextId = nodeId
 				} else if config.IsEdgeLock() {
+					// not free, and not a better payment option, release.
 					graph.UnlockEdge(firstNodeId, nodeId)
 				}
 			} else if config.IsEdgeLock() {
+				// not free and no payment enabled, release
 				graph.UnlockEdge(firstNodeId, nodeId)
 			}
 		}
@@ -98,6 +101,21 @@ func getNext(request types.Request, firstNodeId types.NodeId, prevNodePaid bool,
 		accessFailed = false
 	} else if !thresholdFailed {
 		accessFailed = true
+	}
+
+	if !nextNodeId.IsNil() && !payNextId.IsNil() {
+		// found a free peer, and a peer with payment, but closer
+		if config.IsRouteOnlyNearest() {
+			if config.IsEdgeLock() {
+				graph.UnlockEdge(firstNodeId, nextNodeId)
+			}
+			nextNodeId = -1
+		} else {
+			if config.IsEdgeLock() {
+				graph.UnlockEdge(firstNodeId, payNextId)
+			}
+			payNextId = -1
+		}
 	}
 
 	if config.GetPaymentEnabled() && !payNextId.IsNil() {

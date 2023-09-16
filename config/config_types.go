@@ -52,10 +52,12 @@ type experimentOptions struct {
 	ForwardersPayForceOriginatorToPay bool       `yaml:"ForwardersPayForceOriginatorToPay"`
 	WaitingEnabled                    bool       `yaml:"WaitingEnabled"`
 	RetryWithAnotherPeer              bool       `yaml:"RetryWithAnotherPeer"`
+	CacheIsEnabled                    bool       `yaml:"CacheIsEnabled"`
 	PreferredChunks                   bool       `yaml:"PreferredChunks"`
 	AdjustableThreshold               bool       `yaml:"AdjustableThreshold"`
+	VariableRefreshrate               bool       `yaml:"VariableRefreshrate"`
 	PayIfOrigPays                     bool       `yaml:"PayIfOrigPays"`
-	CacheIsEnabled                    bool       `yaml:"CacheIsEnabled"`
+	RouteOnlyNearest                  bool       `yaml:"RouteOnlyNearest"`
 	CacheSize                         int        `yaml:"CacheSize"`
 	CacheModel                        cacheModel `yaml:"CacheModel"`
 }
