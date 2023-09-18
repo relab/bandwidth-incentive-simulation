@@ -3,7 +3,7 @@
 # Global configuration options, defaults in comment
 BaseOptions:
   # Iterations: 10_000_000, best in multiples of 100_000
-  Iterations: 100_000_000
+  Iterations: 100_000
   # Bits: 16, bits in maximum address
   Bits: 26
   # NetworkSize: 10000, number of nodes in network
@@ -19,7 +19,7 @@ BaseOptions:
   # RandomSeed: 123456789, seed for deterministic randomness
   RandomSeed: 123456789
   # MaxProximityOrder: 16, determines how many accounting units is transferred according to distance from chunk.
-  MaxProximityOrder: 26
+  MaxProximityOrder: 16
   # Price: 1, the base unit for prices
   Price: 1
   # RequestsPerSecond: 12500, number of iterations during a second
@@ -51,7 +51,7 @@ BaseOptions:
   # The probability of neighbor update for every non-originator at every epoch
   NonOriginatorShuffleProbability: 0.0
   # IPFS workload
-  RealWorkload : true
+  RealWorkload: true
   # Which logic should be used in the outputWorker
   OutputOptions:
     MeanRewardPerForward: false
@@ -110,7 +110,7 @@ CustomExperiment:
   # PayIfOrigPays: false, only pay if the originator pays -- NOT NEEDED
   PayIfOrigPays: false
   # CacheIsEnabled: false, cache on nodes which stores chunks the node have seen before
-  CacheIsEnabled: false
+  CacheIsEnabled: true
   # cache size
   CacheSize: 10_000 # this is for 40 megabytes
   # different cache models
@@ -122,4 +122,4 @@ CustomExperiment:
     # remove the least recently used chunk if cache is full (Least Recently Used)
     LRU: false
     # remove the least frequently used chunk if cache is full (Least Frequently Used)
-    LFU: false
+    LFU: true

@@ -12,7 +12,10 @@ func CheckForgiveness(edgeData types.EdgeAttrs, firstNodeId types.NodeId, second
 		return edgeData.A2B, false
 	}
 
-	refreshRate := edgeData.Refreshrate
+	refreshRate := config.GetRefreshRate()
+	if config.IsAdjustableThreshold() {
+		refreshRate = GetAdjustedRefreshrate(edgeData.Threshold, config.GetThreshold(), config.GetRefreshRate(), config.GetAdjustableThresholdExponent())
+	}
 
 	removedDeptAmount := passedTime * refreshRate
 	newEdgeData := edgeData
@@ -22,9 +25,23 @@ func CheckForgiveness(edgeData types.EdgeAttrs, firstNodeId types.NodeId, second
 	}
 	newEdgeData.LastEpoch = request.Epoch
 	graph.SetEdgeData(firstNodeId, secondNodeId, newEdgeData)
-	if config.IsVariableRefreshrate() {
-		graph.SetEdgeDecrementThreshold(firstNodeId, secondNodeId)
-	}
 
 	return newEdgeData.A2B, true
+}
+
+func GetAdjustedRefreshrate(adjustedThreshold, threshold, refreshRate, power int) int {
+	// ratio := float64(adjustedThreshold) / float64(threshold)
+	// return int(math.Ceil(float64(refreshRate) * math.Pow(ratio, float64(power))))
+
+	ratio := float64(refreshRate) / float64(threshold)
+	adjrate := float64(adjustedThreshold) * ratio
+	if adjustedThreshold < threshold {
+		// in this case, we are not in bucket 2.
+		adjrate = adjrate / 2
+	}
+	if adjrate < 1 {
+		return 1
+	}
+	return int(adjrate)
+
 }

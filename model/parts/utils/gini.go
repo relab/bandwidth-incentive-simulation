@@ -36,15 +36,18 @@ func Stdev(x []int, mean float64) float64 {
 }
 
 func MinAndMax(x []int) (min int, max int) {
-	min = x[0]
-	max = x[0]
-	for _, value := range x {
-		if value < min {
-			min = value
+	if len(x) > 0 {
+		min = x[0]
+		max = x[0]
+		for _, value := range x {
+			if value < min {
+				min = value
+			}
+			if value > max {
+				max = value
+			}
 		}
-		if value > max {
-			max = value
-		}
+		return min, max
 	}
-	return min, max
+	return 0, 0
 }
