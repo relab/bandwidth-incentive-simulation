@@ -3,7 +3,6 @@ package routing
 import (
 	"go-incentive-simulation/config"
 	"go-incentive-simulation/model/parts/types"
-	"math"
 )
 
 func CheckForgiveness(edgeData types.EdgeAttrs, firstNodeId types.NodeId, secondNodeId types.NodeId, graph *types.Graph, request types.Request) (int, bool) {
@@ -31,6 +30,18 @@ func CheckForgiveness(edgeData types.EdgeAttrs, firstNodeId types.NodeId, second
 }
 
 func GetAdjustedRefreshrate(adjustedThreshold, threshold, refreshRate, power int) int {
-	ratio := float64(adjustedThreshold) / float64(threshold)
-	return int(math.Ceil(float64(refreshRate) * math.Pow(ratio, float64(power))))
+	// ratio := float64(adjustedThreshold) / float64(threshold)
+	// return int(math.Ceil(float64(refreshRate) * math.Pow(ratio, float64(power))))
+
+	ratio := float64(refreshRate) / float64(threshold)
+	adjrate := float64(adjustedThreshold) * ratio
+	if adjustedThreshold < threshold {
+		// in this case, we are not in bucket 2.
+		adjrate = adjrate / 2
+	}
+	if adjrate < 1 {
+		return 1
+	}
+	return int(adjrate)
+
 }
