@@ -31,37 +31,22 @@ type CachePolicy interface {
 	UpdateCacheMap(c *CacheStruct, newChunkId ChunkId, distance int)
 }
 
-type unlimitedPolicy struct {
-}
+type (
+	unlimitedPolicy struct {
+	}
 
-type proximityPolicy struct {
-	ChunkSet *sortedset.SortedSet[ChunkId, int, CacheData]
-}
+	proximityPolicy struct {
+		ChunkSet *sortedset.SortedSet[ChunkId, int, CacheData]
+	}
 
-type lruPolicy struct {
-	ChunkSet *sortedset.SortedSet[ChunkId, int, CacheData]
-}
+	lruPolicy struct {
+		ChunkSet *sortedset.SortedSet[ChunkId, int, CacheData]
+	}
 
-type lfuPolicy struct {
-	ChunkSet *sortedset.SortedSet[ChunkId, int, CacheData]
-}
-
-// type (
-// 	unlimitedPolicy struct {
-// 	}
-
-// 	proximityPolicy struct {
-// 		ChunkSet *sortedset.SortedSet[ChunkId, int, CacheData]
-// 	}
-
-// 	lruPolicy struct {
-// 		ChunkSet *sortedset.SortedSet[ChunkId, int, CacheData]
-// 	}
-
-// 	lfuPolicy struct {
-// 		ChunkSet *sortedset.SortedSet[ChunkId, int, CacheData]
-// 	}
-// )
+	lfuPolicy struct {
+		ChunkSet *sortedset.SortedSet[ChunkId, int, CacheData]
+	}
+)
 
 func GetCachePolicy(policy int) CachePolicy {
 	switch policy {
