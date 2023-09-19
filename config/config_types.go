@@ -61,6 +61,7 @@ type experimentOptions struct {
 	CacheSize                         int        `yaml:"CacheSize"`
 	CacheModel                        cacheModel `yaml:"CacheModel"`
 	DifferentGatewayCacheIsEnabled    bool       `yaml:"DifferentGatewayCacheIsEnabled"`
+	CacheGatewaySize                  int        `yaml:"CacheGatewaySize"`
 	GatewayCacheModel                 cacheModel `yaml:"GatewayCacheModel"`
 }
 

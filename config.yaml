@@ -125,6 +125,7 @@ CustomExperiment:
     LFU: false
   # DifferentGatewayCacheIsEnabled: false, use a different cache model for gateways  
   DifferentGatewayCacheIsEnabled: true
+  CacheGatewaySize: 10_000
   GatewayCacheModel:
     # a base line can be the unlimited cache.
     Unlimited: true

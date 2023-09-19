@@ -68,6 +68,10 @@ func GetCacheSize() int {
 	return theconfig.ExperimentOptions.CacheSize
 }
 
+func GetCacheGatewaySize() int {
+	return theconfig.ExperimentOptions.CacheGatewaySize
+}
+
 func IsPreferredChunksEnabled() bool {
 	return theconfig.ExperimentOptions.PreferredChunks
 }
@@ -356,7 +360,8 @@ func GetExperimentString() (exp string) {
 	if IsCacheEnabled() {
 		exp += "Cache-"
 		exp += strconv.Itoa(GetCacheModel())
-		exp = exp + "-" + strconv.Itoa(GetCacheSize())
+		exp += ("-" + strconv.Itoa(GetCacheSize()) + "-")
+		exp = exp + strconv.Itoa(GetCacheGatewaySize())
 	}
 	if IsPreferredChunksEnabled() {
 		exp += "Skew"

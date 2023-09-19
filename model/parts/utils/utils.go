@@ -201,7 +201,7 @@ func CreateDownloadersList(g *types.Graph) []types.NodeId {
 		downloadersList = append(downloadersList, originator.Id)
 		originator.IsOriginator = true
 		originator.CacheStruct.EvictionPolicy = types.GetCachePolicy(gatewaysPolicy)
-		// originator.CacheStruct.Size = 1
+		originator.CacheStruct.Size = config.GetCacheGatewaySize()
 		counter++
 		if counter >= config.GetOriginators() {
 			break

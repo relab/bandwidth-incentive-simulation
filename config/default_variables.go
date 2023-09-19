@@ -68,6 +68,7 @@ func getDefaultConfig() Config {
 			CacheIsEnabled:                    false, // false
 			CacheSize:                         100000,
 			DifferentGatewayCacheIsEnabled:    false, // false
+			CacheGatewaySize:                  100000,
 			CacheModel: cacheModel{
 				Unlimited:    false,
 				NonProximity: false,
