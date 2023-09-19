@@ -314,6 +314,29 @@ func GetEvaluateInterval() (i int) {
 	return theconfig.BaseOptions.OutputOptions.EvaluateInterval
 }
 
+func IsDifferentGatewayCacheEnabled() bool {
+	return theconfig.ExperimentOptions.DifferentGatewayCacheIsEnabled
+}
+
+func GetGatewaysCacheModel() int {
+	if IsDifferentGatewayCacheEnabled() {
+		if theconfig.ExperimentOptions.GatewayCacheModel.Unlimited {
+			return 0
+		}
+		if theconfig.ExperimentOptions.GatewayCacheModel.NonProximity {
+			return 1
+		}
+		if theconfig.ExperimentOptions.GatewayCacheModel.LRU {
+			return 2
+		}
+		if theconfig.ExperimentOptions.GatewayCacheModel.LFU {
+			return 3
+		}
+	}
+
+	return -1
+}
+
 func GetExperimentString() (exp string) {
 	exp = fmt.Sprintf("O%dT%dsS%dk%dTh%dFg%dW%d",
 		GetOriginators()*100/GetNetworkSize(),

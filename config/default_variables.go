@@ -67,7 +67,14 @@ func getDefaultConfig() Config {
 			AdjustableThreshold:               false, // false
 			CacheIsEnabled:                    false, // false
 			CacheSize:                         100000,
+			DifferentGatewayCacheIsEnabled:    false, // false
 			CacheModel: cacheModel{
+				Unlimited:    false,
+				NonProximity: false,
+				LRU:          false,
+				LFU:          false,
+			},
+			GatewayCacheModel: cacheModel{
 				Unlimited:    false,
 				NonProximity: false,
 				LRU:          false,

@@ -129,11 +129,12 @@ func (network *Network) node(nodeId NodeId) *Node {
 			RequestCount: 0,
 		},
 		CacheStruct: CacheStruct{
-			Size:           config.GetCacheSize(),
-			CacheMap:       make(CacheMap),
-			CacheFreqMap:   make(CacheFreqMap),
-			CacheMutex:     &sync.Mutex{},
-			EvictionPolicy: GetCachePolicy(),
+			Size:         config.GetCacheSize(),
+			CacheMap:     make(CacheMap),
+			CacheFreqMap: make(CacheFreqMap),
+			CacheMutex:   &sync.Mutex{},
+			// EvictionPolicy: GetCachePolicy(),
+			EvictionPolicy: GetConfigCachePolicy(),
 		},
 		PendingStruct: PendingStruct{
 			PendingQueue: nil,

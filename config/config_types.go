@@ -60,6 +60,8 @@ type experimentOptions struct {
 	RouteOnlyNearest                  bool       `yaml:"RouteOnlyNearest"`
 	CacheSize                         int        `yaml:"CacheSize"`
 	CacheModel                        cacheModel `yaml:"CacheModel"`
+	DifferentGatewayCacheIsEnabled    bool       `yaml:"DifferentGatewayCacheIsEnabled"`
+	GatewayCacheModel                 cacheModel `yaml:"GatewayCacheModel"`
 }
 
 type outputOptions struct {
