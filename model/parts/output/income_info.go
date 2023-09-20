@@ -141,8 +141,9 @@ func (ii *IncomeInfo) Update(output *Route) {
 	if output.failed() {
 		return
 	}
+
 	payments := output.PaymentsWithPrices
-	for hop, payment := range payments {
+	for _, payment := range payments {
 		payer := int(payment.Payment.FirstNodeId)
 		payee := int(payment.Payment.PayNextId)
 
@@ -150,20 +151,19 @@ func (ii *IncomeInfo) Update(output *Route) {
 			ii.IncomeMap[payer] -= payment.Price
 		} else {
 			ii.CostMap[payer] += payment.Price
-			if hop != 0 {
-				panic("First payment in list is not from originator.")
-			}
+			// if hop != 0 {
+			//     panic("First payment in list is not from originator.")
+			// }
 		}
 		ii.IncomeMap[payee] += payment.Price
 	}
+
 	route := output.RouteWithPrices
-	// if !config.GetHopIncome() {
-	// 	return
-	// }
 	for hop, path := range route {
 		payee := path.ProviderNode.ToInt()
+		payer := path.RequesterNode.ToInt()
 		if hop == 0 {
-			ii.Requesters[payee]++
+			ii.Requesters[payer]++
 		}
 		if _, ok := ii.HopMap[payee]; !ok {
 			ii.HopMap[payee] = []int{hop}
