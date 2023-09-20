@@ -16,7 +16,7 @@ import (
 )
 
 func isZipf() {
-	file, err := os.Open("workload.bin")
+	file, err := os.Open("workload.csv")
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return

@@ -9,12 +9,14 @@ import (
 )
 
 type BucketInfo struct {
-	Count          int
-	BucketWork     map[int]int
-	BucketPayCount map[int]int
-	BucketPayment  map[int]int
-	HopWork        map[int]int
-	HopPayCount    map[int]int
+	Count             int
+	BucketWork        map[int]int
+	FirstHopWork      map[int]int
+	BucketAccountings map[int]int
+	BucketPayCount    map[int]int
+	BucketPayment     map[int]int
+	HopWork           map[int]int
+	HopPayCount       map[int]int
 
 	File   *os.File
 	Writer *bufio.Writer
@@ -23,6 +25,8 @@ type BucketInfo struct {
 func InitBucketInfo() *BucketInfo {
 	bi := BucketInfo{}
 	bi.BucketWork = make(map[int]int)
+	bi.FirstHopWork = make(map[int]int)
+	bi.BucketAccountings = make(map[int]int)
 	bi.BucketPayCount = make(map[int]int)
 	bi.BucketPayment = make(map[int]int)
 	bi.HopWork = make(map[int]int)
@@ -36,6 +40,7 @@ func InitBucketInfo() *BucketInfo {
 
 func (bi *BucketInfo) Reset() {
 	bi.BucketWork = make(map[int]int)
+	bi.BucketAccountings = make(map[int]int)
 	bi.BucketPayCount = make(map[int]int)
 	bi.BucketPayment = make(map[int]int)
 	bi.HopWork = make(map[int]int)
@@ -82,7 +87,11 @@ func (bi *BucketInfo) Update(output *Route) {
 	payments := output.PaymentsWithPrices
 	for h, hop := range route {
 		bin := config.GetBits() - general.BitLength(hop.RequesterNode.ToInt()^hop.ProviderNode.ToInt())
+		if h == 0 {
+			bi.FirstHopWork[bin]++
+		}
 		bi.BucketWork[bin]++
+		bi.BucketAccountings[bin] += hop.Price
 		bi.HopWork[h]++
 		for _, payment := range payments {
 			if payment.Payment.FirstNodeId == hop.RequesterNode {
@@ -98,6 +107,42 @@ func (bi *BucketInfo) Log() {
 	_, err := bi.Writer.WriteString(fmt.Sprintf("\n Current count: %d\n", bi.Count))
 	if err != nil {
 		panic(err)
+	}
+
+	_, err = bi.Writer.WriteString("BucketUse: ")
+	if err != nil {
+		panic(err)
+	}
+
+	for bucket := 0; bucket < 11; bucket++ {
+		_, err = bi.Writer.WriteString(fmt.Sprintf(" Bucket %d used %d times \n", bucket, bi.BucketWork[bucket]))
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	_, err = bi.Writer.WriteString("BucketUse as fraction of bucket 0: ")
+	if err != nil {
+		panic(err)
+	}
+
+	for bucket := 0; bucket < 11; bucket++ {
+		_, err = bi.Writer.WriteString(fmt.Sprintf(" Bucket %d used %.3f times on first hop and %.3f times over all \n", bucket, float64(bi.FirstHopWork[bucket])/float64(bi.FirstHopWork[0]), float64(bi.BucketWork[bucket])/float64(bi.BucketWork[0])))
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	_, err = bi.Writer.WriteString("Accounting units transfered per bucket: \n")
+	if err != nil {
+		panic(err)
+	}
+
+	for bucket := 0; bucket < 11; bucket++ {
+		_, err = bi.Writer.WriteString(fmt.Sprintf(" In bucket %d, transfer costs %.3f \n", bucket, float64(bi.BucketAccountings[bucket])/float64(bi.BucketWork[bucket])))
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	_, err = bi.Writer.WriteString("BucketPayRatio: ")
