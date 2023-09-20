@@ -54,7 +54,7 @@ func (o *IncomeInfo) CalculateIncomeFairness() float64 {
 	size := config.GetNetworkSize()
 	vals := make([]int, size)
 	i := 0
-	println("IncomeMap size" ,len(o.IncomeMap))
+	println("IncomeMap size", len(o.IncomeMap))
 	for _, value := range o.IncomeMap {
 		vals[i] = value
 		i++
@@ -93,7 +93,7 @@ func (o *IncomeInfo) CalculateCostAdjustedOriginatorIncomeFairness() float64 {
 	for id, cost := range o.CostMap {
 		if o.Requesters[id] > 0 {
 			income := o.IncomeMap[id]
-			vals = append(vals, income-cost+o.Requesters[id]*16)
+			vals = append(vals, income-cost+o.Requesters[id]*config.GetMaxProximityOrder())
 
 		}
 	}
@@ -138,29 +138,30 @@ func (ii *IncomeInfo) Update(output *Route) {
 	if output.failed() {
 		return
 	}
+
 	payments := output.PaymentsWithPrices
-	for hop, payment := range payments {
+	for _, payment := range payments {
 		payer := int(payment.Payment.FirstNodeId)
 		payee := int(payment.Payment.PayNextId)
 
 		if !(payment.Payment.IsOriginator) {
 			ii.IncomeMap[payer] -= payment.Price
 		} else {
-			ii.Requesters[payer]++
 			ii.CostMap[payer] += payment.Price
-			if hop != 0 {
-				panic("First payment in list is not from originator.")
-			}
+			// if hop != 0 {
+			// 	panic("First payment in list is not from originator.")
+			// }
 		}
 		ii.IncomeMap[payee] += payment.Price
 	}
+
 	route := output.RouteWithPrices
-	if !config.GetHopIncome() {
-		return
-	}
 	for hop, path := range route {
 		payee := path.ProviderNode.ToInt()
-
+		payer := path.RequesterNode.ToInt()
+		if hop == 0 {
+			ii.Requesters[payer]++
+		}
 		if _, ok := ii.HopMap[payee]; !ok {
 			ii.HopMap[payee] = []int{hop}
 		} else {
@@ -285,7 +286,7 @@ func (ii *IncomeInfo) CalculateDensenessDistribution() (mean map[int]float64, st
 	for ida, income := range ii.IncomeMap {
 		totalincome += income
 		newregion := true
-		for regionid := range regions {
+		for _, regionid := range regions {
 			if proximity(ida, regionid) >= depth {
 				newregion = false
 				regiondenseness[regionid]++
@@ -300,21 +301,27 @@ func (ii *IncomeInfo) CalculateDensenessDistribution() (mean map[int]float64, st
 		}
 	}
 
+	cnt := make(map[int]int)
 	densenessincome := make(map[int][]int)
-	for r := range regions {
+	for _, r := range regions {
 		denseness := regiondenseness[r]
+		cnt[denseness]++
 		if _, ok := densenessincome[denseness]; !ok {
 			densenessincome[denseness] = make([]int, 0)
+
 		}
 		densenessincome[denseness] = append(densenessincome[denseness], regionincome[r]...)
 	}
 	mean = make(map[int]float64)
 	std = make(map[int]float64)
+	fraction := make(map[int]float64)
+
 	for d, incomes := range densenessincome {
+		fraction[d] = utils.Mean(incomes) * float64(len(ii.IncomeMap)) / float64(totalincome)
 		mean[d] = utils.Mean(incomes)
 		std[d] = utils.Stdev(incomes, mean[d])
 	}
-	return mean, std
+	return mean, fraction
 }
 
 func proximity(ida, idb int) int {
@@ -466,9 +473,9 @@ func (ii *IncomeInfo) Log() {
 		if err != nil {
 			panic(err)
 		}
-		means, std := ii.CalculateDensenessDistribution()
+		means, fractions := ii.CalculateDensenessDistribution()
 		for denseness, mean := range means {
-			_, err = ii.Writer.WriteString(fmt.Sprintf("Denseness, %d, %.4f, %.4f\n", denseness, mean, std[denseness]))
+			_, err = ii.Writer.WriteString(fmt.Sprintf("Denseness, %d, %.4f, %.4f\n", denseness, mean, fractions[denseness]))
 			if err != nil {
 				panic(err)
 			}
