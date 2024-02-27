@@ -1,5 +1,11 @@
 # bandwidth-incentive-simulation
-This repository contains implementation of the swarm bandwidth incentive simulation written in Go.
+
+
+[![license](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/relab/bandwidth-incentive-simulation/blob/main/LICENSE)
+[![build](https://github.com/relab/gorums/workflows/Test/badge.svg)](https://github.com/relab/bandwidth-incentive-simulation/actions)
+[![golangci-lint](https://github.com/relab/gorums/workflows/golangci-lint/badge.svg)](https://github.com/relab/bandwidth-incentive-simulation/actions)
+
+This repository contains an implementation of the swarm bandwidth incentive simulation written in Go.
 
 # Instructions to Compile and Run System
 Ensure Golang, preferably version 1.19.5 or later, is installed on the computer.
